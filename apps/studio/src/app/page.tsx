@@ -1,3 +1,5 @@
+import { TestConnectionButton } from "@/components/TestConnectionButton";
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-50 font-sans dark:bg-black">
@@ -10,6 +12,7 @@ export default function Home() {
       <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
         Environment Ready
       </p>
+      <TestConnectionButton />
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import { TestConnectionButton } from "@/components/TestConnectionButton";
+import { LineEditorPanel } from "@/components/LineEditorPanel";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-50 px-4 py-12 font-sans dark:bg-black">
       <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
         Literary Studio
       </h1>
@@ -13,6 +14,7 @@ export default function Home() {
         Environment Ready
       </p>
       <TestConnectionButton />
+      <LineEditorPanel />
     </div>
   );
 }

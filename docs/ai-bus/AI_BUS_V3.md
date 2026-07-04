@@ -1,3 +1,10 @@
+------------------------------------
+Superseded by AI_BUS_V4.md.
+
+This document is retained for historical reference only and is no longer the active operating
+protocol.
+------------------------------------
+
 # AI Bus v3
 
 ## Execution System Overview

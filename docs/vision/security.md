@@ -17,6 +17,33 @@ the architecture decided so far, plus open questions to resolve before Phase 2.
   committing keys) before that integration lands — see Remaining Work in the
   [Sprint 03 report](../reports/SPRINT-03.md).
 
+## Secrets Policy
+
+Defined as of Sprint 04, Step 3 — closes the "Next step" below.
+
+- Secrets exist only in `.env.local` (gitignored, never committed).
+- `.env.example` contains placeholders only — no real values, ever.
+- Secrets are never committed, in any file, at any point in history.
+- Secrets are never logged.
+- Secrets are never exposed to client-side code (no `NEXT_PUBLIC_` prefix, no client component
+  ever reads one).
+- Only Next.js Route Handlers may access provider SDKs (e.g. the Anthropic SDK) or read
+  provider API keys.
+
+## Provider Integration Rule
+
+**The only approved integration point for external AI providers is a Next.js Route Handler.**
+This is an architectural constraint, not a convenience default: no client component, no shared
+utility outside a Route Handler, and no build-time code may call a provider SDK or hold a
+provider API key.
+
+In Step 4, the Anthropic SDK is expected to be accessed through a single server-side module —
+`apps/studio/src/lib/ai/anthropic.ts` — to keep exactly one integration point rather than
+scattering SDK calls across multiple Route Handlers. This is not a provider abstraction layer
+(ADR-0003's abstraction layer remains deferred, per its evolutionary approach) — it is only a
+single point of access to minimize future changes. This module does not exist yet; it is not
+created in Step 3, which prepares the project without importing the SDK anywhere.
+
 ## Open questions to resolve before Phase 2
 
 - Authentication approach once user accounts are introduced.

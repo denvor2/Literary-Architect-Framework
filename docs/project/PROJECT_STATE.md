@@ -4,7 +4,7 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-04 (Sprint 03)
+**Last updated:** 2026-07-04 (Sprint 03 committed, Sprint 04 planning)
 **Project Health:** Healthy — on track, no blocking issues.
 **Current Phase:** Phase 1 (MVP).
 
@@ -16,9 +16,9 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 03 — First Implementation Sprint. See
-[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for live status and
-[docs/reports/SPRINT-03.md](../reports/SPRINT-03.md) for the full report.
+Sprint 04 — First Working Expert (planning). See
+[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for live status;
+[docs/reports/SPRINT-04.md](../reports/SPRINT-04.md) is the (currently empty) report template.
 
 ## Completed Milestones
 
@@ -28,7 +28,9 @@ Sprint 03 — First Implementation Sprint. See
   requirements, and Scrum workflow decided outside the repository (not yet fully backfilled —
   see `docs/vision/pricing.md` and `docs/vision/security.md`).
 - **Sprint 03** — Studio App scaffolded (`apps/studio/`, Next.js/TypeScript/Tailwind), build
-  and dev server validated, first architectural documentation set created (this file included).
+  and dev server validated, first architectural documentation set created, Architecture Review
+  approved, committed as `fd253b0` and tagged `v0.1.0-foundation`. See
+  [docs/reports/SPRINT-03.md](../reports/SPRINT-03.md).
 
 ## Current Architecture
 
@@ -37,6 +39,8 @@ Sprint 03 — First Implementation Sprint. See
   [ADR-0001](../adr/ADR-0001-repository-structure.md).
 - The Expert Contract is not yet ratified — Sprint 04's Line Editor will discover it. See
   [ADR-0002](../adr/ADR-0002-expert-contract-vision.md).
+- The technology stack is fixed by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) —
+  any new framework, SDK, or runtime dependency should be checked against it before being added.
 - `apps/studio/` is currently the unmodified Next.js starter — no application logic yet.
 
 ## Accepted ADRs
@@ -45,13 +49,20 @@ Sprint 03 — First Implementation Sprint. See
 |-----|-------|--------|
 | [ADR-0001](../adr/ADR-0001-repository-structure.md) | Repository Structure | Accepted |
 | [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) | Expert Contract Vision | Proposed |
+| [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) | Technology Stack Strategy | Accepted |
 
 ## Technology Stack
 
-- **Studio App:** Next.js, TypeScript, React, Tailwind CSS, App Router.
-- **Storage (Phase 1):** local JSON, single-user.
-- **AI provider:** Anthropic (Claude) — not yet integrated (planned Sprint 04).
-- **Planned (Phase 2+):** SQLite/PostgreSQL, user accounts, cloud sync, AI orchestration layer.
+Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
+
+- **Language / Runtime:** TypeScript, Node.js
+- **Frontend:** React, Next.js, Tailwind CSS, shadcn/ui
+- **Persistence:** PostgreSQL, Prisma (ORM) — Phase 2+; Phase 1 continues using local JSON,
+  single-user, no database.
+- **AI Integration:** official provider SDKs only (Anthropic SDK first, planned Sprint 04); no
+  orchestration frameworks (LangChain, LlamaIndex, or similar).
+- **Deployment targets:** Windows, Linux, Docker Compose, VPS, dedicated server, cloud —
+  without architectural changes between them.
 
 ## Current Priorities
 

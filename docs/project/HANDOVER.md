@@ -20,7 +20,7 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 03 (First Implementation Sprint), wrapping up. See
+Sprint 04 (First Working Expert), planning. See
 [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for live status.
 
 ## Architecture
@@ -31,6 +31,9 @@ Sprint 03 (First Implementation Sprint), wrapping up. See
 - The Expert Contract is deliberately not yet designed — evolutionary architecture. The first
   Expert implementation is expected to *discover* the contract, not implement a predefined one.
   See [ADR-0002](../adr/ADR-0002-expert-contract-vision.md).
+- The technology stack (below) is fixed by
+  [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) — check it before adding any new
+  framework, SDK, or runtime dependency.
 
 ## Current Status
 
@@ -48,12 +51,21 @@ Sprint 03 (First Implementation Sprint), wrapping up. See
 |-----|-------|--------|
 | [ADR-0001](../adr/ADR-0001-repository-structure.md) | Repository Structure | Accepted |
 | [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) | Expert Contract Vision | Proposed |
+| [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) | Technology Stack Strategy | Accepted |
 
 ## Current Tech Stack
 
-Next.js, TypeScript, React, Tailwind CSS (Studio App). Local JSON storage, single-user
-(Phase 1). Anthropic (Claude) planned as the AI provider, not yet integrated. See
-[PROJECT_STATE.md](PROJECT_STATE.md) for the full stack and phase plan.
+Approved (ADR-0003) — no need to read the ADR to get the list:
+
+- **Language / Runtime:** TypeScript, Node.js
+- **Frontend:** React, Next.js, Tailwind CSS, shadcn/ui
+- **Persistence:** PostgreSQL, Prisma — Phase 2+ only; Phase 1 uses local JSON, single-user.
+- **AI:** official provider SDKs only (Anthropic SDK first, Sprint 04) — no orchestration
+  frameworks (LangChain, LlamaIndex, or similar).
+- **Deployment targets:** Windows, Linux, Docker Compose, VPS, dedicated server, cloud.
+
+See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
+[ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) for the full rationale.
 
 ## Immediate Next Task
 

@@ -20,8 +20,8 @@ the architecture decided so far, plus open questions to resolve before Phase 2.
 ## Open questions to resolve before Phase 2
 
 - Authentication approach once user accounts are introduced.
-- Data isolation and access control between users once storage moves to SQLite/PostgreSQL
-  with cloud sync.
+- Data isolation and access control between users once storage moves to PostgreSQL (see
+  [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md)) with cloud sync.
 - Data retention and deletion policy for user-authored manuscripts.
 - Whether/how user text sent to AI providers (Anthropic or others) is retained, logged, or
   used — needs a clear policy stated to users.

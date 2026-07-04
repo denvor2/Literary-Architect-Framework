@@ -18,7 +18,7 @@ Studio App.
 
 Goal: move from a local single-user tool to a persisted, multi-session product.
 
-- SQLite / PostgreSQL storage
+- PostgreSQL storage (via Prisma) — see [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md)
 - User accounts
 - Cloud synchronization
 - AI orchestration layer coordinating multiple Experts/workflows

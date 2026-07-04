@@ -80,6 +80,11 @@ Future architectural experiments, kept separate from product features:
 
 - Shared-package strategy across multiple `apps/` (e.g. npm workspaces), if a second app is
   ever added — see [ADR-0001](../adr/ADR-0001-repository-structure.md)'s Future Impact.
+- **AUTO-001 — Cross-platform documentation link checker.** Replace ad-hoc shell-script link
+  verification with `tools/check-links.ts`, built on the approved stack (TypeScript + Node.js,
+  per [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md)) — cross-platform, CI-ready, no
+  shell dependency. **Status:** Deferred. **Trigger:** after Project Bootstrap, or before CI is
+  introduced.
 
 ## Note
 

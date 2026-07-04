@@ -1,0 +1,27 @@
+# Step Card Template — AI Bus v3
+# Exactly one Step Card is active at a time (see docs/project/CURRENT_STEP.md).
+# Copy this structure to define a new step; every field is required.
+
+id: "" # e.g. Sprint-04-Step-05
+name: "" # short, human-readable name
+type: "" # implementation | architecture | refactor
+
+scope:
+  allowed_paths:
+    - "" # paths this step may create or modify
+  forbidden_paths:
+    - "" # paths this step must not touch, even incidentally
+
+objective: "" # one or two sentences: what this step must achieve, and nothing more
+
+inputs:
+  - "" # prior artifacts, ADRs, or Step Cards this step depends on
+
+outputs:
+  - "" # files/artifacts this step must produce
+
+validation:
+  - "" # concrete, runnable checks that must pass (e.g. "npm run build succeeds")
+
+done_when:
+  - "" # explicit, checkable completion criteria — never vague ("looks good")

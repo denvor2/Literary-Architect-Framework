@@ -1,20 +1,67 @@
-import { TestConnectionButton } from "@/components/TestConnectionButton";
-import { LineEditorPanel } from "@/components/LineEditorPanel";
+"use client";
+
+import { useState } from "react";
+import { Header } from "@/components/Header";
+import { Sidebar } from "@/components/Sidebar";
+import { EditorArea } from "@/components/EditorArea";
+import { AssistantPanel } from "@/components/AssistantPanel";
+import { DeveloperTools } from "@/components/DeveloperTools";
+import { NewBookDialog } from "@/components/NewBookDialog";
+import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 
 export default function Home() {
+  const {
+    book,
+    chapters,
+    selectedChapterId,
+    selectedSceneId,
+    createBook,
+    createScene,
+    updateSceneText,
+    selectChapter,
+    selectScene,
+  } = useWorkspaceController();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // Ephemeral UI state only — not part of Workspace, not persisted.
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-50 px-4 py-12 font-sans dark:bg-black">
-      <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
-        Literary Studio
-      </h1>
-      <p className="text-lg text-zinc-600 dark:text-zinc-400">
-        Sprint 04 Bootstrap
-      </p>
-      <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-        Environment Ready
-      </p>
-      <TestConnectionButton />
-      <LineEditorPanel />
+    <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
+      <Header onNewBook={() => setIsDialogOpen(true)} />
+      <div className="flex flex-1 overflow-hidden">
+        {!isFocusMode && (
+          <Sidebar
+            bookTitle={book?.title}
+            chapters={chapters}
+            selectedChapterId={selectedChapterId}
+            selectedSceneId={selectedSceneId}
+            onSelectChapter={selectChapter}
+            onSelectScene={selectScene}
+          />
+        )}
+        <EditorArea
+          book={book}
+          chapters={chapters}
+          selectedChapterId={selectedChapterId}
+          selectedSceneId={selectedSceneId}
+          onNewScene={createScene}
+          onChangeSceneText={updateSceneText}
+          isFocusMode={isFocusMode}
+          onToggleFocusMode={() => setIsFocusMode((value) => !value)}
+        />
+        {!isFocusMode && <AssistantPanel />}
+      </div>
+      {!isFocusMode && <DeveloperTools />}
+
+      {isDialogOpen && (
+        <NewBookDialog
+          onCancel={() => setIsDialogOpen(false)}
+          onCreate={(newBook) => {
+            createBook(newBook);
+            setIsDialogOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

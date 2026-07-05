@@ -32,8 +32,8 @@ wiring, responsive panel, ADR-0005 + closeout) complete. See
   and dev server validated, first architectural documentation set created, Architecture Review
   approved, committed as `fd253b0` and tagged `v0.1.0-foundation`. See
   [docs/reports/SPRINT-03.md](../reports/SPRINT-03.md).
-- **Sprint 04** — ADR-0003 (Technology Stack Strategy) adopted; AI Bus v4 established as the
-  canonical, now-frozen execution protocol; Anthropic integration built and live-validated
+- **Sprint 04** — ADR-0003 (Technology Stack Strategy) adopted; Task Bus v4 (then still named
+  "AI Bus v4") established as the canonical, now-frozen execution protocol; Anthropic integration built and live-validated
   (Test Connection and Line Editor both confirmed with real Claude responses); a full Literary
   Studio product documentation suite committed (Product Vision, Domain Model, User Model,
   Expert Catalog, Book Lifecycle, MVP Scope). See [docs/reports/SPRINT-04.md](../reports/SPRINT-04.md).
@@ -53,8 +53,8 @@ wiring, responsive panel, ADR-0005 + closeout) complete. See
 - **Sprint 07** — architecture ratification and cleanup, no user-visible behavior change.
   **Step 00:** model-specific role labels ("ChatGPT (Chief Software Architect)", "Claude (Lead
   Software Engineer / Executor)") replaced with model-independent **Architect** / **Programmer
-  (Executor)** across the AI Bus protocol and project docs; a git-based, tool-free handoff
-  channel (`docs/ai-bus/queue/pending/active/done`) introduced for exchanging Step Cards, ARPs,
+  (Executor)** across the Task Bus protocol and project docs; a git-based, tool-free handoff
+  channel (`docs/task-bus/queue/pending/active/done`) introduced for exchanging Step Cards, ARPs,
   and Reviews. Committed `430edd61d2b336bd3f12de79ed491d8669e3ac6e`.
   **Step 01:** [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) formalized the Line
   Editor's request/response schema, AI Bus v5 chain position, error model, and

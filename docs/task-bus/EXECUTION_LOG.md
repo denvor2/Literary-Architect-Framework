@@ -1,4 +1,4 @@
-# AI Bus — Execution Log
+# Task Bus — Execution Log
 
 A trace layer recording every AI-Bus-pattern execution (Architecture-Task style, ARP-producing)
 that has run so far, and whether it maps to a Sprint step under
@@ -6,7 +6,7 @@ that has run so far, and whether it maps to a Sprint step under
 never rewritten.
 
 **Scope note:** this log covers executions run under the Architecture-Task/ARP pattern (what
-later became formalized as AI Bus v3). Sprint 04's Step 1 (creating `CURRENT_SPRINT.md` and
+later became formalized as Task Bus v3). Sprint 04's Step 1 (creating `CURRENT_SPRINT.md` and
 `SPRINT-04.md`) was completed as ordinary planning conversation before this pattern existed and
 is already recorded in `CURRENT_SPRINT.md` itself — it is not duplicated here. The same applies
 to the in-progress, not-yet-checked-off Step 2 work (root `CLAUDE.md`, currently uncommitted).

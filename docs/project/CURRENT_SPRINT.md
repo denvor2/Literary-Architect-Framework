@@ -46,8 +46,8 @@ Expert.
 
 Two unrelated, ad-hoc queue tasks were also processed during this sprint window but are not
 Sprint 08 steps: adding `docs/project/GLOSSARY.md` and a chat-formatting note in
-`docs/ai-bus/STANDING-PROMPT.md` — both documentation-only, tracked in
-`docs/ai-bus/queue/done/`.
+`docs/task-bus/STANDING-PROMPT.md` — both documentation-only, tracked in
+`docs/task-bus/queue/done/`.
 
 ## Out of Scope (held constant this sprint)
 

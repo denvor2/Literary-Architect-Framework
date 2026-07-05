@@ -1,7 +1,7 @@
-# AI Bus — Execution Closure Layer
+# Task Bus — Execution Closure Layer
 
 Defines how an execution — and the Sprint step it serves — is considered **closed**,
-completing the loop: Sprint (planning) → AI Bus (execution) → Execution Log (history) →
+completing the loop: Sprint (planning) → Task Bus (execution) → Execution Log (history) →
 Alignment (binding rules) → **Closure** (completion + authority). This document only adds a
 closure mechanism; it does not modify `CURRENT_SPRINT.md`, `CURRENT_STEP.md`, `BRIDGE.md`,
 `EXECUTION_LOG.md`, or `EXECUTION_ALIGNMENT.md`, and it does not itself close or reclassify any
@@ -48,7 +48,7 @@ this file's existence.
 - A Sprint step can only be marked complete once the Definition of DONE (§1) is satisfied.
 - **Authority**, following the existing three-role structure (see
   [PROJECT_CHARTER.md](../project/PROJECT_CHARTER.md)):
-  - **AI Bus (Executor)** may *propose* that a step's Definition of DONE is satisfied — e.g. as
+  - **Task Bus (Executor)** may *propose* that a step's Definition of DONE is satisfied — e.g. as
     part of an ARP — but never marks `CURRENT_SPRINT.md` complete itself, consistent with
     `BRIDGE.md`'s Authority Rules.
   - **ARCHITECT** verifies the Definition of DONE is actually met (mapped + BOUND execution,
@@ -56,7 +56,7 @@ this file's existence.
     UNBOUND → BOUND transitions needed to support it.
   - **Product Owner** holds final authority to mark the Sprint step complete in
     `CURRENT_SPRINT.md` (or delegate the mechanical edit).
-  - Flow: **AI Bus proposes → Architect verifies and approves binding → Product Owner marks
+  - Flow: **Task Bus proposes → Architect verifies and approves binding → Product Owner marks
     the step done.**
 
 ## 4. Consistency Rule

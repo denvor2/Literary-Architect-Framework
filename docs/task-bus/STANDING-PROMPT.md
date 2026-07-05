@@ -1,12 +1,12 @@
 # Standing Prompt — Programmer Queue Routine
 
 Читать в начале каждой сессии Programmer (Executor), наравне с Bootstrap
-(docs/ai-bus/BOOTSTRAP.md). Не дублирует docs/ai-bus/queue/README.md —
+(docs/task-bus/BOOTSTRAP.md). Не дублирует docs/task-bus/queue/README.md —
 это краткая рабочая инструкция поверх уже описанного там протокола.
 
 ## Что делать при старте сессии
 
-1. Проверь `docs/ai-bus/queue/pending/`.
+1. Проверь `docs/task-bus/queue/pending/`.
    - Пусто → сообщи об этом человеку и жди.
    - Есть файл (Step Card) → переходи к шагу 2.
 2. `git mv pending/<file> active/<file>` — этим же коммитом начинаешь
@@ -22,7 +22,7 @@
    должен видеть его), но теперь он ещё и лежит в репозитории —
    именно это делает возможным ревью без ручного копирования текста.
 5. Сообщи человеку (в чате): "ARP по <id> готов, файл в
-   docs/ai-bus/queue/active/, жду ревью Architect."
+   docs/task-bus/queue/active/, жду ревью Architect."
 6. Дальше — по уже описанному в README.md разделу
    "Programmer Response to Review": проверяешь `active/` на
    `REVIEW.md`, действуешь по STATUS (OK / FIX / STOP).

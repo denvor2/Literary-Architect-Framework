@@ -1,9 +1,9 @@
-# AI Bus Queue — File-Based Handoff Protocol
+# Task Bus Queue — File-Based Handoff Protocol
 
 Purpose-built for exchanging step/task files between the Architect and the Programmer
 (Executor) through git alone — no server, no polling, no external infrastructure. This is a
 documentation-only protocol, consistent with the standing limitation already recorded in
-[AI_BUS_V4.md](../AI_BUS_V4.md)'s Risk Registry ("no technical enforcement exists for any rule
+[TASK_BUS_V4.md](../TASK_BUS_V4.md)'s Risk Registry ("no technical enforcement exists for any rule
 in this document"): nothing here adds tooling.
 
 Architect and Programmer (Executor) are roles, not fixed AI models — see
@@ -14,10 +14,10 @@ whichever session (human or AI) is currently assigned to it.
 
 A single task/Step Card file per unit of work — the same kind of artifact already described by
 `STEP_CARD_TEMPLATE.yml` and `PROMPT_TEMPLATE.md`. The queue does not duplicate ARP content or
-review content: those continue to live in the conversation and in the existing `docs/ai-bus/`
+review content: those continue to live in the conversation and in the existing `docs/task-bus/`
 and `docs/reports/` documents. The queue only carries the task descriptor through its
-lifecycle, to avoid the AI Bus Documentation Fragmentation risk already registered in
-`AI_BUS_V4.md`.
+lifecycle, to avoid the Task Bus Documentation Fragmentation risk already registered in
+`TASK_BUS_V4.md`.
 
 ## Folders
 
@@ -59,7 +59,7 @@ at a time (see Single Active Step Rule, above).
 - Если `REVIEW.md` отсутствует — Step Card ещё не рассмотрен, ожидание продолжается, новую
   работу не начинать.
 - Если `REVIEW.md` присутствует со `STATUS: OK` — Programmer выполняет commit по правилам
-  Standing Commit Policy (`AI_BUS_V4.md`) и перемещает Step Card + ARP + `REVIEW.md` в
+  Standing Commit Policy (`TASK_BUS_V4.md`) и перемещает Step Card + ARP + `REVIEW.md` в
   `queue/done/` в том же коммите.
 - Если `STATUS: FIX` — Programmer читает `NEXT STEP` из `REVIEW.md`, вносит исправления поверх
   текущей активной работы (Step Card не меняется, только его исполнение), коммитит обновлённый

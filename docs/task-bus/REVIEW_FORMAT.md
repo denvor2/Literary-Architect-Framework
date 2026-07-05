@@ -1,4 +1,4 @@
-# ChatGPT Review Format — AI Bus
+# ChatGPT Review Format — Task Bus
 
 Used by the Chief Software Architect to review a completed Step Card's ARP and diff.
 

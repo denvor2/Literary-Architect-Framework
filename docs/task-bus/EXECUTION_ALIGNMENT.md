@@ -1,14 +1,14 @@
-# AI Bus — Execution Alignment Layer
+# Task Bus — Execution Alignment Layer
 
-**Updated under [AI_BUS_V4.md](AI_BUS_V4.md) RC1** — the Binding Rule (§2) now accepts an
+**Updated under [TASK_BUS_V4.md](TASK_BUS_V4.md) RC1** — the Binding Rule (§2) now accepts an
 explicit "No Artifact Required" decision as an alternative to a repository artifact. See
-`AI_BUS_V4.md`'s Version Evolution table; this document remains the canonical, single home of
+`TASK_BUS_V4.md`'s Version Evolution table; this document remains the canonical, single home of
 the Binding Rule and is not duplicated there.
 
 Defines how [EXECUTION_LOG.md](EXECUTION_LOG.md) entries connect to Sprint steps
 ([CURRENT_SPRINT.md](../project/CURRENT_SPRINT.md)) going forward, building on the layer
 roles and `X.Y` numbering already defined in [BRIDGE.md](BRIDGE.md). This document adds
-alignment metadata only — it does not modify the Sprint system, the AI Bus runtime state, the
+alignment metadata only — it does not modify the Sprint system, the Task Bus runtime state, the
 Bridge, or any existing Execution Log entry.
 
 ## 1. Mapping Rules
@@ -50,7 +50,7 @@ a "No Artifact Required" decision) alone, is not sufficient for BOUND status.
 
 **Caution:** the "No Artifact Required" path exists to avoid forcing busywork documentation,
 not to legitimize losing knowledge to conversation. Per Repository-First Enforcement
-(`AI_BUS_V4.md`), any execution that produces *reusable architectural knowledge* — as opposed
+(`TASK_BUS_V4.md`), any execution that produces *reusable architectural knowledge* — as opposed
 to a pure go/no-go investigation with nothing worth keeping — still requires an artifact. "No
 Artifact Required" is for the latter case only, and the Architect's recorded reason should say
 which case applies.

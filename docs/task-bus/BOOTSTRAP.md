@@ -1,4 +1,4 @@
-# AI Bus v4 — Bootstrap Levels
+# Task Bus v4 — Bootstrap Levels
 
 Replaces the informal "Bootstrap Set" referenced in earlier sessions with explicit, numbered
 loading levels. Every new session — whoever is currently playing the Architect role, whoever
@@ -7,7 +7,7 @@ through the level applicable to it, in order, before beginning work. Architect a
 (Executor) are roles, not fixed AI models — see `PROJECT_CHARTER.md`'s Role/Model Binding note.
 
 This document is an index into existing files. It does not restate their content, to avoid the
-AI Bus Documentation Fragmentation risk registered in [AI_BUS_V4.md](AI_BUS_V4.md).
+Task Bus Documentation Fragmentation risk registered in [TASK_BUS_V4.md](TASK_BUS_V4.md).
 
 ## Levels
 
@@ -26,9 +26,9 @@ AI Bus Documentation Fragmentation risk registered in [AI_BUS_V4.md](AI_BUS_V4.m
 - All Accepted ADRs under `docs/adr/`
 
 **Level 4 — Operating Protocol**
-- `docs/ai-bus/AI_BUS_V4.md` (canonical protocol)
-- `docs/ai-bus/BRIDGE.md`, `EXECUTION_LOG.md`, `EXECUTION_ALIGNMENT.md`, `EXECUTION_CLOSURE.md`
-- `docs/ai-bus/STEP_CARD_TEMPLATE.yml`, `PROMPT_TEMPLATE.md`, `REVIEW_FORMAT.md`
+- `docs/task-bus/TASK_BUS_V4.md` (canonical protocol)
+- `docs/task-bus/BRIDGE.md`, `EXECUTION_LOG.md`, `EXECUTION_ALIGNMENT.md`, `EXECUTION_CLOSURE.md`
+- `docs/task-bus/STEP_CARD_TEMPLATE.yml`, `PROMPT_TEMPLATE.md`, `REVIEW_FORMAT.md`
 
 ## Role Notes
 
@@ -37,7 +37,7 @@ AI Bus Documentation Fragmentation risk registered in [AI_BUS_V4.md](AI_BUS_V4.m
   session — a fact about that tool's bootstrap, not part of the role's definition.
   `docs/project/HANDOVER.md` covers Levels 0–2 in onboarding form regardless of which model is
   playing the role. Reading `HANDOVER.md` satisfies Levels 0–2 for a new Programmer (Executor)
-  session. Before checking `docs/ai-bus/queue/`, also read
+  session. Before checking `docs/task-bus/queue/`, also read
   [STANDING-PROMPT.md](STANDING-PROMPT.md) — the queue pickup/ARP/Review routine.
 - **Architect session:** no model-specific auto-loaded file currently exists for this role; a
   new Architect session must read Levels 0–4 explicitly, in order, regardless of which model is
@@ -51,7 +51,7 @@ AI Bus Documentation Fragmentation risk registered in [AI_BUS_V4.md](AI_BUS_V4.m
 Before beginning work, a new session must state that its applicable levels have been read —
 e.g. "Bootstrap confirmed: Levels 0–4 read" for an Architect or Executor session. This mirrors
 the target/type/scope self-declaration already required at the start of every task (see
-`AI_BUS_V4.md`). A session that has not confirmed its bootstrap should not be treated as having
+`TASK_BUS_V4.md`). A session that has not confirmed its bootstrap should not be treated as having
 sufficient context to execute or review work.
 
 ## Session Refresh Trigger

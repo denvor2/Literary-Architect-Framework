@@ -1,4 +1,4 @@
-# AI Bus v4 — Operating Protocol (RC1)
+# Task Bus v4 — Operating Protocol (RC1)
 
 **Status:** Release Candidate 1. **This document is the sole canonical operating protocol for
 Literary Studio as of this commit.** [AI_BUS_V3.md](AI_BUS_V3.md) is retained exclusively as a
@@ -7,7 +7,7 @@ point forward — see Version Evolution below.
 
 This is an evidence-driven revision of v3: every change below is justified by what was
 observed operating v3 during Sprint 04, not by speculative redesign. See
-[docs/ai-bus/EXECUTION_LOG.md](EXECUTION_LOG.md) for the underlying execution history this
+[docs/task-bus/EXECUTION_LOG.md](EXECUTION_LOG.md) for the underlying execution history this
 revision is based on.
 
 ## Roles (carried forward from v3, unchanged)
@@ -102,16 +102,16 @@ exactly the fragmentation risk registered below.
 
 | Old document | New document | Status |
 |---|---|---|
-| `docs/ai-bus/AI_BUS_V3.md` | `docs/ai-bus/AI_BUS_V4.md` | **Superseded** (kept for history; no longer canonical) |
-| `docs/ai-bus/BRIDGE.md` | `docs/ai-bus/BRIDGE.md` | Unchanged — canonical |
-| `docs/ai-bus/EXECUTION_LOG.md` | `docs/ai-bus/EXECUTION_LOG.md` | Unchanged — canonical (historical record, additive-only) |
-| `docs/ai-bus/EXECUTION_ALIGNMENT.md` | `docs/ai-bus/EXECUTION_ALIGNMENT.md` | **Merged/updated in place** — canonical (Binding Rule extended) |
-| `docs/ai-bus/EXECUTION_CLOSURE.md` | `docs/ai-bus/EXECUTION_CLOSURE.md` | Unchanged — canonical |
-| `docs/ai-bus/STEP_CARD_TEMPLATE.yml` | `docs/ai-bus/STEP_CARD_TEMPLATE.yml` | Unchanged — canonical |
-| `docs/ai-bus/PROMPT_TEMPLATE.md` | `docs/ai-bus/PROMPT_TEMPLATE.md` | Unchanged — canonical (its duplication with `REVIEW_FORMAT.md` remains an OPEN risk, not addressed in RC1) |
-| `docs/ai-bus/REVIEW_FORMAT.md` | `docs/ai-bus/REVIEW_FORMAT.md` | Unchanged — canonical |
-| *(none — new)* | `docs/ai-bus/AI_BUS_V4.md` | **New** — canonical operating protocol |
-| *(none — new)* | `docs/ai-bus/BOOTSTRAP.md` | **New** — canonical (formalizes the previously informal Bootstrap Set) |
+| `docs/task-bus/AI_BUS_V3.md` | `docs/task-bus/TASK_BUS_V4.md` | **Superseded** (kept for history; no longer canonical) |
+| `docs/task-bus/BRIDGE.md` | `docs/task-bus/BRIDGE.md` | Unchanged — canonical |
+| `docs/task-bus/EXECUTION_LOG.md` | `docs/task-bus/EXECUTION_LOG.md` | Unchanged — canonical (historical record, additive-only) |
+| `docs/task-bus/EXECUTION_ALIGNMENT.md` | `docs/task-bus/EXECUTION_ALIGNMENT.md` | **Merged/updated in place** — canonical (Binding Rule extended) |
+| `docs/task-bus/EXECUTION_CLOSURE.md` | `docs/task-bus/EXECUTION_CLOSURE.md` | Unchanged — canonical |
+| `docs/task-bus/STEP_CARD_TEMPLATE.yml` | `docs/task-bus/STEP_CARD_TEMPLATE.yml` | Unchanged — canonical |
+| `docs/task-bus/PROMPT_TEMPLATE.md` | `docs/task-bus/PROMPT_TEMPLATE.md` | Unchanged — canonical (its duplication with `REVIEW_FORMAT.md` remains an OPEN risk, not addressed in RC1) |
+| `docs/task-bus/REVIEW_FORMAT.md` | `docs/task-bus/REVIEW_FORMAT.md` | Unchanged — canonical |
+| *(none — new)* | `docs/task-bus/TASK_BUS_V4.md` | **New** — canonical operating protocol |
+| *(none — new)* | `docs/task-bus/BOOTSTRAP.md` | **New** — canonical (formalizes the previously informal Bootstrap Set) |
 | *(chat-only, never a file)* | "Architect Clarification" section, above | **New** — first persistence, not a rename of an existing artifact |
 
 **Nothing is marked obsolete.** No document is deleted — consistent with the additive-only
@@ -161,7 +161,7 @@ revision of this protocol, not just this one.
 
 | # | Risk | Status | Impact | Notes |
 |---|---|---|---|---|
-| 1 | **AI Bus Documentation Fragmentation** | OPEN | Medium | Growing number of `docs/ai-bus/*` files risks becoming harder to keep consistent than the problem it solves. Mitigation: regular consolidation passes; this revision itself practices that by merging into `AI_BUS_V4.md` and `EXECUTION_ALIGNMENT.md` rather than adding a file per rule. |
+| 1 | **Task Bus Documentation Fragmentation** | OPEN | Medium | Growing number of `docs/task-bus/*` files risks becoming harder to keep consistent than the problem it solves. Mitigation: regular consolidation passes; this revision itself practices that by merging into `TASK_BUS_V4.md` and `EXECUTION_ALIGNMENT.md` rather than adding a file per rule. |
 | 2 | **"No Artifact Required" escape hatch misuse** (new, introduced by the Binding Rule Update) | OPEN | Medium | Could be used to avoid persisting things that should be persisted, recreating the Bootstrap-B/C problem in a "sanctioned" way. Mitigation: the decision may only be made by the Architect, must be explicit, and must be recorded on the execution entry itself — never a default. |
 | 3 | `EXECUTION_CLOSURE.md` circular dependency (carried forward, OPEN) | OPEN | Medium | See Protocol Debt Review, above. |
 | 4 | No technical enforcement of any protocol rule (carried forward, OPEN) | OPEN | Low–Medium | Inherent to a documentation-only protocol; accepted as a standing limitation. |
@@ -176,4 +176,4 @@ Architect Override naming ambiguity; risk of silently dropping OPEN risks across
 **Remaining risks:** `EXECUTION_CLOSURE.md` circular dependency; no technical enforcement;
 `PROMPT_TEMPLATE`/`REVIEW_FORMAT` duplication; Bootstrap-B/C content unpersisted.
 
-**New risks:** AI Bus Documentation Fragmentation; "No Artifact Required" escape-hatch misuse.
+**New risks:** Task Bus Documentation Fragmentation; "No Artifact Required" escape-hatch misuse.

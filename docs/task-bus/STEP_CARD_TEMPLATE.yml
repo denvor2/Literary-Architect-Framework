@@ -1,4 +1,4 @@
-# Step Card Template — AI Bus
+# Step Card Template — Task Bus
 # Exactly one Step Card is active at a time (see docs/project/CURRENT_STEP.md).
 # Copy this structure to define a new step; every field is required.
 

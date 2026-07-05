@@ -1,4 +1,4 @@
-# Claude Execution Prompt Template — AI Bus
+# Claude Execution Prompt Template — Task Bus
 
 Use this template to turn the active Step Card ([STEP_CARD_TEMPLATE.yml](STEP_CARD_TEMPLATE.yml))
 into an execution prompt for Claude.

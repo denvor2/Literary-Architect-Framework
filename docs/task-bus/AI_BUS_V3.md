@@ -1,15 +1,15 @@
 ------------------------------------
-Superseded by AI_BUS_V4.md.
+Superseded by TASK_BUS_V4.md.
 
 This document is retained for historical reference only and is no longer the active operating
 protocol.
 ------------------------------------
 
-# AI Bus v3
+# Task Bus v3
 
 ## Execution System Overview
 
-AI Bus v3 is the step-level execution protocol layered on top of Literary Studio's existing
+Task Bus v3 is the step-level execution protocol layered on top of Literary Studio's existing
 development process (see [DEVELOPMENT_WORKFLOW.md](../project/DEVELOPMENT_WORKFLOW.md)). It
 exists to make each unit of AI-assisted implementation work explicit, scoped, reviewable, and
 traceable — one step at a time, rather than one sprint at a time.
@@ -28,7 +28,7 @@ traceable — one step at a time, rather than one sprint at a time.
 
 ## Step-Based Execution Model
 
-All work under AI Bus v3 is decomposed into Step Cards
+All work under Task Bus v3 is decomposed into Step Cards
 ([STEP_CARD_TEMPLATE.yml](STEP_CARD_TEMPLATE.yml)). A Step Card defines exactly one unit of
 work: its objective, allowed/forbidden paths, inputs/outputs, validation rules, and
 `done_when` criteria. Nothing is implemented beyond what the active Step Card describes.

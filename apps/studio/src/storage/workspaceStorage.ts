@@ -21,7 +21,8 @@ const EMPTY_WORKSPACE: Workspace = {
 export function loadWorkspace(): Workspace {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Workspace) : EMPTY_WORKSPACE;
+    if (!raw) return EMPTY_WORKSPACE;
+    return { ...EMPTY_WORKSPACE, ...(JSON.parse(raw) as Partial<Workspace>) };
   } catch {
     return EMPTY_WORKSPACE;
   }

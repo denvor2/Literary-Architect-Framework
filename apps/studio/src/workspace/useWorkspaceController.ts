@@ -124,6 +124,7 @@ export function useWorkspaceController() {
       ...previous,
       selectedChapterId: chapterId,
       selectedSceneId: null,
+      selectedCharacterId: null,
     }));
   }
 
@@ -132,6 +133,7 @@ export function useWorkspaceController() {
       ...previous,
       selectedChapterId: chapterId,
       selectedSceneId: sceneId,
+      selectedCharacterId: null,
     }));
   }
 
@@ -175,6 +177,8 @@ export function useWorkspaceController() {
     setWorkspace((previous) => ({
       ...previous,
       selectedCharacterId: characterId,
+      selectedChapterId: null,
+      selectedSceneId: null,
     }));
   }
 

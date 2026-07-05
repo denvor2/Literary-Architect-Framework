@@ -17,9 +17,9 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 07 — Architecture Ratification & AI Bus Formalization (in progress). Step 00 complete;
-Step 01 (Expert Contract ADR) not yet started. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for
-live status.
+Sprint 07 — Architecture Ratification & AI Bus Formalization (closed). All three steps
+(terminology/channel formalization, Expert Contract ADR, AI Bus bypass closure) complete. See
+[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the closing summary.
 
 ## Completed Milestones
 
@@ -50,12 +50,20 @@ live status.
   extracted into a `useWorkspaceController` hook, reducing `page.tsx` to orchestration-only
   composition (174 → 67 lines). All nine steps validated (build/lint/prettier/grep/runtime) and
   committed. See [docs/reports/SPRINT_06_REPORT.md](../reports/SPRINT_06_REPORT.md).
-- **Sprint 07, Step 00** — AI Bus terminology and channel formalization: model-specific role
-  labels ("ChatGPT (Chief Software Architect)", "Claude (Lead Software Engineer / Executor)")
-  replaced with model-independent **Architect** / **Programmer (Executor)** across the AI Bus
-  protocol and project docs; a git-based, tool-free handoff channel
-  (`docs/ai-bus/queue/pending/active/done`) introduced for exchanging Step Cards, ARPs, and
-  Reviews. Committed `430edd61d2b336bd3f12de79ed491d8669e3ac6e`.
+- **Sprint 07** — architecture ratification and cleanup, no user-visible behavior change.
+  **Step 00:** model-specific role labels ("ChatGPT (Chief Software Architect)", "Claude (Lead
+  Software Engineer / Executor)") replaced with model-independent **Architect** / **Programmer
+  (Executor)** across the AI Bus protocol and project docs; a git-based, tool-free handoff
+  channel (`docs/ai-bus/queue/pending/active/done`) introduced for exchanging Step Cards, ARPs,
+  and Reviews. Committed `430edd61d2b336bd3f12de79ed491d8669e3ac6e`.
+  **Step 01:** [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) formalized the Line
+  Editor's request/response schema, AI Bus v5 chain position, error model, and
+  deterministic/stateless behavior, grounded in file+line citations against the running code;
+  superseded [ADR-0002](../adr/ADR-0002-expert-contract-vision.md). Committed
+  `f7d2c9177f4dbfc5fccfd65e9ba2566984befa30`.
+  **Step 02:** closed the last direct `fetch("/api/line-editor")` call in the UI layer
+  (`LineEditorPanel.tsx`), routing it through `aiBus.execute()` instead — no UI-visible change.
+  Committed `73e59e64328ce042ae3b68e742a83a59a2ca371c`.
 
 ## Current Architecture
 
@@ -124,10 +132,6 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Known Risks
 
-- **`LineEditorPanel.tsx` bypasses the AI Bus** — it still calls `/api/line-editor` directly
-  instead of going through `aiBus.execute()`. Flagged since Sprint 06 Step 02; every subsequent
-  step's file-scope restriction kept it explicitly out of reach. Not a behavior risk (the
-  endpoint contract is identical either way), but an architectural inconsistency.
 - Sprint 02 decisions (pricing, detailed security requirements) remain partially undocumented
   in-repo.
 - ADR-0002 remains intentionally unratified — a second Expert must not be started before the

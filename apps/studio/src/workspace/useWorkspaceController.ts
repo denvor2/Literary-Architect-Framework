@@ -140,19 +140,28 @@ export function useWorkspaceController() {
   function createCharacter() {
     setWorkspace((previous) => {
       const nextNumber = previous.characters.length + 1;
+      const newCharacter: Character = {
+        id: String(nextNumber),
+        name: "",
+        description: "",
+        notes: "",
+        photoUrl: "",
+      };
       return {
         ...previous,
-        characters: [
-          ...previous.characters,
-          { id: String(nextNumber), name: "", description: "", notes: "" },
-        ],
+        characters: [...previous.characters, newCharacter],
+        selectedCharacterId: newCharacter.id,
+        selectedChapterId: null,
+        selectedSceneId: null,
       };
     });
   }
 
   function updateCharacter(
     characterId: string,
-    fields: Partial<Pick<Character, "name" | "description" | "notes">>,
+    fields: Partial<
+      Pick<Character, "name" | "description" | "notes" | "photoUrl">
+    >,
   ) {
     setWorkspace((previous) => ({
       ...previous,

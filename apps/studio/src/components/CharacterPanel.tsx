@@ -1,9 +1,12 @@
+import { useEffect, useRef } from "react";
 import type { Character } from "@/domain/model";
 
 type CharacterPanelProps = {
   character?: Character;
   onUpdate?: (
-    fields: Partial<Pick<Character, "name" | "description" | "notes">>,
+    fields: Partial<
+      Pick<Character, "name" | "description" | "notes" | "photoUrl">
+    >,
   ) => void;
   onDelete?: () => void;
 };
@@ -16,6 +19,15 @@ export function CharacterPanel({
   onUpdate,
   onDelete,
 }: CharacterPanelProps) {
+  // Sprint-10-Step-03: focus the Name field whenever the selected character
+  // changes (including a just-created one) — keyed on character?.id only, so
+  // typing into the field doesn't keep re-triggering the focus.
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    nameInputRef.current?.focus();
+  }, [character?.id]);
+
   if (!character) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
@@ -39,7 +51,7 @@ export function CharacterPanel({
                 onDelete?.();
               }
             }}
-            className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            className="rounded-full border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
           >
             Удалить персонажа
           </button>
@@ -50,11 +62,32 @@ export function CharacterPanel({
             Name
           </label>
           <input
+            ref={nameInputRef}
             value={character.name}
             onChange={(event) => onUpdate?.({ name: event.target.value })}
             placeholder="Character name..."
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
           />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Photo URL
+          </label>
+          <input
+            value={character.photoUrl}
+            onChange={(event) => onUpdate?.({ photoUrl: event.target.value })}
+            placeholder="Ссылка на изображение..."
+            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          />
+          {character.photoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element -- arbitrary external URL, not a build-time optimizable local asset
+            <img
+              src={character.photoUrl}
+              alt={character.name || "Character photo"}
+              className="h-40 w-40 rounded-lg object-cover"
+            />
+          )}
         </div>
 
         <div className="flex flex-1 flex-col gap-1.5">

@@ -33,4 +33,5 @@ export type Character = {
   readonly name: string;
   readonly description: string;
   readonly notes: string;
+  readonly photoUrl: string;
 };

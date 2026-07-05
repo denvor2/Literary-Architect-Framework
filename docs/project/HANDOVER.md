@@ -8,7 +8,7 @@ to make the rest of the repository make sense without re-reading the whole histo
 Read, in this order: this file, then
 [PROJECT_STATE.md](PROJECT_STATE.md), then
 [CURRENT_SPRINT.md](CURRENT_SPRINT.md), then the Accepted ADRs (`docs/adr/`). That's enough
-context to pick up the work.
+context to pick up the work. If any term here is unfamiliar, see [GLOSSARY.md](GLOSSARY.md).
 
 ## Project
 

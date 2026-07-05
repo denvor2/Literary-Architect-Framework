@@ -1,11 +1,12 @@
 // AI Bus — Sprint 06 Step 02 (thin pass-through), Step 03 (operation entry
 // point), Step 04 (context envelope entry point), Step 05 (normalized
 // response contract), Step 06 (domain applier, no-effect layer), Sprint 08
-// Step 02 (real dispatch by operation.type — the first second Expert).
+// Step 02 (real dispatch by operation.type — the first second Expert),
+// Sprint 09 Step 02 (third Expert, third branch).
 //
-// It exists only so the UI never calls fetch("/api/line-editor")/fetch("/api/critic")
-// itself and never talks to AI except through an AIContextEnvelope, and never
-// sees a raw response back — only an AppliedAIResponse. Caching, multi-model
+// It exists only so the UI never calls fetch() on an Expert route itself and
+// never talks to AI except through an AIContextEnvelope, and never sees a
+// raw response back — only an AppliedAIResponse. Caching, multi-model
 // dispatch, and provider abstraction do not exist here yet.
 //
 // `envelope.context` and `AppliedAIResponse.domain` are deliberately
@@ -49,6 +50,19 @@ export async function execute(
     // stringifying into AIResponse.text — AIResponse/AppliedAIResponse are
     // still shaped for a single text result and are not reworked here.
     resultText = JSON.stringify(data.reviews);
+  } else if (operation.type === "reader_reaction") {
+    const response = await fetch("/api/reader", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      throw new Error(data.error);
+    }
+    // No stringify/TODO needed here — this Expert's response is already a
+    // plain string, the same shape AIResponse.text expects natively.
+    resultText = data.result;
   } else {
     const exhaustiveCheck: never = operation;
     throw new Error(

@@ -1,6 +1,7 @@
 # ADR-0002: Expert Contract Vision
 
-- **Status:** Proposed — vision only, not a binding specification
+- **Status:** Superseded by [ADR-0004](ADR-0004-expert-contract-specification.md) — vision
+  only, not a binding specification (historical; content below unchanged)
 - **Date:** 2026-07-04
 - **Deciders:** Product Owner, Chief Software Architect, Lead Software Engineer
 

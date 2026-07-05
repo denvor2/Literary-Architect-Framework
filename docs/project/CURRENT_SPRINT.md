@@ -6,7 +6,7 @@ This file is a living document, replaced at the start of every sprint — it des
 sprint in progress. History lives in `docs/reports/SPRINT_06_REPORT.md` for Sprint 06, not
 here.
 
-- **Status:** In Progress. Step 00 complete; Step 01 not yet started.
+- **Status:** In Progress. Steps 00–01 complete.
 - **Phase:** Phase 1 (MVP)
 
 ## Goal
@@ -47,9 +47,13 @@ footing — before any second AI Expert or new Operation type is attempted.
       `README.md` defining a git-only handoff protocol, including the Programmer's response
       procedure to a committed `REVIEW.md`. Committed:
       `430edd61d2b336bd3f12de79ed491d8669e3ac6e`.
-- [ ] **Step 01 — Expert Contract ADR.** Not yet started. Will formalize the request/response
-      schema, error model, prompt contract, and deterministic behavior extracted from the Line
-      Editor implementation (Sprint 04) as the superseding ADR that ADR-0002 calls for.
+- [x] **Step 01 — Expert Contract ADR.** [ADR-0004](../adr/ADR-0004-expert-contract-specification.md)
+      created, formalizing the request/response schema, AI Bus v5 chain position, error model,
+      and deterministic/stateless behavior — extracted directly from the Line Editor
+      implementation (`route.ts`, `ai/*.ts`), with file+line citations for every claim.
+      Supersedes [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) (status updated,
+      content otherwise unchanged — historical record). Not yet committed, pending Architect
+      review.
 
 ## Definition of Done
 
@@ -64,16 +68,18 @@ footing — before any second AI Expert or new Operation type is attempted.
 - Step 00: delivered as an ARP (including one FIX round — Session Refresh Trigger, build/lint
   confirmation, Programmer Response to Review), approved (`STATUS: OK`), committed as
   `430edd61d2b336bd3f12de79ed491d8669e3ac6e`.
+- Step 01: [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) delivered as an ARP
+  with a file+line citation for every contractual claim; ADR-0002 status updated to
+  Superseded. Not yet committed — pending Architect review (`STATUS: OK`).
 
-## Known Open Items (carried forward, not part of Sprint 07 Step 00)
+## Known Open Items (carried forward)
 
 - `LineEditorPanel.tsx` still calls `/api/line-editor` directly, bypassing the AI Bus —
-  unresolved since Sprint 06 Step 02.
-- `ADR-0002` (Expert Contract Vision) remains `Proposed` — Step 01 of this sprint targets this
-  directly.
+  unresolved since Sprint 06 Step 02; not addressed by Step 01 (documentation-only step).
 - The AI Bus v5 architecture (Sprint 06) has no ADR of its own yet — a candidate for a later
   step in this sprint, not yet scheduled.
 
 ## Next Action
 
-Begin Step 01 — Expert Contract ADR — once explicitly scoped and approved by the Architect.
+Awaiting Architect review (`STATUS: OK`) on Step 01 before commit. Next step after that is not
+yet scoped.

@@ -86,8 +86,9 @@ live status.
 | ADR | Title | Status |
 |-----|-------|--------|
 | [ADR-0001](../adr/ADR-0001-repository-structure.md) | Repository Structure | Accepted |
-| [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) | Expert Contract Vision | Proposed |
+| [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) | Expert Contract Vision | Superseded by ADR-0004 |
 | [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) | Technology Stack Strategy | Accepted |
+| [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) | Expert Contract Specification | Accepted |
 
 ## Technology Stack
 

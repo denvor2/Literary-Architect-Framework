@@ -174,6 +174,9 @@ function SceneImprove({
   // typing after the request was sent.
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [reviewedText, setReviewedText] = useState("");
+  // Reader-only state (Sprint-09-Step-03): plain reaction text — /api/reader
+  // already returns a string, so unlike Critic there is no parsing step.
+  const [readerReaction, setReaderReaction] = useState("");
   // UI-only run count per role, for this scene only — not persisted, not
   // sent to the API, reset whenever this component remounts for a new scene.
   const [runCounts, setRunCounts] = useState<Record<AssistantMode, number>>({
@@ -279,6 +282,73 @@ function SceneImprove({
     } catch {
       setStatus("error");
     }
+  }
+
+  // Sprint-09-Step-03: Reader also produces a Review, not a Revision — same
+  // principle as Critic (Sprint-08-Step-03), so it never offers "Заменить
+  // текст" either. Simpler than Critic: /api/reader already returns a plain
+  // string, so there is no JSON.parse step here.
+  async function handleReader() {
+    setStatus("loading");
+    try {
+      const selected = getSelectedText();
+      const result = await aiBus.execute({
+        operation: {
+          type: "reader_reaction",
+          payload: { text: selected },
+        },
+        context: {
+          sceneId,
+          chapterId,
+          bookTitle,
+        },
+      });
+      setReaderReaction(result.response.text);
+      setReviewedText(selected);
+      setRunCounts((previous) => ({
+        ...previous,
+        [mode]: previous[mode] + 1,
+      }));
+      setStatus("preview");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "preview" && mode === "Reader") {
+    return (
+      <div className="flex flex-col gap-4">
+        {summaryStrip}
+        <p className={`text-xs font-medium ${info.accent}`}>
+          {info.emoji} {info.label}
+        </p>
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-wide text-zinc-400 dark:text-zinc-600">
+            Text reviewed
+          </p>
+          <p className="whitespace-pre-wrap text-sm text-zinc-400 dark:text-zinc-600">
+            {reviewedText}
+          </p>
+        </div>
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-wide text-zinc-500">
+            {getResultHeading(mode, runNumber)}
+          </p>
+          <p className="whitespace-pre-wrap text-base leading-relaxed text-black dark:text-zinc-50">
+            {readerReaction}
+          </p>
+        </div>
+        <p className="text-xs text-zinc-400 dark:text-zinc-600">
+          {info.disclosure}
+        </p>
+        <button
+          onClick={() => setStatus("idle")}
+          className="self-start rounded-full px-4 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+        >
+          Закрыть
+        </button>
+      </div>
+    );
   }
 
   if (status === "preview" && mode === "Critic") {
@@ -430,7 +500,13 @@ function SceneImprove({
         </select>
       </div>
       <button
-        onClick={mode === "Critic" ? handleCritic : handleImprove}
+        onClick={
+          mode === "Critic"
+            ? handleCritic
+            : mode === "Reader"
+              ? handleReader
+              : handleImprove
+        }
         disabled={status === "loading" || text.trim().length === 0}
         className="self-start rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
       >

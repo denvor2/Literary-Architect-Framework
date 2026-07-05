@@ -1,21 +1,17 @@
 // AI Bus — Sprint 06 Step 02 (thin pass-through), Step 03 (operation entry
 // point), Step 04 (context envelope entry point), Step 05 (normalized
-// response contract), Step 06 (domain applier, no-effect layer).
+// response contract), Step 06 (domain applier, no-effect layer), Sprint 08
+// Step 02 (real dispatch by operation.type — the first second Expert).
 //
-// This is a structural seam, not real decoupling: for "improve_text" it
-// calls /api/line-editor exactly as the UI did directly before Step 02 —
-// same request, same response field, no added logic. It exists only so the
-// UI never calls fetch("/api/line-editor") itself and never talks to AI
-// except through an AIContextEnvelope, and never sees a raw response back —
-// only an AppliedAIResponse. Caching, routing, and multi-model dispatch do
-// not exist here yet (Sprint 07+).
+// It exists only so the UI never calls fetch("/api/line-editor")/fetch("/api/critic")
+// itself and never talks to AI except through an AIContextEnvelope, and never
+// sees a raw response back — only an AppliedAIResponse. Caching, multi-model
+// dispatch, and provider abstraction do not exist here yet.
 //
-// `envelope.context`, `AIResponse.meta`, and `AppliedAIResponse.domain` are
-// deliberately unread/unused for logic below — Steps 04–06 introduce the
-// data shapes only. `flags.isSceneAware` is hardcoded false: no scene-aware
-// behavior exists yet. Scene-aware generation, critic/reader
-// differentiation, memory injection, and multi-part responses (Sprint 07+)
-// are what will eventually use them.
+// `envelope.context` and `AppliedAIResponse.domain` are deliberately
+// unread/unused for logic below — Step 04/06 introduced the data shapes
+// only. `flags.isSceneAware` is hardcoded false: no scene-aware behavior
+// exists yet.
 
 import type { AIContextEnvelope } from "./context";
 import type { AppliedAIResponse } from "./applier";
@@ -23,21 +19,48 @@ import type { AppliedAIResponse } from "./applier";
 export async function execute(
   envelope: AIContextEnvelope,
 ): Promise<AppliedAIResponse> {
-  const { text } = envelope.operation.payload;
-  const response = await fetch("/api/line-editor", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
-  const data = await response.json();
-  if (!data.ok) {
-    throw new Error(data.error);
+  const { operation } = envelope;
+  const { text } = operation.payload;
+
+  let resultText: string;
+
+  if (operation.type === "improve_text") {
+    const response = await fetch("/api/line-editor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      throw new Error(data.error);
+    }
+    resultText = data.result;
+  } else if (operation.type === "critic_review") {
+    const response = await fetch("/api/critic", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      throw new Error(data.error);
+    }
+    // TODO Sprint-08-Step-03: unpack into typed ReviewResult instead of
+    // stringifying into AIResponse.text — AIResponse/AppliedAIResponse are
+    // still shaped for a single text result and are not reworked here.
+    resultText = JSON.stringify(data.reviews);
+  } else {
+    const exhaustiveCheck: never = operation;
+    throw new Error(
+      `Unknown operation type: ${JSON.stringify(exhaustiveCheck)}`,
+    );
   }
+
   return {
     response: {
-      text: data.result,
+      text: resultText,
       meta: {
-        operationType: envelope.operation.type,
+        operationType: operation.type,
       },
     },
     domain: envelope.context,

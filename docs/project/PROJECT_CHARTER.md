@@ -53,19 +53,23 @@ when they become in-scope:
 ## Roles
 
 - **Product Owner** (Денис Воробьев) — owns product vision, priorities, and approval of scope.
-- **Chief Software Architect** (ChatGPT) — owns architectural review and long-term technical
-  direction.
-- **Lead Software Engineer** (Claude) — implements, proposes architectural options, writes and
+- **Architect** — owns architectural review and long-term technical direction.
+- **Programmer (Executor)** — implements, proposes architectural options, writes and
   maintains documentation, raises risks.
+
+**Role/Model Binding:** Architect and Programmer (Executor) are roles, not fixed AI models.
+Which model is currently executing which role is a separate, session-level fact — recorded
+apart from the role definition itself, not baked into it — and may change between sessions
+without requiring any change to this document.
 
 ## Decision Process
 
-1. An idea or need is identified (Product Owner or Chief Software Architect).
+1. An idea or need is identified (Product Owner or Architect).
 2. Non-trivial architectural decisions are captured as an ADR under `docs/adr/` — proposed
    before or discovered after implementation, per the evolutionary architecture principle.
 3. Documentation is reviewed (Architecture Review) before being committed.
-4. The Product Owner approves scope and sequencing; the Chief Software Architect approves
-   architectural direction; the Lead Software Engineer implements and flags trade-offs.
+4. The Product Owner approves scope and sequencing; the Architect approves architectural
+   direction; the Programmer (Executor) implements and flags trade-offs.
 
 See [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) for the full process.
 

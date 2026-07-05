@@ -9,15 +9,15 @@ being written up front and then abandoned.
 ```
 Idea
   ↓
-Planning        (Product Owner scopes intent; Chief Software Architect considers direction)
+Planning        (Product Owner scopes intent; Architect considers direction)
   ↓
 ADR             (architectural decisions recorded — before implementation when the decision
                  can be made safely in the abstract, after implementation when it should be
                  discovered from a working example)
   ↓
-Implementation  (Lead Software Engineer builds the smallest working slice)
+Implementation  (Programmer (Executor) builds the smallest working slice)
   ↓
-Architecture Review   (Product Owner + Chief Software Architect review the result and its
+Architecture Review   (Product Owner + Architect review the result and its
                        documentation before it is committed)
   ↓
 Commit
@@ -48,7 +48,7 @@ committed until both the code (if any) and its documentation are reviewed togeth
 - Provides context that originates outside the repository (e.g. product/business decisions)
   and ensures it eventually gets backfilled into `docs/`.
 
-### Chief Software Architect
+### Architect
 
 - Owns architectural direction and long-term technical coherence across sprints.
 - Leads Architecture Review passes: checking that ADRs, reports, and project docs are
@@ -56,7 +56,7 @@ committed until both the code (if any) and its documentation are reviewed togeth
 - Decides when a decision is safe to make upfront (ADR before implementation) versus when it
   should be discovered from a working example (ADR after implementation).
 
-### Lead Software Engineer
+### Programmer (Executor)
 
 - Implements the smallest working slice that validates a decision.
 - Proposes architectural options and trade-offs; writes ADRs, sprint reports, and keeps

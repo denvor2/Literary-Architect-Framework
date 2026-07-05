@@ -15,8 +15,13 @@ documentation. See [README.md](README.md).
 ## Roles
 
 - **Product Owner** (Денис Воробьев) — product vision, priorities, scope approval.
-- **Chief Software Architect** (ChatGPT) — architectural review, long-term technical direction.
-- **Lead Software Engineer** (Claude) — implementation, documentation, risk-flagging.
+- **Architect** — architectural review, long-term technical direction.
+- **Programmer (Executor)** — implementation, documentation, risk-flagging.
+
+Architect and Programmer (Executor) are roles, not fixed AI models — see
+[PROJECT_CHARTER.md](docs/project/PROJECT_CHARTER.md)'s Role/Model Binding note. This file is
+auto-loaded specifically by the Claude Code CLI, which is a fact about that tool's session
+bootstrap, not a statement that the Programmer role is permanently bound to Claude.
 
 ## Documentation Hierarchy
 

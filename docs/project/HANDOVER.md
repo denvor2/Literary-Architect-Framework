@@ -84,8 +84,8 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 ## Immediate Next Task
 
 None defined in the repository. Sprint 06 is closed; Sprint 07 has not been scoped. Scoping
-the next sprint is a Product Owner / Chief Software Architect decision that has not yet been
-made — do not start implementation work under an assumed Sprint 07 scope.
+the next sprint is a Product Owner / Architect decision that has not yet been made — do not
+start implementation work under an assumed Sprint 07 scope.
 
 ## Current Priorities
 
@@ -94,7 +94,7 @@ made — do not start implementation work under an assumed Sprint 07 scope.
 2. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both placeholders.
-3. Decide Sprint 07 scope with the Product Owner / Chief Software Architect.
+3. Decide Sprint 07 scope with the Product Owner / Architect.
 
 ## Working Style
 
@@ -111,7 +111,7 @@ continuing.
   report in `docs/reports/`; project snapshots live in `docs/project/`. Don't let decisions
   live only in conversation.
 - **Architecture Review before commit:** documentation and architecture changes are reviewed
-  by the Product Owner and Chief Software Architect before being committed. See
+  by the Product Owner and Architect before being committed. See
   [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
 - **Preferred terminology:** "Literary Studio", "AI-powered IDE for writers", "Expert" /
   "Professional Role", "Framework" (the `framework/` system), "Studio App" (the `apps/studio/`

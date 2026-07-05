@@ -14,12 +14,16 @@ revision is based on.
 
 - **Human (Product Owner)** — approves each Step Card before execution, holds final authority
   over scope and commit, updates `CURRENT_SPRINT.md`.
-- **ChatGPT (Chief Software Architect)** — reviews Claude's output against the active Step
+- **Architect** — reviews the Programmer's output against the active Step
   Card using [REVIEW_FORMAT.md](REVIEW_FORMAT.md), issues `STATUS: OK / FIX / STOP`, and may
   issue an Architect Clarification (see below).
-- **Claude (Lead Software Engineer / Executor)** — executes exactly one Step Card at a time,
+- **Programmer (Executor)** — executes exactly one Step Card at a time,
   produces an ARP, commits only under the Standing Commit Policy below.
 - **Git** — the record of truth.
+
+Architect and Programmer (Executor) are roles, not fixed AI models — see
+`PROJECT_CHARTER.md`'s Role/Model Binding note. Which model is currently playing which role is
+tracked separately from this protocol and may change between sessions.
 
 **Observed in practice:** one human account has issued both Product-Owner-flavored and
 Architect-flavored instructions within the same session. This protocol describes roles, not
@@ -54,14 +58,14 @@ Apply this test:
 **Evidence:** at Sprint-04-Step-05, ADR-0002's text ("discover before codifying") was never
 touched; the Architect only specified that "implement the Line Editor" meant disposable
 discovery code, not a production build. Both readings were always consistent with ADR-0002's
-actual Decision text — the ambiguity was in the task instruction, not the ADR. Claude's role is
-to distinguish these two cases before complying, not to treat every Architect statement as
-either automatically binding or automatically suspect.
+actual Decision text — the ambiguity was in the task instruction, not the ADR. The Programmer's
+role is to distinguish these two cases before complying, not to treat every Architect statement
+as either automatically binding or automatically suspect.
 
 ## Standing Commit Policy
 
-Replaces per-task commit renegotiation. Claude may commit automatically only if **all** of the
-following hold:
+Replaces per-task commit renegotiation. The Programmer may commit automatically only if **all**
+of the following hold:
 
 - `STATUS = OK`
 - Architect review passed

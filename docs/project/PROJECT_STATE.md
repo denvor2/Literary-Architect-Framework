@@ -4,8 +4,8 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-05 (Sprint 08 closing)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 08 are all complete and
+**Last updated:** 2026-07-05 (Sprint 09 closing)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 09 are all complete and
 committed; no blocking issues. See Known Risks for open, non-blocking items.
 **Current Phase:** Phase 1 (MVP).
 
@@ -17,8 +17,8 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 08 — Second AI Expert: Critic (closed). All five steps (backend, AI Bus dispatch, UI
-wiring, responsive panel, ADR-0005 + closeout) complete. See
+Sprint 09 — Third AI Expert: Reader (closed). All four steps (backend, AI Bus dispatch, UI
+wiring, ADR-0006 + closeout) complete. See
 [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the closing summary.
 
 ## Completed Milestones
@@ -73,6 +73,17 @@ wiring, responsive panel, ADR-0005 + closeout) complete. See
   badges); and [ADR-0005](../adr/ADR-0005-critic-expert-contract.md), ratifying the Critic
   Expert contract and resolving `docs/product/DOMAIN_MODEL.md`'s Product Role → AI Expert
   mapping question for Critic specifically (Co-author/Editor/Reader remain unresolved).
+- **Sprint 09** — built and ratified the project's third AI Expert, Reader, end to end:
+  `/api/reader` backend (discovery implementation, mirrors Line Editor's shape — a whole
+  reaction string, not Critic's structured list — with the project's first explicit
+  language instruction, Russian, in its system prompt); `aiBus.execute()`'s third dispatch
+  branch (`reader_reaction`, added without new technical debt since the response is already
+  string-shaped); Reader UI wiring in `EditorArea.tsx` (`handleReader()`, Review-not-Revision
+  presentation, same principle as Critic); and
+  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md), ratifying the Reader Expert contract
+  and resolving `docs/product/DOMAIN_MODEL.md`'s Product Role → AI Expert mapping question for
+  Reader specifically (Co-author/Editor remain unresolved). Committed `5418ff3`, `bb9df12`,
+  `6ad8aac`.
 
 ## Current Architecture
 
@@ -80,28 +91,30 @@ wiring, responsive panel, ADR-0005 + closeout) complete. See
   `framework/` (the Expert/workflow/memory system), `prompts/`, and `docs/`. See
   [ADR-0001](../adr/ADR-0001-repository-structure.md).
 - The Expert Contract has been ratified as
-  [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) (Line Editor) and
-  [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) (Critic) — request/response schema,
+  [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) (Line Editor),
+  [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) (Critic), and
+  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) (Reader) — request/response schema,
   AI Bus v5 chain position, error model, and deterministic behavior, each grounded in a
   file+line citation against the running code. ADR-0004 supersedes
   [ADR-0002](../adr/ADR-0002-expert-contract-vision.md).
 - The technology stack is fixed by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) —
   any new framework, SDK, or runtime dependency should be checked against it before being added.
-- `apps/studio/` has a working Anthropic integration with two Experts: Line Editor
-  (`/api/line-editor`, Test Connection) and Critic (`/api/critic`), both live-validated with
-  real Claude responses.
-- **AI Bus layering (Sprint 06, extended Sprint 08):**
+- `apps/studio/` has a working Anthropic integration with three Experts: Line Editor
+  (`/api/line-editor`, Test Connection), Critic (`/api/critic`), and Reader (`/api/reader`), all
+  live-validated with real Claude responses.
+- **AI Bus layering (Sprint 06, extended Sprint 08, Sprint 09):**
   `UI (page.tsx, orchestration only) → Workspace Controller (useWorkspaceController) →
   Workspace (domain/workspace.ts) → AI Bus (aiBus.execute, dispatches by operation.type) →
   Operation → Context Envelope → Response → Applied Response → /api/line-editor |
-  /api/critic`. `aiBus.execute()` performs real dispatch since Sprint 08 Step 02 — previously
-  `operation.type` was read only decoratively.
+  /api/critic | /api/reader`. `aiBus.execute()` performs real dispatch since Sprint 08 Step 02 —
+  previously `operation.type` was read only decoratively.
   Domain types (`Book`/`Chapter`/`Scene`/`Workspace`) live in `apps/studio/src/domain/` as the
   single source of truth; `localStorage` access is isolated in
   `apps/studio/src/storage/workspaceStorage.ts`.
-- Product Role → AI Expert mapping: Critic → Critic Expert is now 1:1
-  ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md)). Co-author, Editor, and Reader still
-  all call the Line Editor Expert under different UI labels — unresolved.
+- Product Role → AI Expert mapping: Critic → Critic Expert and Reader → Reader Expert are now
+  both 1:1 ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md),
+  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md)). Co-author and Editor still call the
+  Line Editor Expert under different UI labels — unresolved.
 
 ## Accepted ADRs
 
@@ -112,6 +125,7 @@ wiring, responsive panel, ADR-0005 + closeout) complete. See
 | [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) | Technology Stack Strategy | Accepted |
 | [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) | Expert Contract Specification | Accepted |
 | [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) | Critic Expert Contract | Accepted |
+| [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) | Reader Expert Contract | Accepted |
 
 ## Technology Stack
 
@@ -130,13 +144,13 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 ## Current Priorities
 
 1. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
-2. Decide Sprint 09 scope — not yet started, no plan exists in the repository.
+2. Decide Sprint 10 scope — not yet started, no plan exists in the repository.
 
 ## Open Decisions
 
 - **Pricing and detailed security requirements** — Sprint 02 conclusions not yet backfilled;
   see `docs/vision/pricing.md` and `docs/vision/security.md`.
-- **Sprint 09 scope** — not defined. Requires a Product Owner / Architect planning pass
+- **Sprint 10 scope** — not defined. Requires a Product Owner / Architect planning pass
   before any implementation work starts.
 
 ## Known Risks
@@ -150,5 +164,5 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-None defined. Sprint 08 is closed; Sprint 09 has not been started and has no scope in this
+None defined. Sprint 09 is closed; Sprint 10 has not been started and has no scope in this
 repository yet.

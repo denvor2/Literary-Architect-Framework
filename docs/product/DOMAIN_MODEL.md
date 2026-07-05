@@ -111,12 +111,12 @@ assesses; a Revision changes.
 - What is a **Workspace**, and how does it relate to User and Book — is it per-Book, per-User,
   or a separate concept altogether?
 - Which specific **AI Expert(s)** does each **Product Role** use? **Resolved for Critic**
-  ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md)): Critic maps 1:1 to the Critic
-  Expert (`/api/critic`), the project's first unambiguous Product Role → Expert mapping.
-  **Still open for Editor, Co-author, and Reader** — all three still call the Line Editor
-  Expert under different labels; e.g. does "Editor" use Line Editor alone, or Line Editor +
-  Developmental Editor + Style Editor together? Nothing in existing documentation specifies
-  this.
+  ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md)) and **Reader**
+  ([ADR-0006](../adr/ADR-0006-reader-expert-contract.md)): both now map 1:1 to their own
+  Expert (`/api/critic`, `/api/reader` respectively). **Still open for Editor and Co-author** —
+  both still call the Line Editor Expert under different labels; e.g. does "Editor" use Line
+  Editor alone, or Line Editor + Developmental Editor + Style Editor together? Nothing in
+  existing documentation specifies this.
 - **"Co-author" has no grounded mapping to any existing AI Expert.** The six AI Experts named
   in ADR-0002 (Line Editor, Developmental Editor, Style Editor, Continuity Checker, Fact
   Checker, Research Assistant) are all editorial/review-oriented — none performs original

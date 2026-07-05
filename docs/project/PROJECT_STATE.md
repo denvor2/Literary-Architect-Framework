@@ -17,10 +17,9 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 06 — Architecture Refactor (closed). Sprint 07 not started, no scope defined. See
-[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for live status;
-[docs/reports/SPRINT_06_REPORT.md](../reports/SPRINT_06_REPORT.md) for the full closing
-report.
+Sprint 07 — Architecture Ratification & AI Bus Formalization (in progress). Step 00 complete;
+Step 01 (Expert Contract ADR) not yet started. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for
+live status.
 
 ## Completed Milestones
 
@@ -51,6 +50,12 @@ report.
   extracted into a `useWorkspaceController` hook, reducing `page.tsx` to orchestration-only
   composition (174 → 67 lines). All nine steps validated (build/lint/prettier/grep/runtime) and
   committed. See [docs/reports/SPRINT_06_REPORT.md](../reports/SPRINT_06_REPORT.md).
+- **Sprint 07, Step 00** — AI Bus terminology and channel formalization: model-specific role
+  labels ("ChatGPT (Chief Software Architect)", "Claude (Lead Software Engineer / Executor)")
+  replaced with model-independent **Architect** / **Programmer (Executor)** across the AI Bus
+  protocol and project docs; a git-based, tool-free handoff channel
+  (`docs/ai-bus/queue/pending/active/done`) introduced for exchanging Step Cards, ARPs, and
+  Reviews. Committed `430edd61d2b336bd3f12de79ed491d8669e3ac6e`.
 
 ## Current Architecture
 

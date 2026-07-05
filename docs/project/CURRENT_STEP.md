@@ -5,8 +5,8 @@ This file tracks the single active Step Card under the AI Bus execution model â€
 [docs/ai-bus/STEP_CARD_TEMPLATE.yml](../ai-bus/STEP_CARD_TEMPLATE.yml) for the schema.
 
 ```yaml
-id: Sprint-04-Step-05.1
-status: executed
+id: Sprint-07-Step-00
+status: done
 next:
-  - Sprint-04-Step-06
+  - Sprint-07-Step-01
 ```

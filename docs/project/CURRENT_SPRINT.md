@@ -1,87 +1,79 @@
 # Current Sprint
 
-**Sprint 06 — Architecture Refactor (Domain Model → Operation Layer → AI Bus v5)** — **closed**
+**Sprint 07 — Architecture Ratification & AI Bus Formalization** — **in progress**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
-sprint in progress. History lives in `docs/reports/SPRINT_06_REPORT.md`, not here.
+sprint in progress. History lives in `docs/reports/SPRINT_06_REPORT.md` for Sprint 06, not
+here.
 
-- **Status:** Closed. All nine steps completed, validated, and committed (`f82f650`, "Sprint
-  06: Architecture Foundation").
+- **Status:** In Progress. Step 00 complete; Step 01 not yet started.
 - **Phase:** Phase 1 (MVP)
-- **Sprint 07:** Not started. No scope has been defined yet.
 
 ## Goal
 
-Introduce a domain-driven architecture (`UI → Workspace Controller → Workspace → AI Bus v5 →
-Operation → Context → Response → Applied Response → API`) underneath the existing, frozen
-Sprint 05 UI — without changing any user-visible behavior. This was an internal architecture
-sprint, not a feature sprint.
+Close the architecture-ratification gap identified after Sprint 06: formalize the Expert
+Contract (still `Proposed` since ADR-0002, Sprint 04) as a superseding ADR, and put the AI Bus
+v5 architecture and the human/AI collaboration protocol itself on a durable, model-independent
+footing — before any second AI Expert or new Operation type is attempted.
 
 ## In Scope
 
-- Domain Model extraction (`Book`, `Chapter`, `Scene`, `Workspace`).
-- AI Bus v5: Operation Model, Context Envelope, Response Normalization, Domain Applier.
-- Persistence boundary (`workspaceStorage.ts`).
-- Workspace Controller extraction (`useWorkspaceController`), reducing `page.tsx` to
-  orchestration-only composition.
+- Model-independent role terminology (Architect / Programmer (Executor)) across the AI Bus
+  protocol and project documentation.
+- A git-based, tool-free channel (`docs/ai-bus/queue/`) for exchanging Step Cards, ARPs, and
+  Reviews between Architect and Programmer.
+- Formalizing the Expert Contract (extracted in Sprint 04) as a superseding ADR.
+- Documenting the AI Bus v5 architecture built in Sprint 06 as its own ADR (currently only
+  described in `docs/reports/SPRINT_06_REPORT.md`, not in `docs/adr/`).
 
-## Out of Scope (held constant all sprint)
+## Out of Scope (held constant this sprint)
 
-- Any UI redesign or new user-facing feature.
-- Changes to `/api/line-editor` (request, response, or prompt).
-- Multi-model routing, scene-aware generation, memory injection — explicitly deferred, not
-  implemented.
+- A second AI Expert or second Operation type — blocked by ADR-0002's Review Trigger until the
+  Expert Contract is formally ratified (see Step 01).
+- PostgreSQL / Prisma migration.
+- Authentication.
+- Any change to `/api/line-editor` request/response contract.
+- Any change to UI behavior.
 
 ## Tasks (Development Strategy)
 
-- [x] Step 01: Domain Model Lock — `domain/model.ts` created; local type duplication removed
-      from `EditorArea.tsx`, `page.tsx`, `Sidebar.tsx`, `NewBookDialog.tsx`.
-- [x] Step 02: AI Bus Introduction (read-only proxy layer) — `ai/aiBus.ts` created;
-      `EditorArea.tsx` routed through it instead of a direct `fetch`.
-- [x] Step 03: Operation Model Introduction — `ai/operations.ts` (`AIOperation`); `aiBus.execute`
-      takes an operation instead of a bare string.
-- [x] Step 04: Context Envelope Introduction — `ai/context.ts` (`AIContextEnvelope`); context
-      data carried but deliberately unread by the bus.
-- [x] Step 05: Response Normalization Layer — `ai/response.ts` (`AIResponse`); bus returns a
-      structured object instead of a raw string.
-- [x] Step 06: Domain Applier (no-effect layer) — `ai/applier.ts` (`AppliedAIResponse`);
-      `domain`/`flags` present but not used for logic yet.
-- [x] Step 07: Persistence Boundary — `storage/workspaceStorage.ts`
-      (`loadWorkspace`/`saveWorkspace`); `localStorage` calls removed from `page.tsx`.
-- [x] Step 08: Workspace Domain Extraction — `Workspace` type moved to `domain/workspace.ts`;
-      dependency direction corrected (`workspaceStorage.ts` no longer imports from `page.tsx`).
-- [x] Step 09: Workspace Controller Extraction — `workspace/useWorkspaceController.ts`;
-      `page.tsx` reduced from 174 to 67 lines.
+- [x] **Step 00 — AI Bus Terminology & Channel Formalization.** Replaced model-specific role
+      labels ("ChatGPT (Chief Software Architect)", "Claude (Lead Software Engineer /
+      Executor)") with model-independent terms **Architect** and **Programmer (Executor)**
+      across `CLAUDE.md`, `docs/project/PROJECT_CHARTER.md`, `DEVELOPMENT_WORKFLOW.md`,
+      `HANDOVER.md`, `docs/ai-bus/AI_BUS_V4.md`, `BOOTSTRAP.md`. Added a Role/Model Binding
+      clause (`PROJECT_CHARTER.md`). Added a Session Refresh Trigger heuristic
+      (`BOOTSTRAP.md`). Created `docs/ai-bus/queue/` (`pending/`, `active/`, `done/`) with a
+      `README.md` defining a git-only handoff protocol, including the Programmer's response
+      procedure to a committed `REVIEW.md`. Committed:
+      `430edd61d2b336bd3f12de79ed491d8669e3ac6e`.
+- [ ] **Step 01 — Expert Contract ADR.** Not yet started. Will formalize the request/response
+      schema, error model, prompt contract, and deterministic behavior extracted from the Line
+      Editor implementation (Sprint 04) as the superseding ADR that ADR-0002 calls for.
 
 ## Definition of Done
 
-- Each step validated by `npm run build`, `npm run lint`, `prettier --check`, a grep-based
-  migration check, and a live `next start` HTTP check before moving to the next.
-- No step changed `/api/line-editor` or any user-visible behavior.
-- Architect Review (ARP) delivered and approved for each step before proceeding.
-
-## Sprint Success Criteria
-
-- The UI behaves identically before and after the refactor — **met**, confirmed at every step.
-- `/api/line-editor` request/response contract unchanged — **met**, confirmed at every step.
-- `page.tsx` reduced to orchestration-only composition — **met** (174 → 67 lines).
-- Domain Model is the single source of truth for `Book`/`Chapter`/`Scene`/`Workspace` — **met**.
+- Each step validated by `npm run build`, `npm run lint`, and grep-based scope verification
+  before proceeding.
+- No step changes `/api/line-editor`, UI behavior, or introduces a second AI Expert ahead of
+  Expert Contract ratification.
+- Architect Review (ARP, `STATUS: OK`) delivered and approved for each step before commit.
 
 ## Completed
 
-- All nine steps above, delivered as Architect Review Packages (ARP), approved, and committed
-  in a single commit: `f82f650` ("Sprint 06: Architecture Foundation").
-- Sprint 06 final closeout report: `docs/reports/SPRINT_06_REPORT.md`.
+- Step 00: delivered as an ARP (including one FIX round — Session Refresh Trigger, build/lint
+  confirmation, Programmer Response to Review), approved (`STATUS: OK`), committed as
+  `430edd61d2b336bd3f12de79ed491d8669e3ac6e`.
 
-## Known Open Items (carried forward, not part of Sprint 06 scope)
+## Known Open Items (carried forward, not part of Sprint 07 Step 00)
 
 - `LineEditorPanel.tsx` still calls `/api/line-editor` directly, bypassing the AI Bus —
-  flagged since Step 02, explicitly out of scope for every step (each step restricted changes
-  to specific named files).
-- `ADR-0002` (Expert Contract Vision) remains `Proposed`, not yet ratified as a superseding ADR
-  — unrelated to Sprint 06, carried over from Sprint 04.
+  unresolved since Sprint 06 Step 02.
+- `ADR-0002` (Expert Contract Vision) remains `Proposed` — Step 01 of this sprint targets this
+  directly.
+- The AI Bus v5 architecture (Sprint 06) has no ADR of its own yet — a candidate for a later
+  step in this sprint, not yet scheduled.
 
 ## Next Action
 
-Sprint 07 has not been started and has no defined scope. Scoping it is a Product
-Owner / Chief Software Architect decision, not yet made.
+Begin Step 01 — Expert Contract ADR — once explicitly scoped and approved by the Architect.

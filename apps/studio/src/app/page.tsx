@@ -17,6 +17,7 @@ export default function Home() {
     selectedChapterId,
     selectedSceneId,
     createBook,
+    createChapter,
     createScene,
     updateSceneText,
     selectChapter,
@@ -28,6 +29,7 @@ export default function Home() {
     updateCharacter,
     deleteCharacter,
     selectCharacter,
+    selectBook,
   } = useWorkspaceController();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // Ephemeral UI state only — not part of Workspace, not persisted.
@@ -35,7 +37,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
-      <Header onNewBook={() => setIsDialogOpen(true)} />
+      <Header />
       <div className="flex flex-1 overflow-hidden">
         {!isFocusMode && (
           <Sidebar
@@ -49,6 +51,9 @@ export default function Home() {
             selectedCharacterId={selectedCharacterId}
             onSelectCharacter={selectCharacter}
             onCreateCharacter={createCharacter}
+            onSelectBook={selectBook}
+            onNewBook={() => setIsDialogOpen(true)}
+            onCreateChapter={createChapter}
           />
         )}
         {selectedCharacterId ? (

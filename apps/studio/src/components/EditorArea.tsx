@@ -555,11 +555,8 @@ export function EditorArea({
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
         <p className="text-lg text-zinc-500 dark:text-zinc-400">
-          Create your first scene
+          Create your first book to get started
         </p>
-        <button className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
-          New Scene
-        </button>
       </main>
     );
   }

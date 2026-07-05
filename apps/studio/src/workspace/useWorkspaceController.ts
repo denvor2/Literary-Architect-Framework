@@ -80,6 +80,23 @@ export function useWorkspaceController() {
     });
   }
 
+  function createChapter() {
+    setWorkspace((previous) => {
+      const nextNumber = previous.chapters.length + 1;
+      return {
+        ...previous,
+        chapters: [
+          ...previous.chapters,
+          {
+            id: String(nextNumber),
+            title: `Chapter ${nextNumber}`,
+            scenes: [{ id: "1", title: "Scene 1", text: "" }],
+          },
+        ],
+      };
+    });
+  }
+
   function createScene() {
     setWorkspace((previous) => {
       if (!previous.selectedChapterId) return previous;
@@ -191,6 +208,15 @@ export function useWorkspaceController() {
     }));
   }
 
+  function selectBook() {
+    setWorkspace((previous) => ({
+      ...previous,
+      selectedChapterId: null,
+      selectedSceneId: null,
+      selectedCharacterId: null,
+    }));
+  }
+
   return {
     workspace,
     book,
@@ -203,6 +229,7 @@ export function useWorkspaceController() {
     selectedCharacterId,
     selectedCharacter,
     createBook,
+    createChapter,
     createScene,
     updateSceneText,
     selectChapter,
@@ -211,5 +238,6 @@ export function useWorkspaceController() {
     updateCharacter,
     deleteCharacter,
     selectCharacter,
+    selectBook,
   };
 }

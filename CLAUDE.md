@@ -22,33 +22,73 @@ documentation. See [README.md](README.md).
 
 Authoritative, in this order:
 
-1. [README.md](README.md) — public product vision
-2. [docs/project/PROJECT_CHARTER.md](docs/project/PROJECT_CHARTER.md) — mission, principles, scope
-3. [docs/project/PROJECT_STATE.md](docs/project/PROJECT_STATE.md) — current snapshot
-4. [docs/project/CURRENT_SPRINT.md](docs/project/CURRENT_SPRINT.md) — the sprint in progress
-5. [docs/project/HANDOVER.md](docs/project/HANDOVER.md) — onboarding for a new session
-6. [docs/project/DEVELOPMENT_WORKFLOW.md](docs/project/DEVELOPMENT_WORKFLOW.md) — process and roles
-7. [docs/adr/](docs/adr/) — Architecture Decision Records
-8. [docs/reports/](docs/reports/) — Sprint reports (history)
+1. [README.md](README.md)
+2. [docs/project/PROJECT_CHARTER.md](docs/project/PROJECT_CHARTER.md)
+3. [docs/project/PROJECT_STATE.md](docs/project/PROJECT_STATE.md)
+4. [docs/project/CURRENT_SPRINT.md](docs/project/CURRENT_SPRINT.md)
+5. [docs/project/HANDOVER.md](docs/project/HANDOVER.md)
+6. [docs/project/DEVELOPMENT_WORKFLOW.md](docs/project/DEVELOPMENT_WORKFLOW.md)
+7. [docs/adr/](docs/adr/)
+8. [docs/reports/](docs/reports/)
 
-If a decision isn't recorded in one of these, it isn't decided — conversation history is not
-authoritative (see `PROJECT_STATE.md`'s Source of Truth section).
+If a decision isn't recorded here, it isn't decided — conversation history is not authoritative.
+
+---
+
+## 🚨 OUTPUT LANGUAGE RULE (SPRINT 06+)
+
+All ARP outputs, logs, summaries, validation reports, and step descriptions
+must be written in **Russian**.
+
+Exceptions:
+- Code blocks
+- Identifiers (file names, variables, API routes)
+- Technical symbols
+
+This rule is mandatory unless explicitly overridden.
+
+---
+
+## Sprint Context
+
+- Sprint 05: UI + Editor + AI integration + persistence (completed, UI stable)
+- Sprint 06: Architecture refactor (Domain Model → Operation Layer → AI Bus v5)
+
+IMPORTANT:
+Sprint 06 does NOT introduce new user-facing features.
+It restructures internal architecture while preserving identical UI behavior.
+
+Any change that affects UI behavior is considered a violation unless explicitly approved.
+
+---
 
 ## Evolutionary Architecture
 
-Contracts are discovered from working examples, not designed upfront. Do not design a generic
-abstraction (e.g. the Expert Contract) before a concrete implementation has validated it. See
-[ADR-0002](docs/adr/ADR-0002-expert-contract-vision.md).
+Contracts are discovered from working examples, not designed upfront.
+
+Do not design generic abstractions before they are validated by real usage.
+
+See [ADR-0002](docs/adr/ADR-0002-expert-contract-vision.md).
+
+---
 
 ## How to Work Here
 
-- Read [docs/project/HANDOVER.md](docs/project/HANDOVER.md) first in any new session — it has
-  the full onboarding detail this file doesn't repeat.
-- Think before coding; prefer the smallest validated step over a complete design; ask when a
-  requirement is ambiguous rather than assuming.
-- No unrequested functionality, abstractions, or scope expansion. Small commits.
-- If implementation reveals that an earlier architectural assumption was wrong: stop, explain,
-  propose alternatives, and wait for review — don't silently work around it.
-- Architectural changes need an ADR under `docs/adr/` before they're considered final.
-- Keep documentation synchronized with what's actually true in the repository — an
-  inconsistency between docs is a defect, not a style issue.
+- Read HANDOVER.md first in new sessions.
+- Prefer smallest validated step over large redesign.
+- Do not expand scope without explicit approval.
+- If assumptions break: stop and escalate.
+- Keep documentation synchronized with reality.
+
+---
+
+## Architecture Rule (SPRINT 06 CRITICAL)
+
+During Sprint 06:
+
+- UI must NOT directly evolve AI logic
+- AI must NOT depend on UI state shape
+- All AI calls should eventually pass through AI Bus v5
+- Domain Model is the single source of truth for Book/Chapter/Scene
+
+Temporary coupling is allowed only during migration steps — not as final state.

@@ -20,8 +20,8 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 04 (First Working Expert), planning. See
-[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for live status.
+Sprint 06 (Architecture Refactor) is closed. Sprint 07 has not been started and has no
+defined scope. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for live status.
 
 ## Architecture
 
@@ -37,13 +37,27 @@ Sprint 04 (First Working Expert), planning. See
 
 ## Current Status
 
-- `apps/studio/` is an unmodified Next.js (TypeScript, Tailwind, App Router) scaffold. Build
-  and dev server are verified working. No application logic, AI integration, auth, or database
-  exist yet.
+- `apps/studio/` is a working Literary Studio MVP: Book → Chapter → Scene structure, a real
+  scene text editor, AI-assisted editing via the Line Editor Expert, Focus Mode, and
+  `localStorage` persistence (all from Sprint 05) — layered on top of a domain-driven
+  architecture (from Sprint 06).
+- **Architecture (post-Sprint-06):**
+  `UI (page.tsx, orchestration only) → Workspace Controller (useWorkspaceController) →
+  Workspace (domain/workspace.ts) → AI Bus (aiBus.execute) → Operation → Context Envelope →
+  Response → Applied Response → /api/line-editor (unchanged since Sprint 04)`.
+  - `apps/studio/src/domain/` — single source of truth for `Book`/`Chapter`/`Scene`/`Workspace`.
+  - `apps/studio/src/ai/` — AI Bus v5 contracts (`operations.ts`, `context.ts`, `response.ts`,
+    `applier.ts`, `aiBus.ts`).
+  - `apps/studio/src/storage/workspaceStorage.ts` — the only place that touches `localStorage`.
+  - `apps/studio/src/workspace/useWorkspaceController.ts` — owns all `Workspace` state and
+    mutation logic.
+- **Known gap:** `apps/studio/src/components/LineEditorPanel.tsx` still calls
+  `/api/line-editor` directly, bypassing the AI Bus — out of scope for every Sprint 06 step,
+  carried forward as an open item.
 - `framework/`, `prompts/`, `templates/`, `examples/`, `tests/`, `assets/` are still empty
   scaffolding from Sprint 01.
 - Documentation (this file included) was substantially expanded in Sprint 03 via an
-  Architecture Review process.
+  Architecture Review process, and again updated at Sprint 06 closeout.
 
 ## Accepted ADRs
 
@@ -69,17 +83,18 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Sprint 04: implement the first Expert, **Line Editor**, end-to-end (prompt template + API
-route + minimal UI, calling the Anthropic API), then extract the actual Expert Contract from
-that implementation, superseding ADR-0002.
+None defined in the repository. Sprint 06 is closed; Sprint 07 has not been scoped. Scoping
+the next sprint is a Product Owner / Chief Software Architect decision that has not yet been
+made — do not start implementation work under an assumed Sprint 07 scope.
 
 ## Current Priorities
 
-1. Backfill remaining Sprint 02 context (pricing, security) — see
+1. Formalize the Expert Contract extraction (Sprint 04) as the superseding ADR that
+   [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) calls for — still pending.
+2. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both placeholders.
-2. Decide a `.env`/secrets convention before any AI integration.
-3. Build the Line Editor vertical slice (Sprint 04).
+3. Decide Sprint 07 scope with the Product Owner / Chief Software Architect.
 
 ## Working Style
 

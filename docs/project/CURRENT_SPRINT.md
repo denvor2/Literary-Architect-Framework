@@ -1,107 +1,87 @@
 # Current Sprint
 
-**Sprint 04 — First Working Expert** (closing)
+**Sprint 06 — Architecture Refactor (Domain Model → Operation Layer → AI Bus v5)** — **closed**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
-sprint in progress. History lives in `docs/reports/SPRINT-04.md`, not here.
+sprint in progress. History lives in `docs/reports/SPRINT_06_REPORT.md`, not here.
 
-- **Status:** Closing — substantially complete; three items implemented/delivered but not yet
-  committed (see Remaining Uncommitted Work). Recorded honestly here rather than marked done by
-  fiat.
+- **Status:** Closed. All nine steps completed, validated, and committed (`f82f650`, "Sprint
+  06: Architecture Foundation").
 - **Phase:** Phase 1 (MVP)
+- **Sprint 07:** Not started. No scope has been defined yet.
 
 ## Goal
 
-Build the first complete vertical slice of Literary Studio: one working Expert, the Line
-Editor. This was intentionally a contract-discovery exercise — the Expert Contract was not
-designed first; it was extracted from this implementation. See
-[ADR-0002](../adr/ADR-0002-expert-contract-vision.md).
+Introduce a domain-driven architecture (`UI → Workspace Controller → Workspace → AI Bus v5 →
+Operation → Context → Response → Applied Response → API`) underneath the existing, frozen
+Sprint 05 UI — without changing any user-visible behavior. This was an internal architecture
+sprint, not a feature sprint.
 
 ## In Scope
 
-- Sprint 04 planning docs (this file, `docs/reports/SPRINT-04.md`).
-- Repository-level `CLAUDE.md`.
-- Anthropic SDK installation, `.env.example`, and a secrets convention.
-- A minimal Claude connection test (Browser → Next.js API route → Anthropic → response).
-- The Line Editor Expert: minimal UI, minimal prompt, minimal API route, minimal config.
-- An Expert Contract extraction (successor to ADR-0002) — from what the Line Editor actually
-  required.
-- (Emerged during the sprint, not originally listed) A Literary Studio product documentation
-  suite: Product Vision, Domain Model, User Model, Expert Catalog, Book Lifecycle, MVP Scope.
-- (Emerged during the sprint, not originally listed) AI Bus v4: a step-based execution protocol
-  layered on top of this workflow, now frozen as canonical infrastructure.
+- Domain Model extraction (`Book`, `Chapter`, `Scene`, `Workspace`).
+- AI Bus v5: Operation Model, Context Envelope, Response Normalization, Domain Applier.
+- Persistence boundary (`workspaceStorage.ts`).
+- Workspace Controller extraction (`useWorkspaceController`), reducing `page.tsx` to
+  orchestration-only composition.
 
-## Out of Scope
+## Out of Scope (held constant all sprint)
 
-- A generic Expert framework, plugins, workflows, or orchestration.
-- Any second Expert.
-- Authentication, database, deployment.
+- Any UI redesign or new user-facing feature.
+- Changes to `/api/line-editor` (request, response, or prompt).
+- Multi-model routing, scene-aware generation, memory injection — explicitly deferred, not
+  implemented.
 
 ## Tasks (Development Strategy)
 
-- [x] Step 1: Create `CURRENT_SPRINT.md` for Sprint 04; create `SPRINT-04.md` report template.
-- [ ] Step 2: Create repository-level `CLAUDE.md` — **implemented, not yet committed.**
-- [x] Step 3: Install the Anthropic SDK; create `.env.example`; define the secrets convention —
-      committed `19ab4c6`.
-- [x] Step 4: Build the simplest possible connection test ("Test Claude Connection" button) —
-      committed `75e92ae`, live-validated with a real Anthropic response.
-- [ ] Step 5: Implement the Line Editor Expert (minimal UI / prompt / API route / config) —
-      **implemented and live-validated with a real Anthropic response, not yet committed.**
-- [ ] Step 6: Extract the Expert Contract from the Line Editor implementation — **extraction
-      delivered as an ARP; not yet persisted as a superseding ADR.**
-- [x] Step 7 (A–F): Literary Studio product documentation suite — all six documents committed
-      (`13aed34`, `2acdea6`, `5e94746`, `f91d6aa`).
+- [x] Step 01: Domain Model Lock — `domain/model.ts` created; local type duplication removed
+      from `EditorArea.tsx`, `page.tsx`, `Sidebar.tsx`, `NewBookDialog.tsx`.
+- [x] Step 02: AI Bus Introduction (read-only proxy layer) — `ai/aiBus.ts` created;
+      `EditorArea.tsx` routed through it instead of a direct `fetch`.
+- [x] Step 03: Operation Model Introduction — `ai/operations.ts` (`AIOperation`); `aiBus.execute`
+      takes an operation instead of a bare string.
+- [x] Step 04: Context Envelope Introduction — `ai/context.ts` (`AIContextEnvelope`); context
+      data carried but deliberately unread by the bus.
+- [x] Step 05: Response Normalization Layer — `ai/response.ts` (`AIResponse`); bus returns a
+      structured object instead of a raw string.
+- [x] Step 06: Domain Applier (no-effect layer) — `ai/applier.ts` (`AppliedAIResponse`);
+      `domain`/`flags` present but not used for logic yet.
+- [x] Step 07: Persistence Boundary — `storage/workspaceStorage.ts`
+      (`loadWorkspace`/`saveWorkspace`); `localStorage` calls removed from `page.tsx`.
+- [x] Step 08: Workspace Domain Extraction — `Workspace` type moved to `domain/workspace.ts`;
+      dependency direction corrected (`workspaceStorage.ts` no longer imports from `page.tsx`).
+- [x] Step 09: Workspace Controller Extraction — `workspace/useWorkspaceController.ts`;
+      `page.tsx` reduced from 174 to 67 lines.
 
 ## Definition of Done
 
-- Each step above is validated (build/run, manual check) before moving to the next.
-- No step's implementation anticipates a later step's requirements — architecture follows what
-  is built, not the reverse.
-- Documentation (this file, `SPRINT-04.md`, `PROJECT_STATE.md`) stays in sync with what is
-  actually done.
-- Product Owner and Chief Software Architect review before commit, per the process established
-  in Sprint 03.
+- Each step validated by `npm run build`, `npm run lint`, `prettier --check`, a grep-based
+  migration check, and a live `next start` HTTP check before moving to the next.
+- No step changed `/api/line-editor` or any user-visible behavior.
+- Architect Review (ARP) delivered and approved for each step before proceeding.
 
 ## Sprint Success Criteria
 
-- A user can click "Test Claude Connection" in the Studio App and see a real response from
-  Claude. — **Met, live-validated.**
-- A user can submit text through a minimal UI and get it back edited by the Line Editor Expert.
-  — **Met, live-validated** (code not yet committed — see below).
-- The Expert Contract proposal is written from what the Line Editor implementation actually
-  required — not designed in advance. — **Met** (extraction delivered; not yet persisted as an
-  ADR).
+- The UI behaves identically before and after the refactor — **met**, confirmed at every step.
+- `/api/line-editor` request/response contract unchanged — **met**, confirmed at every step.
+- `page.tsx` reduced to orchestration-only composition — **met** (174 → 67 lines).
+- Domain Model is the single source of truth for `Book`/`Chapter`/`Scene`/`Workspace` — **met**.
 
 ## Completed
 
-- Step 1: Sprint 04 planning documents created.
-- Step 3: Anthropic SDK, `.env.example`, secrets convention — committed and validated.
-- Step 4: Connection test — committed and live-validated.
-- Step 7 (A–F): Product documentation suite — committed in full.
-- AI Bus v4 established as the project's canonical execution protocol (frozen; no further
-  evolution planned absent a real deficiency).
+- All nine steps above, delivered as Architect Review Packages (ARP), approved, and committed
+  in a single commit: `f82f650` ("Sprint 06: Architecture Foundation").
+- Sprint 06 final closeout report: `docs/reports/SPRINT_06_REPORT.md`.
 
-## Remaining Uncommitted Work (carried into Sprint 05 unless closed first)
+## Known Open Items (carried forward, not part of Sprint 06 scope)
 
-- **Step 2:** root `CLAUDE.md` exists in the working tree but has never been committed.
-- **Step 5:** the Line Editor implementation (`apps/studio/src/app/api/line-editor/route.ts`,
-  `apps/studio/src/components/LineEditorPanel.tsx`, and the `page.tsx` wiring) is implemented
-  and was live-validated with a real Anthropic response, but has never been committed. Under
-  this project's repository-first discipline, this work is not safely "done" until it is.
-- **Step 6:** the Expert Contract extraction was delivered in full as an ARP (request/response
-  schema, error model, prompt contract, deterministic behavior — all directly observed from the
-  Step 5 code) but was never persisted as the superseding ADR that ADR-0002 calls for.
-- A stray, unrelated edit to `docs/project/BACKLOG.md` (the AUTO-001 backlog entry from earlier
-  in the sprint) also remains uncommitted.
-
-These were deliberately **not** committed as part of this closeout: the closeout's own
-instructions scoped commits to documentation named explicitly (product docs, project-state
-docs), and application code changes were explicitly out of scope for this task. Recording the
-gap here, rather than silently treating the sprint as fully closed.
+- `LineEditorPanel.tsx` still calls `/api/line-editor` directly, bypassing the AI Bus —
+  flagged since Step 02, explicitly out of scope for every step (each step restricted changes
+  to specific named files).
+- `ADR-0002` (Expert Contract Vision) remains `Proposed`, not yet ratified as a superseding ADR
+  — unrelated to Sprint 06, carried over from Sprint 04.
 
 ## Next Action
 
-Recommend opening Sprint 05 to begin Literary Studio MVP implementation using AI Bus v4 as a
-fixed platform — while carrying the three items above forward as immediate first actions,
-since they represent already-completed, already-validated work that only needs to be committed
-and (for Step 6) formalized as an ADR.
+Sprint 07 has not been started and has no defined scope. Scoping it is a Product
+Owner / Chief Software Architect decision, not yet made.

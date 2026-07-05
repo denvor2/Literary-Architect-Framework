@@ -4,9 +4,9 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-05 (Sprint 06 closing)
-**Project Health:** Healthy — on track. Sprint 05 and Sprint 06 are both complete and
-committed; no blocking issues. See Known Risks for open, non-blocking items.
+**Last updated:** 2026-07-05 (Sprint 07 closing)
+**Project Health:** Healthy — on track. Sprint 05, Sprint 06, and Sprint 07 are all complete
+and committed; no blocking issues. See Known Risks for open, non-blocking items.
 **Current Phase:** Phase 1 (MVP).
 
 ## Source of Truth
@@ -70,10 +70,11 @@ Sprint 07 — Architecture Ratification & AI Bus Formalization (closed). All thr
 - Repository is an ecosystem monorepo: `apps/` (delivery applications) sits alongside
   `framework/` (the Expert/workflow/memory system), `prompts/`, and `docs/`. See
   [ADR-0001](../adr/ADR-0001-repository-structure.md).
-- The Expert Contract has been **extracted** from the Line Editor implementation (request/
-  response schema, error model, prompt contract, deterministic behavior) but is not yet
-  ratified as a superseding ADR. See [ADR-0002](../adr/ADR-0002-expert-contract-vision.md),
-  still `Proposed`, pending that follow-up ADR.
+- The Expert Contract has been ratified as
+  [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) — request/response schema,
+  AI Bus v5 chain position, error model, and deterministic behavior, each grounded in a
+  file+line citation against the Line Editor implementation. Supersedes
+  [ADR-0002](../adr/ADR-0002-expert-contract-vision.md).
 - The technology stack is fixed by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) —
   any new framework, SDK, or runtime dependency should be checked against it before being added.
 - `apps/studio/` has a working Anthropic integration (Test Connection + Line Editor Expert),
@@ -85,9 +86,6 @@ Sprint 07 — Architecture Ratification & AI Bus Formalization (closed). All thr
   Domain types (`Book`/`Chapter`/`Scene`/`Workspace`) live in `apps/studio/src/domain/` as the
   single source of truth; `localStorage` access is isolated in
   `apps/studio/src/storage/workspaceStorage.ts`.
-- `apps/studio/src/components/LineEditorPanel.tsx` still calls `/api/line-editor` directly,
-  bypassing the AI Bus — a known, explicitly out-of-scope gap carried since Sprint 06 Step 02
-  (see Known Risks).
 
 ## Accepted ADRs
 
@@ -114,29 +112,20 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Current Priorities
 
-1. Formalize the Expert Contract extraction (from Sprint 04) as the superseding ADR that
-   [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) calls for — still pending, unrelated
-   to Sprint 06.
-2. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
-3. Decide Sprint 07 scope — not yet started, no plan exists in the repository.
+1. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
+2. Decide Sprint 08 scope — not yet started, no plan exists in the repository.
 
 ## Open Decisions
 
-- **Expert Contract ratification** — the contract has been extracted from the Line Editor
-  implementation; it now needs to be written up as the superseding ADR that
-  [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) calls for.
 - **Pricing and detailed security requirements** — Sprint 02 conclusions not yet backfilled;
   see `docs/vision/pricing.md` and `docs/vision/security.md`.
-- **Sprint 07 scope** — not defined. Requires a Product Owner / Chief Software Architect
+- **Sprint 08 scope** — not defined. Requires a Product Owner / Chief Software Architect
   planning pass before any implementation work starts.
 
 ## Known Risks
 
 - Sprint 02 decisions (pricing, detailed security requirements) remain partially undocumented
   in-repo.
-- ADR-0002 remains intentionally unratified — a second Expert must not be started before the
-  Expert Contract extraction is formalized as a superseding ADR (see ADR-0002's Review
-  Trigger).
 - Sprint 06's commit (`f82f650`) necessarily bundled the entire, previously-never-committed
   Sprint 05 UI layer together with the Sprint 06 architecture work — the two could not be
   separated in git history at commit time. See
@@ -144,5 +133,5 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-None defined. Sprint 06 is closed; Sprint 07 has not been started and has no scope in this
+None defined. Sprint 07 is closed; Sprint 08 has not been started and has no scope in this
 repository yet.

@@ -11,6 +11,16 @@ type ReviewItem = {
   comment?: string;
 };
 
+// Sprint-08-Step-04: muted, not-alarming badge tones per severity — the
+// Step Card explicitly asked for neutral colors, not attention-grabbing
+// ones. Unrecognized/missing severity falls back to the same tone as "low".
+const SEVERITY_BADGE: Record<string, string> = {
+  low: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  medium: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+  high: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
+};
+const DEFAULT_SEVERITY_BADGE = SEVERITY_BADGE.low;
+
 type ImproveStatus = "idle" | "loading" | "preview" | "error";
 
 type AssistantMode = "Co-author" | "Editor" | "Critic" | "Reader";
@@ -278,35 +288,54 @@ function SceneImprove({
         <p className={`text-xs font-medium ${info.accent}`}>
           {info.emoji} {info.label}
         </p>
-        <div>
-          <p className="mb-1 text-xs uppercase tracking-wide text-zinc-400 dark:text-zinc-600">
-            Text reviewed
-          </p>
-          <p className="whitespace-pre-wrap text-sm text-zinc-400 dark:text-zinc-600">
-            {reviewedText}
-          </p>
-        </div>
-        <div>
-          <p className="mb-1 text-xs uppercase tracking-wide text-zinc-500">
-            {getResultHeading(mode, runNumber)}
-          </p>
-          {/* Plain, unstyled list — Sprint-08-Step-04 replaces this with a
-              designed panel. This step is about working end-to-end, not layout. */}
-          <ul className="flex flex-col gap-2">
-            {reviews.length === 0 && (
-              <li className="text-sm text-zinc-500 dark:text-zinc-400">
-                No issues found.
-              </li>
-            )}
-            {reviews.map((review, index) => (
-              <li key={index} className="text-sm text-black dark:text-zinc-50">
-                <span className="font-medium">
-                  [{review.category ?? "General"} · {review.severity ?? "?"}]
-                </span>{" "}
-                {review.comment ?? ""}
-              </li>
-            ))}
-          </ul>
+        {/* Sprint-08-Step-04: below lg, stacks (text, then reviews); at lg
+            and above, the reviews column sits beside the reviewed text,
+            which stays in the foreground (flex-1). Pure CSS breakpoint —
+            no JS width detection. */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+          <div className="lg:flex-1">
+            <p className="mb-1 text-xs uppercase tracking-wide text-zinc-400 dark:text-zinc-600">
+              Text reviewed
+            </p>
+            <p className="whitespace-pre-wrap text-sm text-zinc-400 dark:text-zinc-600">
+              {reviewedText}
+            </p>
+          </div>
+          <div className="lg:w-80 lg:shrink-0">
+            <p className="mb-1 text-xs uppercase tracking-wide text-zinc-500">
+              {getResultHeading(mode, runNumber)}
+            </p>
+            <ul className="flex flex-col gap-2">
+              {reviews.length === 0 && (
+                <li className="rounded-lg border border-zinc-200 p-3 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                  No issues found.
+                </li>
+              )}
+              {reviews.map((review, index) => (
+                <li
+                  key={index}
+                  className="flex flex-col gap-1.5 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                      {review.category ?? "General"}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        SEVERITY_BADGE[review.severity ?? ""] ??
+                        DEFAULT_SEVERITY_BADGE
+                      }`}
+                    >
+                      {review.severity ?? "?"}
+                    </span>
+                  </div>
+                  <p className="text-sm text-black dark:text-zinc-50">
+                    {review.comment ?? ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
         <p className="text-xs text-zinc-400 dark:text-zinc-600">
           {info.disclosure}

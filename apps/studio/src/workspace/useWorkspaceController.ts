@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Book } from "@/domain/model";
+import type { Book, Character } from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
 import { loadWorkspace, saveWorkspace } from "@/storage/workspaceStorage";
 
@@ -13,6 +13,8 @@ const EMPTY_WORKSPACE: Workspace = {
   chapters: [],
   selectedChapterId: null,
   selectedSceneId: null,
+  characters: [],
+  selectedCharacterId: null,
 };
 
 // Owns the Workspace domain state and every operation that mutates it —
@@ -22,7 +24,14 @@ const EMPTY_WORKSPACE: Workspace = {
 export function useWorkspaceController() {
   const [workspace, setWorkspace] = useState<Workspace>(EMPTY_WORKSPACE);
   const [isLoaded, setIsLoaded] = useState(false);
-  const { book, chapters, selectedChapterId, selectedSceneId } = workspace;
+  const {
+    book,
+    chapters,
+    selectedChapterId,
+    selectedSceneId,
+    characters,
+    selectedCharacterId,
+  } = workspace;
 
   // Restore the previous workspace once, on mount. This intentionally
   // synchronizes React state from an external system (localStorage), which
@@ -49,6 +58,9 @@ export function useWorkspaceController() {
   const selectedScene = selectedChapter?.scenes.find(
     (scene) => scene.id === selectedSceneId,
   );
+  const selectedCharacter = characters.find(
+    (character) => character.id === selectedCharacterId,
+  );
 
   function createBook(newBook: Book) {
     setWorkspace({
@@ -62,6 +74,9 @@ export function useWorkspaceController() {
       ],
       selectedChapterId: null,
       selectedSceneId: null,
+      // A new book starts with no characters — the writer adds them later.
+      characters: [],
+      selectedCharacterId: null,
     });
   }
 
@@ -120,6 +135,49 @@ export function useWorkspaceController() {
     }));
   }
 
+  function createCharacter() {
+    setWorkspace((previous) => {
+      const nextNumber = previous.characters.length + 1;
+      return {
+        ...previous,
+        characters: [
+          ...previous.characters,
+          { id: String(nextNumber), name: "", description: "", notes: "" },
+        ],
+      };
+    });
+  }
+
+  function updateCharacter(
+    characterId: string,
+    fields: Partial<Pick<Character, "name" | "description" | "notes">>,
+  ) {
+    setWorkspace((previous) => ({
+      ...previous,
+      characters: previous.characters.map((character) =>
+        character.id === characterId
+          ? { ...character, ...fields }
+          : character,
+      ),
+    }));
+  }
+
+  function deleteCharacter(characterId: string) {
+    setWorkspace((previous) => ({
+      ...previous,
+      characters: previous.characters.filter(
+        (character) => character.id !== characterId,
+      ),
+    }));
+  }
+
+  function selectCharacter(characterId: string) {
+    setWorkspace((previous) => ({
+      ...previous,
+      selectedCharacterId: characterId,
+    }));
+  }
+
   return {
     workspace,
     book,
@@ -128,10 +186,17 @@ export function useWorkspaceController() {
     selectedSceneId,
     selectedChapter,
     selectedScene,
+    characters,
+    selectedCharacterId,
+    selectedCharacter,
     createBook,
     createScene,
     updateSceneText,
     selectChapter,
     selectScene,
+    createCharacter,
+    updateCharacter,
+    deleteCharacter,
+    selectCharacter,
   };
 }

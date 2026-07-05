@@ -27,3 +27,10 @@ export type Book = {
   readonly language: string;
   readonly premise: string;
 };
+
+export type Character = {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly notes: string;
+};

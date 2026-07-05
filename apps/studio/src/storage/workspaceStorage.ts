@@ -14,6 +14,8 @@ const EMPTY_WORKSPACE: Workspace = {
   chapters: [],
   selectedChapterId: null,
   selectedSceneId: null,
+  characters: [],
+  selectedCharacterId: null,
 };
 
 export function loadWorkspace(): Workspace {

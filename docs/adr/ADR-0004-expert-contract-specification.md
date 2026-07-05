@@ -5,6 +5,11 @@
 - **Deciders:** Product Owner, Architect, Programmer (Executor)
 - **Supersedes:** [ADR-0002](ADR-0002-expert-contract-vision.md) (Expert Contract Vision)
 
+**2026-07-05 annotation:** the Review Trigger condition "a second AI Expert is proposed" fired
+— see [ADR-0005](ADR-0005-critic-expert-contract.md) (Critic Expert Contract), which examines
+the contract below against that second real example. This ADR's Decision text is unchanged by
+that annotation.
+
 ## Context
 
 [ADR-0002](ADR-0002-expert-contract-vision.md) deliberately deferred the concrete Expert

@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import * as aiBus from "@/ai/aiBus";
 
 // Discovery implementation (Sprint-04-Step-05). Disposable — not a reusable Expert component.
+// Sprint 07 Step 02: routed through aiBus.execute() instead of a direct fetch, closing the
+// AI Bus bypass flagged since Sprint 06 Step 02 (see ADR-0004). Same Expert, same contract —
+// only the internal call path changed.
 
 export function LineEditorPanel() {
   const [input, setInput] = useState("");
@@ -15,19 +19,16 @@ export function LineEditorPanel() {
     setOutput(null);
     setError(null);
     try {
-      const response = await fetch("/api/line-editor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: input }),
+      const result = await aiBus.execute({
+        operation: {
+          type: "improve_text",
+          payload: { text: input },
+        },
+        context: {},
       });
-      const data = await response.json();
-      if (data.ok) {
-        setOutput(data.result);
-      } else {
-        setError(data.error);
-      }
-    } catch {
-      setError("Request failed.");
+      setOutput(result.response.text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Request failed.");
     } finally {
       setStatus("idle");
     }
@@ -54,7 +55,9 @@ export function LineEditorPanel() {
           {output}
         </p>
       )}
-      {error && <p className="text-sm text-red-600 dark:text-red-400">Error: {error}</p>}
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400">Error: {error}</p>
+      )}
     </div>
   );
 }

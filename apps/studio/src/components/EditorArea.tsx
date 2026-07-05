@@ -1,6 +1,15 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import * as aiBus from "@/ai/aiBus";
 import type { Book, Chapter } from "@/domain/model";
+
+// Sprint-08-Step-03: a Critic review, unlike every other entry here.
+// Shape matches /api/critic's response.reviews (apps/studio/src/app/api/critic/route.ts) —
+// not validated at runtime, per that route's own documented discovery-stage risk.
+type ReviewItem = {
+  category?: string;
+  severity?: string;
+  comment?: string;
+};
 
 type ImproveStatus = "idle" | "loading" | "preview" | "error";
 
@@ -134,16 +143,27 @@ function SceneImprove({
   sceneId,
   chapterId,
   bookTitle,
+  getSelectedText,
 }: {
   text: string;
   onReplace: (text: string) => void;
   sceneId?: string;
   chapterId?: string;
   bookTitle?: string;
+  // Sprint-08-Step-03: reads the textarea's current selection at call time,
+  // owned by the parent (which owns the <textarea>), falling back to the
+  // whole scene text when nothing is selected.
+  getSelectedText: () => string;
 }) {
   const [mode, setMode] = useState<AssistantMode>("Editor");
   const [status, setStatus] = useState<ImproveStatus>("idle");
   const [improvedText, setImprovedText] = useState("");
+  // Critic-only state (Sprint-08-Step-03): the parsed reviews and exactly
+  // the text that was actually sent (selection or fallback), so the "Text
+  // reviewed" display below is honest about scope even if the user keeps
+  // typing after the request was sent.
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [reviewedText, setReviewedText] = useState("");
   // UI-only run count per role, for this scene only — not persisted, not
   // sent to the API, reset whenever this component remounts for a new scene.
   const [runCounts, setRunCounts] = useState<Record<AssistantMode, number>>({
@@ -213,6 +233,92 @@ function SceneImprove({
     } catch {
       setStatus("error");
     }
+  }
+
+  // Sprint-08-Step-03: Critic no longer calls improve_text like every other
+  // mode — it produces a Review (feedback), not a Revision (rewritten
+  // text), so it never offers "Заменить текст". Operates on the current
+  // text selection if one exists, else the whole scene (see
+  // getSelectedText's own comment for why that fallback is temporary).
+  async function handleCritic() {
+    setStatus("loading");
+    try {
+      const selected = getSelectedText();
+      const result = await aiBus.execute({
+        operation: {
+          type: "critic_review",
+          payload: { text: selected },
+        },
+        context: {
+          sceneId,
+          chapterId,
+          bookTitle,
+        },
+      });
+      // Temporary: AIResponse.text carries reviews as a JSON string until
+      // the TODO in aiBus.ts (Sprint-08-Step-02) is resolved — not a
+      // permanent contract.
+      const parsed: unknown = JSON.parse(result.response.text);
+      setReviews(Array.isArray(parsed) ? (parsed as ReviewItem[]) : []);
+      setReviewedText(selected);
+      setRunCounts((previous) => ({
+        ...previous,
+        [mode]: previous[mode] + 1,
+      }));
+      setStatus("preview");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "preview" && mode === "Critic") {
+    return (
+      <div className="flex flex-col gap-4">
+        {summaryStrip}
+        <p className={`text-xs font-medium ${info.accent}`}>
+          {info.emoji} {info.label}
+        </p>
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-wide text-zinc-400 dark:text-zinc-600">
+            Text reviewed
+          </p>
+          <p className="whitespace-pre-wrap text-sm text-zinc-400 dark:text-zinc-600">
+            {reviewedText}
+          </p>
+        </div>
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-wide text-zinc-500">
+            {getResultHeading(mode, runNumber)}
+          </p>
+          {/* Plain, unstyled list — Sprint-08-Step-04 replaces this with a
+              designed panel. This step is about working end-to-end, not layout. */}
+          <ul className="flex flex-col gap-2">
+            {reviews.length === 0 && (
+              <li className="text-sm text-zinc-500 dark:text-zinc-400">
+                No issues found.
+              </li>
+            )}
+            {reviews.map((review, index) => (
+              <li key={index} className="text-sm text-black dark:text-zinc-50">
+                <span className="font-medium">
+                  [{review.category ?? "General"} · {review.severity ?? "?"}]
+                </span>{" "}
+                {review.comment ?? ""}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className="text-xs text-zinc-400 dark:text-zinc-600">
+          {info.disclosure}
+        </p>
+        <button
+          onClick={() => setStatus("idle")}
+          className="self-start rounded-full px-4 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+        >
+          Закрыть
+        </button>
+      </div>
+    );
   }
 
   if (status === "preview") {
@@ -295,7 +401,7 @@ function SceneImprove({
         </select>
       </div>
       <button
-        onClick={handleImprove}
+        onClick={mode === "Critic" ? handleCritic : handleImprove}
         disabled={status === "loading" || text.trim().length === 0}
         className="self-start rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
       >
@@ -335,6 +441,11 @@ export function EditorArea({
   isFocusMode = false,
   onToggleFocusMode,
 }: EditorAreaProps) {
+  // Sprint-08-Step-03: owns the textarea so Critic can read its current
+  // selection at click time — must be called unconditionally (Rules of
+  // Hooks), before the early returns below.
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   if (!book) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
@@ -360,6 +471,25 @@ export function EditorArea({
     const wordCount = trimmed === "" ? 0 : trimmed.split(/\s+/).length;
     const characterCount = selectedScene.text.length;
 
+    // Sprint-08-Step-03: read the textarea's current selection at call
+    // time (not tracked in state — no re-render needed for this).
+    function getSelectedText(): string {
+      const el = textareaRef.current;
+      if (!el) return selectedScene!.text;
+      const { selectionStart, selectionEnd, value } = el;
+      if (
+        selectionStart == null ||
+        selectionEnd == null ||
+        selectionStart === selectionEnd
+      ) {
+        // Temporary decision: no explicit UX exists yet for "nothing
+        // selected" — fall back to the whole scene, matching every other
+        // mode's default scope. Revisit when Step 04 designs the panel.
+        return value;
+      }
+      return value.slice(selectionStart, selectionEnd);
+    }
+
     return (
       <main className="flex flex-1 flex-col overflow-y-auto p-8">
         <div
@@ -379,6 +509,7 @@ export function EditorArea({
             </button>
           </div>
           <textarea
+            ref={textareaRef}
             value={selectedScene.text}
             onChange={(event) =>
               onChangeSceneText?.(
@@ -399,6 +530,7 @@ export function EditorArea({
             sceneId={selectedScene.id}
             chapterId={selectedChapter.id}
             bookTitle={book.title}
+            getSelectedText={getSelectedText}
           />
           <p className="text-xs text-zinc-400 dark:text-zinc-600">
             Words: {wordCount} · Characters: {characterCount}

@@ -37,7 +37,8 @@ AI Bus Documentation Fragmentation risk registered in [AI_BUS_V4.md](AI_BUS_V4.m
   session — a fact about that tool's bootstrap, not part of the role's definition.
   `docs/project/HANDOVER.md` covers Levels 0–2 in onboarding form regardless of which model is
   playing the role. Reading `HANDOVER.md` satisfies Levels 0–2 for a new Programmer (Executor)
-  session.
+  session. Before checking `docs/ai-bus/queue/`, also read
+  [STANDING-PROMPT.md](STANDING-PROMPT.md) — the queue pickup/ARP/Review routine.
 - **Architect session:** no model-specific auto-loaded file currently exists for this role; a
   new Architect session must read Levels 0–4 explicitly, in order, regardless of which model is
   playing it.

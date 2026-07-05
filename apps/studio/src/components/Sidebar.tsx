@@ -87,7 +87,7 @@ export function Sidebar({
           </h2>
           <button
             onClick={() => onCreateCharacter?.()}
-            className="text-xs font-medium text-zinc-600 transition-colors hover:text-black dark:text-zinc-400 dark:hover:text-white"
+            className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
           >
             + New Character
           </button>

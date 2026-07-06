@@ -18,6 +18,29 @@ const EMPTY_WORKSPACE: Workspace = {
   selectedCharacterId: null,
 };
 
+// Fix-Book-Fields-Undefined-Systemic: centralizes "what to do about a
+// missing Book field" in one place. Every field of Book gets a default
+// here — if a future field is added to Book and this function isn't
+// updated, the defect shows up immediately and uniformly (a missing field
+// here), not as a hard-to-explain crash in some random component months
+// later. Third occurrence of this exact class of bug (Workspace-level
+// characters, Chapter.subtitle, now Book fields) — this is why it's a
+// shared function instead of another one-off fix at the point of use.
+function normalizeBook(book: Partial<Book>): Book {
+  return {
+    id: book.id ?? "",
+    title: book.title ?? "",
+    genre: book.genre ?? "",
+    language: book.language ?? "",
+    premise: book.premise ?? "",
+    shortAnnotation: book.shortAnnotation ?? "",
+    fullAnnotation: book.fullAnnotation ?? "",
+    tags: book.tags ?? [],
+    chapters: book.chapters ?? [],
+    characters: book.characters ?? [],
+  };
+}
+
 // Sprint-11-Step-01: migrates the single-book Workspace shape (Sprint 05
 // through Sprint 10 — one `book` object plus top-level `chapters`/
 // `characters`) into the multi-book shape (`books: Book[]`, `activeBookId`).
@@ -26,30 +49,33 @@ const EMPTY_WORKSPACE: Workspace = {
 function migrateIfNeeded(parsed: unknown): Workspace {
   const data = parsed as Record<string, unknown>;
 
-  // New format already — nothing to migrate.
+  // New format already — nothing to migrate, but each book still passes
+  // through normalizeBook() in case it's missing fields added to Book
+  // after it was saved (see Fix-Book-Fields-Undefined-Systemic above).
   if (Array.isArray(data.books)) {
-    return { ...EMPTY_WORKSPACE, ...(data as Partial<Workspace>) };
+    return {
+      ...EMPTY_WORKSPACE,
+      ...(data as Partial<Workspace>),
+      books: data.books.map((book) => normalizeBook(book as Partial<Book>)),
+    };
   }
 
   // Old format: single `book` (without id/chapters/characters — those were
   // separate top-level Workspace fields) + top-level chapters/characters.
   if (data.book) {
     const oldBook = data.book as Partial<Book>;
-    const migratedBook: Book = {
+    const migratedBook = normalizeBook({
       id: "1",
-      title: oldBook.title ?? "",
-      genre: oldBook.genre ?? "",
-      language: oldBook.language ?? "",
-      premise: oldBook.premise ?? "",
-      // Sprint-11-Step-04: fields added to Book after this migration was
-      // written — old saved data never had them, so they default empty,
-      // same as chapters/characters do above.
-      shortAnnotation: oldBook.shortAnnotation ?? "",
-      fullAnnotation: oldBook.fullAnnotation ?? "",
-      tags: (oldBook.tags as readonly string[] | undefined) ?? [],
-      chapters: (data.chapters as readonly Chapter[] | undefined) ?? [],
-      characters: (data.characters as readonly Character[] | undefined) ?? [],
-    };
+      title: oldBook.title,
+      genre: oldBook.genre,
+      language: oldBook.language,
+      premise: oldBook.premise,
+      shortAnnotation: oldBook.shortAnnotation,
+      fullAnnotation: oldBook.fullAnnotation,
+      tags: oldBook.tags,
+      chapters: data.chapters as readonly Chapter[] | undefined,
+      characters: data.characters as readonly Character[] | undefined,
+    });
     return {
       books: [migratedBook],
       activeBookId: migratedBook.id,

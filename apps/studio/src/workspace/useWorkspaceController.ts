@@ -71,7 +71,15 @@ export function useWorkspaceController() {
   );
 
   function createBook(
-    newBookData: Omit<Book, "id" | "chapters" | "characters">,
+    newBookData: Omit<
+      Book,
+      | "id"
+      | "chapters"
+      | "characters"
+      | "tags"
+      | "shortAnnotation"
+      | "fullAnnotation"
+    >,
   ) {
     setWorkspace((previous) => {
       const nextNumber = previous.books.length + 1;
@@ -88,6 +96,12 @@ export function useWorkspaceController() {
         ],
         // A new book starts with no characters — the writer adds them later.
         characters: [],
+        // New book-level fields (Sprint-11-Step-04) start empty — filled in
+        // later via the book overview's editing form, not the creation
+        // dialog (kept compact: Title/Genre/Language/Premise only).
+        tags: [],
+        shortAnnotation: "",
+        fullAnnotation: "",
       };
       return {
         ...previous,
@@ -102,7 +116,18 @@ export function useWorkspaceController() {
 
   function updateBook(
     bookId: string,
-    fields: Partial<Pick<Book, "title" | "genre" | "language" | "premise">>,
+    fields: Partial<
+      Pick<
+        Book,
+        | "title"
+        | "genre"
+        | "language"
+        | "premise"
+        | "shortAnnotation"
+        | "fullAnnotation"
+        | "tags"
+      >
+    >,
   ) {
     setWorkspace((previous) => ({
       ...previous,

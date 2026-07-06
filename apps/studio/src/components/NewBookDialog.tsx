@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Book } from "@/domain/model";
 
-const GENRES = [
+export const GENRES = [
   "Fiction",
   "Fantasy",
   "Science Fiction",
@@ -15,9 +15,27 @@ const GENRES = [
   "Other",
 ];
 
+export const LANGUAGES = [
+  "Russian",
+  "English",
+  "Ukrainian",
+  "Belarusian",
+  "Kazakh",
+];
+
 type NewBookDialogProps = {
   onCancel: () => void;
-  onCreate: (book: Omit<Book, "id" | "chapters" | "characters">) => void;
+  onCreate: (
+    book: Omit<
+      Book,
+      | "id"
+      | "chapters"
+      | "characters"
+      | "tags"
+      | "shortAnnotation"
+      | "fullAnnotation"
+    >,
+  ) => void;
 };
 
 export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {
@@ -75,12 +93,17 @@ export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Language
             </span>
-            <input
-              type="text"
+            <select
               value={language}
               onChange={(event) => setLanguage(event.target.value)}
               className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-            />
+            >
+              {LANGUAGES.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="flex flex-col gap-1">

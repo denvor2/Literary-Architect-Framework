@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import * as aiBus from "@/ai/aiBus";
 import type { Book, Chapter } from "@/domain/model";
+import { GENRES, LANGUAGES } from "@/components/NewBookDialog";
 
 // Sprint-08-Step-03: a Critic review, unlike every other entry here.
 // Shape matches /api/critic's response.reviews (apps/studio/src/app/api/critic/route.ts) —
@@ -543,7 +544,18 @@ type EditorAreaProps = {
   ) => void;
   onUpdateBook?: (
     bookId: string,
-    fields: Partial<Pick<Book, "title" | "genre" | "language" | "premise">>,
+    fields: Partial<
+      Pick<
+        Book,
+        | "title"
+        | "genre"
+        | "language"
+        | "premise"
+        | "shortAnnotation"
+        | "fullAnnotation"
+        | "tags"
+      >
+    >,
   ) => void;
   isFocusMode?: boolean;
   onToggleFocusMode?: () => void;
@@ -731,22 +743,32 @@ export function EditorArea({
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
         />
         <div className="flex gap-2">
-          <input
+          <select
             value={book.genre}
             onChange={(event) =>
               onUpdateBook?.(book.id, { genre: event.target.value })
             }
-            placeholder="Genre..."
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
-          />
-          <input
+          >
+            {GENRES.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          <select
             value={book.language}
             onChange={(event) =>
               onUpdateBook?.(book.id, { language: event.target.value })
             }
-            placeholder="Language..."
             className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
-          />
+          >
+            {LANGUAGES.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
         <textarea
           value={book.premise}
@@ -755,6 +777,37 @@ export function EditorArea({
           }
           placeholder="What is this book about?"
           rows={4}
+          className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+        />
+        <input
+          value={book.tags.join(", ")}
+          onChange={(event) =>
+            onUpdateBook?.(book.id, {
+              tags: event.target.value
+                .split(",")
+                .map((tag) => tag.trim())
+                .filter((tag) => tag.length > 0),
+            })
+          }
+          placeholder="Tags (comma-separated)..."
+          className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+        />
+        <textarea
+          value={book.shortAnnotation}
+          onChange={(event) =>
+            onUpdateBook?.(book.id, { shortAnnotation: event.target.value })
+          }
+          placeholder="Short annotation..."
+          rows={2}
+          className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+        />
+        <textarea
+          value={book.fullAnnotation}
+          onChange={(event) =>
+            onUpdateBook?.(book.id, { fullAnnotation: event.target.value })
+          }
+          placeholder="Full annotation..."
+          rows={6}
           className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
         />
       </div>

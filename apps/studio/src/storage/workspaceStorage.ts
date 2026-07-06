@@ -41,6 +41,12 @@ function migrateIfNeeded(parsed: unknown): Workspace {
       genre: oldBook.genre ?? "",
       language: oldBook.language ?? "",
       premise: oldBook.premise ?? "",
+      // Sprint-11-Step-04: fields added to Book after this migration was
+      // written — old saved data never had them, so they default empty,
+      // same as chapters/characters do above.
+      shortAnnotation: oldBook.shortAnnotation ?? "",
+      fullAnnotation: oldBook.fullAnnotation ?? "",
+      tags: (oldBook.tags as readonly string[] | undefined) ?? [],
       chapters: (data.chapters as readonly Chapter[] | undefined) ?? [],
       characters: (data.characters as readonly Character[] | undefined) ?? [],
     };

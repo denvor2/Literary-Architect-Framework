@@ -28,6 +28,9 @@ export type Book = {
   readonly genre: string;
   readonly language: string;
   readonly premise: string;
+  readonly shortAnnotation: string;
+  readonly fullAnnotation: string;
+  readonly tags: readonly string[];
   readonly chapters: readonly Chapter[];
   readonly characters: readonly Character[];
 };

@@ -21,6 +21,7 @@ export default function Home() {
     updateChapter,
     createScene,
     updateSceneText,
+    updateSceneTitle,
     selectChapter,
     selectScene,
     characters,
@@ -61,9 +62,7 @@ export default function Home() {
         {selectedCharacterId ? (
           <CharacterPanel
             character={selectedCharacter}
-            onUpdate={(fields) =>
-              updateCharacter(selectedCharacterId, fields)
-            }
+            onUpdate={(fields) => updateCharacter(selectedCharacterId, fields)}
             onDelete={() => deleteCharacter(selectedCharacterId)}
           />
         ) : (
@@ -75,6 +74,7 @@ export default function Home() {
             onNewScene={createScene}
             onChangeSceneText={updateSceneText}
             onUpdateChapter={updateChapter}
+            onUpdateSceneTitle={updateSceneTitle}
             isFocusMode={isFocusMode}
             onToggleFocusMode={() => setIsFocusMode((value) => !value)}
           />

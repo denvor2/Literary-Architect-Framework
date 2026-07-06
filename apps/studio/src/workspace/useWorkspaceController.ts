@@ -116,23 +116,28 @@ export function useWorkspaceController() {
     setWorkspace((previous) => {
       const targetChapterId = chapterId ?? previous.selectedChapterId;
       if (!targetChapterId) return previous;
+      const targetChapter = previous.chapters.find(
+        (chapter) => chapter.id === targetChapterId,
+      );
+      if (!targetChapter) return previous;
+      const nextNumber = targetChapter.scenes.length + 1;
+      const newSceneId = String(nextNumber);
       return {
         ...previous,
-        chapters: previous.chapters.map((chapter) => {
-          if (chapter.id !== targetChapterId) return chapter;
-          const nextNumber = chapter.scenes.length + 1;
-          return {
-            ...chapter,
-            scenes: [
-              ...chapter.scenes,
-              {
-                id: String(nextNumber),
-                title: `Scene ${nextNumber}`,
-                text: "",
-              },
-            ],
-          };
-        }),
+        chapters: previous.chapters.map((chapter) =>
+          chapter.id === targetChapterId
+            ? {
+                ...chapter,
+                scenes: [
+                  ...chapter.scenes,
+                  { id: newSceneId, title: `Scene ${nextNumber}`, text: "" },
+                ],
+              }
+            : chapter,
+        ),
+        selectedChapterId: targetChapterId,
+        selectedSceneId: newSceneId,
+        selectedCharacterId: null,
       };
     });
   }
@@ -146,6 +151,21 @@ export function useWorkspaceController() {
           ...chapter,
           scenes: chapter.scenes.map((scene) =>
             scene.id === sceneId ? { ...scene, text } : scene,
+          ),
+        };
+      }),
+    }));
+  }
+
+  function updateSceneTitle(chapterId: string, sceneId: string, title: string) {
+    setWorkspace((previous) => ({
+      ...previous,
+      chapters: previous.chapters.map((chapter) => {
+        if (chapter.id !== chapterId) return chapter;
+        return {
+          ...chapter,
+          scenes: chapter.scenes.map((scene) =>
+            scene.id === sceneId ? { ...scene, title } : scene,
           ),
         };
       }),
@@ -199,9 +219,7 @@ export function useWorkspaceController() {
     setWorkspace((previous) => ({
       ...previous,
       characters: previous.characters.map((character) =>
-        character.id === characterId
-          ? { ...character, ...fields }
-          : character,
+        character.id === characterId ? { ...character, ...fields } : character,
       ),
     }));
   }
@@ -249,6 +267,7 @@ export function useWorkspaceController() {
     updateChapter,
     createScene,
     updateSceneText,
+    updateSceneTitle,
     selectChapter,
     selectScene,
     createCharacter,

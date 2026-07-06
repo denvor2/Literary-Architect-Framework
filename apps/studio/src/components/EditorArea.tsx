@@ -536,6 +536,11 @@ type EditorAreaProps = {
     chapterId: string,
     fields: Partial<Pick<Chapter, "title" | "subtitle">>,
   ) => void;
+  onUpdateSceneTitle?: (
+    chapterId: string,
+    sceneId: string,
+    title: string,
+  ) => void;
   isFocusMode?: boolean;
   onToggleFocusMode?: () => void;
 };
@@ -548,6 +553,7 @@ export function EditorArea({
   onNewScene,
   onChangeSceneText,
   onUpdateChapter,
+  onUpdateSceneTitle,
   isFocusMode = false,
   onToggleFocusMode,
 }: EditorAreaProps) {
@@ -604,10 +610,19 @@ export function EditorArea({
             isFocusMode ? "mx-auto max-w-3xl" : ""
           }`}
         >
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-              {selectedScene.title}
-            </h1>
+          <div className="flex items-center justify-between gap-3">
+            <input
+              value={selectedScene.title}
+              onChange={(event) =>
+                onUpdateSceneTitle?.(
+                  selectedChapter.id,
+                  selectedScene.id,
+                  event.target.value,
+                )
+              }
+              placeholder="Scene title..."
+              className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-lg font-medium tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
             <button
               onClick={onToggleFocusMode}
               className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"

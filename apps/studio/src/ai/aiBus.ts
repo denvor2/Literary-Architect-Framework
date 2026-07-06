@@ -2,7 +2,8 @@
 // point), Step 04 (context envelope entry point), Step 05 (normalized
 // response contract), Step 06 (domain applier, no-effect layer), Sprint 08
 // Step 02 (real dispatch by operation.type — the first second Expert),
-// Sprint 09 Step 02 (third Expert, third branch).
+// Sprint 09 Step 02 (third Expert, third branch), Sprint 12 Step 03 (fourth
+// branch — Co-author, plus optional bookContext forwarded for Editor).
 //
 // It exists only so the UI never calls fetch() on an Expert route itself and
 // never talks to AI except through an AIContextEnvelope, and never sees a
@@ -21,15 +22,15 @@ export async function execute(
   envelope: AIContextEnvelope,
 ): Promise<AppliedAIResponse> {
   const { operation } = envelope;
-  const { text } = operation.payload;
 
   let resultText: string;
 
   if (operation.type === "improve_text") {
+    const { text, bookContext } = operation.payload;
     const response = await fetch("/api/line-editor", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify(bookContext ? { text, bookContext } : { text }),
     });
     const data = await response.json();
     if (!data.ok) {
@@ -37,6 +38,7 @@ export async function execute(
     }
     resultText = data.result;
   } else if (operation.type === "critic_review") {
+    const { text } = operation.payload;
     const response = await fetch("/api/critic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -51,6 +53,7 @@ export async function execute(
     // still shaped for a single text result and are not reworked here.
     resultText = JSON.stringify(data.reviews);
   } else if (operation.type === "reader_reaction") {
+    const { text } = operation.payload;
     const response = await fetch("/api/reader", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -62,6 +65,20 @@ export async function execute(
     }
     // No stringify/TODO needed here — this Expert's response is already a
     // plain string, the same shape AIResponse.text expects natively.
+    resultText = data.result;
+  } else if (operation.type === "coauthor_draft") {
+    const { currentText, bookContext } = operation.payload;
+    const response = await fetch("/api/coauthor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentText, bookContext }),
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      throw new Error(data.error);
+    }
+    // Same as reader_reaction — /api/coauthor's response is already a plain
+    // string, no stringify/TODO needed.
     resultText = data.result;
   } else {
     const exhaustiveCheck: never = operation;

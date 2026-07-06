@@ -1,7 +1,8 @@
-import type { Chapter, Character } from "@/domain/model";
+import type { Book, Chapter, Character } from "@/domain/model";
 
 type SidebarProps = {
-  bookTitle?: string;
+  books?: readonly Book[];
+  activeBookId?: string | null;
   chapters?: readonly Chapter[];
   selectedChapterId?: string | null;
   selectedSceneId?: string | null;
@@ -11,14 +12,15 @@ type SidebarProps = {
   selectedCharacterId?: string | null;
   onSelectCharacter?: (id: string) => void;
   onCreateCharacter?: () => void;
-  onSelectBook?: () => void;
+  onSelectBook?: (bookId: string) => void;
   onNewBook?: () => void;
   onCreateChapter?: () => void;
   onCreateScene?: (chapterId: string) => void;
 };
 
 export function Sidebar({
-  bookTitle,
+  books = [],
+  activeBookId,
   chapters = [],
   selectedChapterId,
   selectedSceneId,
@@ -33,9 +35,6 @@ export function Sidebar({
   onCreateChapter,
   onCreateScene,
 }: SidebarProps) {
-  const isBookSelected =
-    !selectedChapterId && !selectedSceneId && !selectedCharacterId;
-
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
       <div>
@@ -50,16 +49,28 @@ export function Sidebar({
             + New Book
           </button>
         </div>
-        <button
-          onClick={() => onSelectBook?.()}
-          className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
-            isBookSelected
-              ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-              : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
-          }`}
-        >
-          {bookTitle ?? "Untitled Book"}
-        </button>
+        {books.length === 0 ? (
+          <p className="text-sm text-zinc-400 dark:text-zinc-600">
+            No books yet
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-1">
+            {books.map((book) => (
+              <li key={book.id}>
+                <button
+                  onClick={() => onSelectBook?.(book.id)}
+                  className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                    book.id === activeBookId
+                      ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                      : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
+                  }`}
+                >
+                  {book.title || "Untitled Book"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       <div>
         <div className="mb-2 flex items-center justify-between">

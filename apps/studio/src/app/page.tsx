@@ -12,7 +12,9 @@ import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 
 export default function Home() {
   const {
-    book,
+    activeBook,
+    books,
+    activeBookId,
     chapters,
     selectedChapterId,
     selectedSceneId,
@@ -32,10 +34,21 @@ export default function Home() {
     deleteCharacter,
     selectCharacter,
     selectBook,
+    deselectAll,
   } = useWorkspaceController();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // Ephemeral UI state only — not part of Workspace, not persisted.
   const [isFocusMode, setIsFocusMode] = useState(false);
+
+  // Clicking the already-active book returns to its overview (Sprint 10
+  // behavior); clicking a different book switches to it.
+  function handleSelectBook(bookId: string) {
+    if (bookId === activeBookId) {
+      deselectAll();
+    } else {
+      selectBook(bookId);
+    }
+  }
 
   return (
     <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
@@ -43,7 +56,8 @@ export default function Home() {
       <div className="flex flex-1 overflow-hidden">
         {!isFocusMode && (
           <Sidebar
-            bookTitle={book?.title}
+            books={books}
+            activeBookId={activeBookId}
             chapters={chapters}
             selectedChapterId={selectedChapterId}
             selectedSceneId={selectedSceneId}
@@ -53,7 +67,7 @@ export default function Home() {
             selectedCharacterId={selectedCharacterId}
             onSelectCharacter={selectCharacter}
             onCreateCharacter={createCharacter}
-            onSelectBook={selectBook}
+            onSelectBook={handleSelectBook}
             onNewBook={() => setIsDialogOpen(true)}
             onCreateChapter={createChapter}
             onCreateScene={createScene}
@@ -67,7 +81,7 @@ export default function Home() {
           />
         ) : (
           <EditorArea
-            book={book}
+            book={activeBook}
             chapters={chapters}
             selectedChapterId={selectedChapterId}
             selectedSceneId={selectedSceneId}

@@ -17,7 +17,7 @@ const GENRES = [
 
 type NewBookDialogProps = {
   onCancel: () => void;
-  onCreate: (book: Book) => void;
+  onCreate: (book: Omit<Book, "id" | "chapters" | "characters">) => void;
 };
 
 export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {

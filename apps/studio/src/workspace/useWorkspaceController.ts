@@ -70,12 +70,6 @@ export function useWorkspaceController() {
     (character) => character.id === selectedCharacterId,
   );
 
-  // Sprint-11-Step-01 TEMPORARY ALIAS: exported as `book` so the current
-  // (not-yet-updated) page.tsx/components keep compiling against a single
-  // active book for one more step. Remove when Step 02 updates the UI layer
-  // to consume `books`/`activeBookId` directly.
-  const book = activeBook ?? null;
-
   function createBook(
     newBookData: Omit<Book, "id" | "chapters" | "characters">,
   ) {
@@ -400,7 +394,7 @@ export function useWorkspaceController() {
 
   return {
     workspace,
-    book,
+    activeBook,
     books,
     activeBookId,
     chapters,

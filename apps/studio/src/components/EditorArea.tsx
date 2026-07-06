@@ -662,7 +662,7 @@ export function EditorArea({
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-center text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
           />
           <input
-            value={selectedChapter.subtitle}
+            value={selectedChapter.subtitle ?? ""}
             onChange={(event) =>
               onUpdateChapter?.(selectedChapter.id, {
                 subtitle: event.target.value,

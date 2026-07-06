@@ -4,11 +4,11 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-06 (Sprint 10 closing)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 10 are all complete and
-committed; no blocking issues. See Known Risks for open, non-blocking items — notably a
-newly-discovered data-loss risk (creating a new book replaces the previous one) driving Sprint
-11's scope.
+**Last updated:** 2026-07-06 (Sprint 11 closing)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 11 are all complete and
+committed; no blocking issues. The data-loss risk that drove Sprint 11's scope (creating a new
+book replaced the previous one) is now resolved — see Current Architecture and
+[ADR-0007](../adr/ADR-0007-multi-book-workspace.md).
 **Current Phase:** Phase 1 (MVP).
 
 ## Source of Truth
@@ -19,12 +19,12 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 10 — Characters + Chapter/Scene parity (closed). Character introduced as a new domain
-entity with its own editing panel; Chapter gained a `subtitle` field and editing panel; Scene
-gained an editable title; navigation and creation-button conventions unified
-(`docs/design/UI_STYLE_GUIDE.md`, new this sprint); two real bugs found and fixed along the way.
-**No ADR produced** — this was a pure domain/UI extension, no new AI Expert, no AI Bus change;
-ADR-0004/0005/0006 remain the complete Expert Contract set. See
+Sprint 11 — Multi-Book Workspace (closed). Replaced the single-book `Workspace` with a
+multi-book one (`books: Book[]`, `activeBookId`); `Book` became a self-contained container for
+its own `chapters`/`characters`; `workspaceStorage.ts` gained a migration for old saved data and
+`normalizeBook()` to defend against missing fields on future `Book` changes.
+[ADR-0007](../adr/ADR-0007-multi-book-workspace.md) ratifies this — the project's first ADR for
+a domain-model change outside the AI Expert Contract family (ADR-0004/0005/0006). See
 [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the full closing summary.
 
 ## Completed Milestones
@@ -103,6 +103,16 @@ ADR-0004/0005/0006 remain the complete Expert Contract set. See
   change; not an oversight, see [CURRENT_SPRINT.md](CURRENT_SPRINT.md). Committed `0e0668c`,
   `2a0107b`, `03f0b0e`, `d4c7172`, `3b62f5f`, `3159229`, plus several small fix/UX commits in
   the same window (see CURRENT_SPRINT.md's Tasks list for the complete, honest set).
+- **Sprint 11** — replaced the single-book `Workspace` with a multi-book one, closing a real
+  data-loss risk (the Product Owner actually lost their first book creating a second one,
+  before this sprint's migration existed — recorded plainly in ADR-0007, not softened). `Book`
+  became self-contained (`chapters`/`characters` moved inside it); `workspaceStorage.ts` gained
+  a migration for the old single-book format and `normalizeBook()`, a centralized-defaults
+  pattern born from three recurring instances of the same bug class (missing fields on old
+  saved data — Workspace `characters`, `Chapter.subtitle`, now `Book` fields).
+  [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) ratifies this — the project's first ADR
+  outside the AI Expert Contract family. Committed `385d10e`, `6793fa4`, `3b96695`, `beaab6e`,
+  `f99910c`.
 
 ## Current Architecture
 
@@ -116,6 +126,8 @@ ADR-0004/0005/0006 remain the complete Expert Contract set. See
   AI Bus v5 chain position, error model, and deterministic behavior, each grounded in a
   file+line citation against the running code. ADR-0004 supersedes
   [ADR-0002](../adr/ADR-0002-expert-contract-vision.md).
+  [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) ratifies the Sprint 11 multi-book
+  Workspace change — the first ADR outside this Expert Contract family.
 - The technology stack is fixed by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) —
   any new framework, SDK, or runtime dependency should be checked against it before being added.
 - `apps/studio/` has a working Anthropic integration with three Experts: Line Editor
@@ -127,9 +139,15 @@ ADR-0004/0005/0006 remain the complete Expert Contract set. See
   Operation → Context Envelope → Response → Applied Response → /api/line-editor |
   /api/critic | /api/reader`. `aiBus.execute()` performs real dispatch since Sprint 08 Step 02 —
   previously `operation.type` was read only decoratively.
-  Domain types (`Book`/`Chapter`/`Scene`/`Character`/`Workspace`) live in
-  `apps/studio/src/domain/` as the single source of truth; `localStorage` access is isolated in
-  `apps/studio/src/storage/workspaceStorage.ts`.
+- **Domain Model (extended Sprint 11 — [ADR-0007](../adr/ADR-0007-multi-book-workspace.md)):**
+  `Workspace` now holds `books: Book[]` + `activeBookId` (previously a single `book: Book |
+  null`); `Book` is a self-contained container — `chapters`/`characters` live inside it, not as
+  separate top-level `Workspace` fields as before. Domain types
+  (`Book`/`Chapter`/`Scene`/`Character`/`Workspace`) live in `apps/studio/src/domain/` as the
+  single source of truth; `localStorage` access is isolated in
+  `apps/studio/src/storage/workspaceStorage.ts`, which also holds `migrateIfNeeded()` (old-format
+  migration) and `normalizeBook()` (centralized field-defaulting for `Book`, a documented
+  practice per ADR-0007 for any future field added to `Book`).
 - Product Role → AI Expert mapping: Critic → Critic Expert and Reader → Reader Expert are now
   both 1:1 ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md),
   [ADR-0006](../adr/ADR-0006-reader-expert-contract.md)). Co-author and Editor still call the
@@ -145,6 +163,7 @@ ADR-0004/0005/0006 remain the complete Expert Contract set. See
 | [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) | Expert Contract Specification | Accepted |
 | [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) | Critic Expert Contract | Accepted |
 | [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) | Reader Expert Contract | Accepted |
+| [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) | Multi-Book Workspace | Accepted |
 
 ## Technology Stack
 
@@ -163,23 +182,22 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 ## Current Priorities
 
 1. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
-2. Scope Sprint 11 (multi-book support) into Step Cards — elevated above the previously-planned
-   Co-author work due to a data-loss risk found during Sprint 10 (creating a new book replaces
-   the previous one with no recovery path).
+2. Scope Sprint 12 into Step Cards — no scope defined yet.
 
 ## Open Decisions
 
 - **Pricing and detailed security requirements** — Sprint 02 conclusions not yet backfilled;
   see `docs/vision/pricing.md` and `docs/vision/security.md`.
-- **Sprint 11 scope (multi-book support)** — prioritized, not yet broken into Step Cards.
-  Requires a Product Owner / Architect planning pass before any implementation work starts.
+- **Sprint 12 scope** — not defined. Requires a Product Owner / Architect planning pass before
+  any implementation work starts.
 
 ## Known Risks
 
-- **Data loss on new book creation** — creating a new book via `NewBookDialog` completely
-  replaces the previous book's `Workspace` (single-book storage model, unchanged since Sprint
-  05); there is no multi-book support and no recovery path. Discovered during Sprint 10 live
-  testing; drives Sprint 11's scope. This is the most significant currently-known risk.
+- **Data loss on new book creation — resolved in Sprint 11.** `Workspace` now supports multiple
+  books (`books: Book[]`); creating a new book appends rather than replaces. See
+  [ADR-0007](../adr/ADR-0007-multi-book-workspace.md). **The book lost before this migration
+  existed cannot be recovered** — recorded permanently, not implying the fix undoes the past
+  incident.
 - Sprint 02 decisions (pricing, detailed security requirements) remain partially undocumented
   in-repo.
 - Sprint 06's commit (`f82f650`) necessarily bundled the entire, previously-never-committed
@@ -189,6 +207,5 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-Sprint 11 — multi-book support, prioritized above the previously-planned Co-author work because
-of the data-loss risk above. Sprint 10 is closed; Sprint 11 has not been broken into Step Cards
-yet.
+None defined. Sprint 11 is closed; Sprint 12 has not been started and has no scope in this
+repository yet.

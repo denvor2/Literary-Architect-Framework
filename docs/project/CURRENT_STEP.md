@@ -5,7 +5,7 @@ This file tracks the single active Step Card under the Task Bus execution model 
 [docs/task-bus/STEP_CARD_TEMPLATE.yml](../task-bus/STEP_CARD_TEMPLATE.yml) for the schema.
 
 ```yaml
-id: Sprint-10-Close
+id: Sprint-11-Step-05
 status: done
 next: []
 ```

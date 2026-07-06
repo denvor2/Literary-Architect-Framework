@@ -541,6 +541,10 @@ type EditorAreaProps = {
     sceneId: string,
     title: string,
   ) => void;
+  onUpdateBook?: (
+    bookId: string,
+    fields: Partial<Pick<Book, "title" | "genre" | "language" | "premise">>,
+  ) => void;
   isFocusMode?: boolean;
   onToggleFocusMode?: () => void;
 };
@@ -554,6 +558,7 @@ export function EditorArea({
   onChangeSceneText,
   onUpdateChapter,
   onUpdateSceneTitle,
+  onUpdateBook,
   isFocusMode = false,
   onToggleFocusMode,
 }: EditorAreaProps) {
@@ -716,20 +721,43 @@ export function EditorArea({
 
   return (
     <main className="flex flex-1 flex-col gap-6 overflow-y-auto p-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          {book.title}
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          {book.genre} · {book.language}
-        </p>
+      <div className="flex max-w-2xl flex-col gap-2">
+        <input
+          value={book.title}
+          onChange={(event) =>
+            onUpdateBook?.(book.id, { title: event.target.value })
+          }
+          placeholder="Book title..."
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+        />
+        <div className="flex gap-2">
+          <input
+            value={book.genre}
+            onChange={(event) =>
+              onUpdateBook?.(book.id, { genre: event.target.value })
+            }
+            placeholder="Genre..."
+            className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+          />
+          <input
+            value={book.language}
+            onChange={(event) =>
+              onUpdateBook?.(book.id, { language: event.target.value })
+            }
+            placeholder="Language..."
+            className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+          />
+        </div>
+        <textarea
+          value={book.premise}
+          onChange={(event) =>
+            onUpdateBook?.(book.id, { premise: event.target.value })
+          }
+          placeholder="What is this book about?"
+          rows={4}
+          className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+        />
       </div>
-
-      {book.premise && (
-        <p className="max-w-2xl whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
-          {book.premise}
-        </p>
-      )}
 
       <div>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">

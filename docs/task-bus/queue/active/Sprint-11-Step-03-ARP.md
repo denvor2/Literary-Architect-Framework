@@ -1,3 +1,40 @@
+# ARP — Sprint-11-Step-03
+
+**Шаг:** Редактируемые данные книги в обзоре (title/genre/language/premise)
+**Статус выполнения:** Готово к ревью
+
+## Что сделано
+
+### 1. useWorkspaceController.ts — updateBook
+
+Добавлена `updateBook(bookId, fields)` ровно по коду из Step Card — `Partial<Pick<Book, "title"
+| "genre" | "language" | "premise">>`, immutable `.map()` по `books`. Экспортирована из хука
+вместе с остальными.
+
+### 2. EditorArea.tsx — обзор книги стал редактируемым
+
+Финальная ветка (ни chapter, ни scene не выбраны) переписана: статичные `<h1>`/`<p>` заменены на
+поля ввода:
+- **Title** — `input`, крупный шрифт (`text-2xl font-semibold`, как и был заголовок), placeholder
+  "Book title...".
+- **Genre**/**Language** — два отдельных `input` в одной строке (`flex gap-2`) вместо прежнего
+  объединённого текста "{genre} · {language}".
+- **Premise** — `textarea` (не `input` — может быть длинным текстом), **всегда видима** (убрано
+  условие `{book.premise && ...}` — раз это теперь редактируемое поле, оно должно быть видно и
+  пустым), placeholder "What is this book about?".
+
+Все три — `onChange` → `onUpdateBook(book.id, { <field>: value })`. Список Chapters ниже не
+менялся. Добавлен новый проп `onUpdateBook` в `EditorAreaProps`.
+
+### 3. page.tsx — проброс
+
+`updateBook` из контроллера передан в `EditorArea` как `onUpdateBook`.
+
+## Изменённые файлы целиком
+
+### apps/studio/src/workspace/useWorkspaceController.ts
+
+```typescript
 "use client";
 
 import { useEffect, useState } from "react";
@@ -434,3 +471,250 @@ export function useWorkspaceController() {
     deselectAll,
   };
 }
+```
+
+### apps/studio/src/app/page.tsx
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { Header } from "@/components/Header";
+import { Sidebar } from "@/components/Sidebar";
+import { EditorArea } from "@/components/EditorArea";
+import { CharacterPanel } from "@/components/CharacterPanel";
+import { AssistantPanel } from "@/components/AssistantPanel";
+import { DeveloperTools } from "@/components/DeveloperTools";
+import { NewBookDialog } from "@/components/NewBookDialog";
+import { useWorkspaceController } from "@/workspace/useWorkspaceController";
+
+export default function Home() {
+  const {
+    activeBook,
+    books,
+    activeBookId,
+    chapters,
+    selectedChapterId,
+    selectedSceneId,
+    createBook,
+    updateBook,
+    createChapter,
+    updateChapter,
+    createScene,
+    updateSceneText,
+    updateSceneTitle,
+    selectChapter,
+    selectScene,
+    characters,
+    selectedCharacterId,
+    selectedCharacter,
+    createCharacter,
+    updateCharacter,
+    deleteCharacter,
+    selectCharacter,
+    selectBook,
+    deselectAll,
+  } = useWorkspaceController();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // Ephemeral UI state only — not part of Workspace, not persisted.
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
+  // Clicking the already-active book returns to its overview (Sprint 10
+  // behavior); clicking a different book switches to it.
+  function handleSelectBook(bookId: string) {
+    if (bookId === activeBookId) {
+      deselectAll();
+    } else {
+      selectBook(bookId);
+    }
+  }
+
+  return (
+    <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
+      <Header />
+      <div className="flex flex-1 overflow-hidden">
+        {!isFocusMode && (
+          <Sidebar
+            books={books}
+            activeBookId={activeBookId}
+            chapters={chapters}
+            selectedChapterId={selectedChapterId}
+            selectedSceneId={selectedSceneId}
+            onSelectChapter={selectChapter}
+            onSelectScene={selectScene}
+            characters={characters}
+            selectedCharacterId={selectedCharacterId}
+            onSelectCharacter={selectCharacter}
+            onCreateCharacter={createCharacter}
+            onSelectBook={handleSelectBook}
+            onNewBook={() => setIsDialogOpen(true)}
+            onCreateChapter={createChapter}
+            onCreateScene={createScene}
+          />
+        )}
+        {selectedCharacterId ? (
+          <CharacterPanel
+            character={selectedCharacter}
+            onUpdate={(fields) => updateCharacter(selectedCharacterId, fields)}
+            onDelete={() => deleteCharacter(selectedCharacterId)}
+          />
+        ) : (
+          <EditorArea
+            book={activeBook}
+            chapters={chapters}
+            selectedChapterId={selectedChapterId}
+            selectedSceneId={selectedSceneId}
+            onNewScene={createScene}
+            onChangeSceneText={updateSceneText}
+            onUpdateChapter={updateChapter}
+            onUpdateSceneTitle={updateSceneTitle}
+            onUpdateBook={updateBook}
+            isFocusMode={isFocusMode}
+            onToggleFocusMode={() => setIsFocusMode((value) => !value)}
+          />
+        )}
+        {!isFocusMode && <AssistantPanel />}
+      </div>
+      {!isFocusMode && <DeveloperTools />}
+
+      {isDialogOpen && (
+        <NewBookDialog
+          onCancel={() => setIsDialogOpen(false)}
+          onCreate={(newBook) => {
+            createBook(newBook);
+            setIsDialogOpen(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+### apps/studio/src/components/EditorArea.tsx (только изменённые фрагменты — файл 760+ строк, остальное не менялось)
+
+```tsx
+type EditorAreaProps = {
+  book?: Book | null;
+  chapters?: readonly Chapter[];
+  selectedChapterId?: string | null;
+  selectedSceneId?: string | null;
+  onNewScene?: () => void;
+  onChangeSceneText?: (
+    chapterId: string,
+    sceneId: string,
+    text: string,
+  ) => void;
+  onUpdateChapter?: (
+    chapterId: string,
+    fields: Partial<Pick<Chapter, "title" | "subtitle">>,
+  ) => void;
+  onUpdateSceneTitle?: (
+    chapterId: string,
+    sceneId: string,
+    title: string,
+  ) => void;
+  onUpdateBook?: (
+    bookId: string,
+    fields: Partial<Pick<Book, "title" | "genre" | "language" | "premise">>,
+  ) => void;
+  isFocusMode?: boolean;
+  onToggleFocusMode?: () => void;
+};
+
+export function EditorArea({
+  book,
+  chapters = [],
+  selectedChapterId,
+  selectedSceneId,
+  onNewScene,
+  onChangeSceneText,
+  onUpdateChapter,
+  onUpdateSceneTitle,
+  onUpdateBook,
+  isFocusMode = false,
+  onToggleFocusMode,
+}: EditorAreaProps) {
+  // ... (unchanged: textareaRef, !book branch, selectedChapter/selectedScene
+  //      branches, selectedChapter-only branch)
+
+  return (
+    <main className="flex flex-1 flex-col gap-6 overflow-y-auto p-8">
+      <div className="flex max-w-2xl flex-col gap-2">
+        <input
+          value={book.title}
+          onChange={(event) =>
+            onUpdateBook?.(book.id, { title: event.target.value })
+          }
+          placeholder="Book title..."
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+        />
+        <div className="flex gap-2">
+          <input
+            value={book.genre}
+            onChange={(event) =>
+              onUpdateBook?.(book.id, { genre: event.target.value })
+            }
+            placeholder="Genre..."
+            className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+          />
+          <input
+            value={book.language}
+            onChange={(event) =>
+              onUpdateBook?.(book.id, { language: event.target.value })
+            }
+            placeholder="Language..."
+            className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+          />
+        </div>
+        <textarea
+          value={book.premise}
+          onChange={(event) =>
+            onUpdateBook?.(book.id, { premise: event.target.value })
+          }
+          placeholder="What is this book about?"
+          rows={4}
+          className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+        />
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          Chapters
+        </h2>
+        {/* ... (unchanged: chapters list) */}
+      </div>
+    </main>
+  );
+}
+```
+
+## Валидация
+
+```
+npx tsc --noEmit → 0 ошибок во всём проекте
+npm run build → успешно (Compiled successfully)
+npm run lint  → чисто
+npx prettier --check → чисто
+git status --short → ровно 3 файла из Allowed paths (useWorkspaceController.ts, EditorArea.tsx,
+                       page.tsx — все M); Sidebar.tsx/CharacterPanel.tsx/NewBookDialog.tsx/
+                       domain/**/storage/**/ai/**/api/** не тронуты
+```
+
+**Живая проверка (честно, ограничение среды):** нет браузера — та же оговорка, что и всегда.
+Код-ревью: `updateBook` — точная копия паттерна `updateCharacter`/`updateChapter` (найти
+активную книгу... точнее, здесь ищем по явному `bookId`, не через `activeBookId` — что
+корректно, поскольку обзор книги показывается только для активной книги, но сигнатура,
+продиктованная Step Card, принимает `bookId` явно, для общности). Прошу лично проверить: выбрать
+книгу (обзор без выбранной главы), изменить title/genre/language/premise — сохраняется, title
+виден в Sidebar после изменения, переживает перезагрузку страницы.
+
+## Отклонения от Step Card
+
+Нет.
+
+## Стоп-условие
+
+Не коммичу — жду `REVIEW.md` со `STATUS: OK` от Architect.
+
+Жду REVIEW.md.

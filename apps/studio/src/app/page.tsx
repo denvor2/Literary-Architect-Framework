@@ -19,6 +19,7 @@ export default function Home() {
     selectedChapterId,
     selectedSceneId,
     createBook,
+    updateBook,
     createChapter,
     updateChapter,
     createScene,
@@ -89,6 +90,7 @@ export default function Home() {
             onChangeSceneText={updateSceneText}
             onUpdateChapter={updateChapter}
             onUpdateSceneTitle={updateSceneTitle}
+            onUpdateBook={updateBook}
             isFocusMode={isFocusMode}
             onToggleFocusMode={() => setIsFocusMode((value) => !value)}
           />

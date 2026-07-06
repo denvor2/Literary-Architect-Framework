@@ -96,6 +96,7 @@ export function Sidebar({
                         <button
                           onClick={() => onSelectScene?.(chapter.id, scene.id)}
                           className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                            selectedChapterId === chapter.id &&
                             selectedSceneId === scene.id
                               ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
                               : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"

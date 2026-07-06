@@ -532,6 +532,10 @@ type EditorAreaProps = {
     sceneId: string,
     text: string,
   ) => void;
+  onUpdateChapter?: (
+    chapterId: string,
+    fields: Partial<Pick<Chapter, "title" | "subtitle">>,
+  ) => void;
   isFocusMode?: boolean;
   onToggleFocusMode?: () => void;
 };
@@ -543,6 +547,7 @@ export function EditorArea({
   selectedSceneId,
   onNewScene,
   onChangeSceneText,
+  onUpdateChapter,
   isFocusMode = false,
   onToggleFocusMode,
 }: EditorAreaProps) {
@@ -645,9 +650,28 @@ export function EditorArea({
   if (selectedChapter) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          {selectedChapter.title}
-        </h1>
+        <div className="flex w-full max-w-md flex-col gap-2">
+          <input
+            value={selectedChapter.title}
+            onChange={(event) =>
+              onUpdateChapter?.(selectedChapter.id, {
+                title: event.target.value,
+              })
+            }
+            placeholder="Chapter title..."
+            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-center text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+          <input
+            value={selectedChapter.subtitle}
+            onChange={(event) =>
+              onUpdateChapter?.(selectedChapter.id, {
+                subtitle: event.target.value,
+              })
+            }
+            placeholder="Subtitle..."
+            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-center text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+          />
+        </div>
         {selectedChapter.scenes.length === 0 ? (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             No scenes yet

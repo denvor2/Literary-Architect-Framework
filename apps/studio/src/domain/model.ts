@@ -18,6 +18,7 @@ export type Scene = {
 export type Chapter = {
   readonly id: string;
   readonly title: string;
+  readonly subtitle: string;
   readonly scenes: readonly Scene[];
 };
 

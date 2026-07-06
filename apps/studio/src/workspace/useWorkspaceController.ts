@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Book, Character } from "@/domain/model";
+import type { Book, Chapter, Character } from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
 import { loadWorkspace, saveWorkspace } from "@/storage/workspaceStorage";
 
@@ -69,6 +69,7 @@ export function useWorkspaceController() {
         {
           id: "1",
           title: "Chapter 1",
+          subtitle: "",
           scenes: [{ id: "1", title: "Scene 1", text: "" }],
         },
       ],
@@ -83,27 +84,42 @@ export function useWorkspaceController() {
   function createChapter() {
     setWorkspace((previous) => {
       const nextNumber = previous.chapters.length + 1;
+      const newChapter: Chapter = {
+        id: String(nextNumber),
+        title: `Chapter ${nextNumber}`,
+        subtitle: "",
+        scenes: [{ id: "1", title: "Scene 1", text: "" }],
+      };
       return {
         ...previous,
-        chapters: [
-          ...previous.chapters,
-          {
-            id: String(nextNumber),
-            title: `Chapter ${nextNumber}`,
-            scenes: [{ id: "1", title: "Scene 1", text: "" }],
-          },
-        ],
+        chapters: [...previous.chapters, newChapter],
+        selectedChapterId: newChapter.id,
+        selectedSceneId: null,
+        selectedCharacterId: null,
       };
     });
   }
 
-  function createScene() {
+  function updateChapter(
+    chapterId: string,
+    fields: Partial<Pick<Chapter, "title" | "subtitle">>,
+  ) {
+    setWorkspace((previous) => ({
+      ...previous,
+      chapters: previous.chapters.map((chapter) =>
+        chapter.id === chapterId ? { ...chapter, ...fields } : chapter,
+      ),
+    }));
+  }
+
+  function createScene(chapterId?: string) {
     setWorkspace((previous) => {
-      if (!previous.selectedChapterId) return previous;
+      const targetChapterId = chapterId ?? previous.selectedChapterId;
+      if (!targetChapterId) return previous;
       return {
         ...previous,
         chapters: previous.chapters.map((chapter) => {
-          if (chapter.id !== previous.selectedChapterId) return chapter;
+          if (chapter.id !== targetChapterId) return chapter;
           const nextNumber = chapter.scenes.length + 1;
           return {
             ...chapter,
@@ -230,6 +246,7 @@ export function useWorkspaceController() {
     selectedCharacter,
     createBook,
     createChapter,
+    updateChapter,
     createScene,
     updateSceneText,
     selectChapter,

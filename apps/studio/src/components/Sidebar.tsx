@@ -14,6 +14,7 @@ type SidebarProps = {
   onSelectBook?: () => void;
   onNewBook?: () => void;
   onCreateChapter?: () => void;
+  onCreateScene?: (chapterId: string) => void;
 };
 
 export function Sidebar({
@@ -30,6 +31,7 @@ export function Sidebar({
   onSelectBook,
   onNewBook,
   onCreateChapter,
+  onCreateScene,
 }: SidebarProps) {
   const isBookSelected =
     !selectedChapterId && !selectedSceneId && !selectedCharacterId;
@@ -79,16 +81,24 @@ export function Sidebar({
           <ul className="flex flex-col gap-1">
             {chapters.map((chapter) => (
               <li key={chapter.id}>
-                <button
-                  onClick={() => onSelectChapter?.(chapter.id)}
-                  className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                    selectedChapterId === chapter.id && !selectedSceneId
-                      ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                      : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                  }`}
-                >
-                  {chapter.title}
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => onSelectChapter?.(chapter.id)}
+                    className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                      selectedChapterId === chapter.id && !selectedSceneId
+                        ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                        : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    }`}
+                  >
+                    {chapter.title}
+                  </button>
+                  <button
+                    onClick={() => onCreateScene?.(chapter.id)}
+                    className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  >
+                    + New Scene
+                  </button>
+                </div>
                 {chapter.scenes.length > 0 && (
                   <ul className="ml-3 mt-1 flex flex-col gap-1 border-l border-zinc-200 pl-2 dark:border-zinc-800">
                     {chapter.scenes.map((scene) => (

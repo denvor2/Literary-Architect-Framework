@@ -18,6 +18,7 @@ export default function Home() {
     selectedSceneId,
     createBook,
     createChapter,
+    updateChapter,
     createScene,
     updateSceneText,
     selectChapter,
@@ -54,6 +55,7 @@ export default function Home() {
             onSelectBook={selectBook}
             onNewBook={() => setIsDialogOpen(true)}
             onCreateChapter={createChapter}
+            onCreateScene={createScene}
           />
         )}
         {selectedCharacterId ? (
@@ -72,6 +74,7 @@ export default function Home() {
             selectedSceneId={selectedSceneId}
             onNewScene={createScene}
             onChangeSceneText={updateSceneText}
+            onUpdateChapter={updateChapter}
             isFocusMode={isFocusMode}
             onToggleFocusMode={() => setIsFocusMode((value) => !value)}
           />

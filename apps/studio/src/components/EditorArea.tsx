@@ -620,6 +620,12 @@ export function EditorArea({
                   event.target.value,
                 )
               }
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  textareaRef.current?.focus();
+                }
+              }}
               placeholder="Scene title..."
               className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-lg font-medium tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />

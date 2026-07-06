@@ -6,4 +6,5 @@ export type Workspace = {
   selectedChapterId: string | null;
   selectedSceneId: string | null;
   selectedCharacterId: string | null;
+  selectedAssistantMode: "coauthor" | "editor" | "critic" | "reader";
 };

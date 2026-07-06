@@ -14,6 +14,7 @@ const EMPTY_WORKSPACE: Workspace = {
   selectedChapterId: null,
   selectedSceneId: null,
   selectedCharacterId: null,
+  selectedAssistantMode: "editor",
 };
 
 // Owns the Workspace domain state and every operation that mutates it —
@@ -79,6 +80,7 @@ export function useWorkspaceController() {
       | "tags"
       | "shortAnnotation"
       | "fullAnnotation"
+      | "assistantThreads"
     >,
   ) {
     setWorkspace((previous) => {
@@ -102,6 +104,14 @@ export function useWorkspaceController() {
         tags: [],
         shortAnnotation: "",
         fullAnnotation: "",
+        // Sprint-13-Step-01: one empty dialog per role, same default as
+        // normalizeBook() uses for pre-existing books missing this field.
+        assistantThreads: {
+          coauthor: [{ id: "1", name: "Диалог 1", messages: [] }],
+          editor: [{ id: "1", name: "Диалог 1", messages: [] }],
+          critic: [{ id: "1", name: "Диалог 1", messages: [] }],
+          reader: [{ id: "1", name: "Диалог 1", messages: [] }],
+        },
       };
       return {
         ...previous,
@@ -429,6 +439,13 @@ export function useWorkspaceController() {
     }));
   }
 
+  function selectAssistantMode(mode: Workspace["selectedAssistantMode"]) {
+    setWorkspace((previous) => ({
+      ...previous,
+      selectedAssistantMode: mode,
+    }));
+  }
+
   return {
     workspace,
     activeBook,
@@ -457,5 +474,6 @@ export function useWorkspaceController() {
     selectCharacter,
     selectBook,
     deselectAll,
+    selectAssistantMode,
   };
 }

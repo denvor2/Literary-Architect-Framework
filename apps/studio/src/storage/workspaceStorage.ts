@@ -5,7 +5,13 @@
 // validation, no async API, no repository — a straight lift of the
 // existing logic.
 
-import type { Book, Chapter, Character } from "@/domain/model";
+import type {
+  AssistantThread,
+  AssistantThreads,
+  Book,
+  Chapter,
+  Character,
+} from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
 
 const STORAGE_KEY = "literary-studio-workspace";
@@ -16,7 +22,27 @@ const EMPTY_WORKSPACE: Workspace = {
   selectedChapterId: null,
   selectedSceneId: null,
   selectedCharacterId: null,
+  selectedAssistantMode: "editor",
 };
+
+function emptyThread(): AssistantThread {
+  return { id: "1", name: "Диалог 1", messages: [] };
+}
+
+// Per-role default, not just whole-object default: a book saved with only
+// some roles' threads present (e.g. coauthor has real messages, the other
+// three roles didn't exist yet) must keep the ones that exist and default
+// only the missing ones.
+function normalizeAssistantThreads(
+  threads: Partial<AssistantThreads> | undefined,
+): AssistantThreads {
+  return {
+    coauthor: threads?.coauthor ?? [emptyThread()],
+    editor: threads?.editor ?? [emptyThread()],
+    critic: threads?.critic ?? [emptyThread()],
+    reader: threads?.reader ?? [emptyThread()],
+  };
+}
 
 // Fix-Book-Fields-Undefined-Systemic: centralizes "what to do about a
 // missing Book field" in one place. Every field of Book gets a default
@@ -38,6 +64,7 @@ function normalizeBook(book: Partial<Book>): Book {
     tags: book.tags ?? [],
     chapters: book.chapters ?? [],
     characters: book.characters ?? [],
+    assistantThreads: normalizeAssistantThreads(book.assistantThreads),
   };
 }
 
@@ -82,6 +109,9 @@ function migrateIfNeeded(parsed: unknown): Workspace {
       selectedChapterId: (data.selectedChapterId as string | null) ?? null,
       selectedSceneId: (data.selectedSceneId as string | null) ?? null,
       selectedCharacterId: (data.selectedCharacterId as string | null) ?? null,
+      selectedAssistantMode:
+        (data.selectedAssistantMode as Workspace["selectedAssistantMode"]) ??
+        "editor",
     };
   }
 

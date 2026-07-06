@@ -33,6 +33,7 @@ export type Book = {
   readonly tags: readonly string[];
   readonly chapters: readonly Chapter[];
   readonly characters: readonly Character[];
+  readonly assistantThreads: AssistantThreads;
 };
 
 export type Character = {
@@ -41,4 +42,26 @@ export type Character = {
   readonly description: string;
   readonly notes: string;
   readonly photoUrl: string;
+};
+
+export type ChatMessage = {
+  readonly role: "user" | "assistant";
+  readonly content: string;
+};
+
+export type AssistantThread = {
+  readonly id: string;
+  readonly name: string;
+  readonly messages: readonly ChatMessage[];
+};
+
+// One data shape for all four Product Roles (Sprint-13-Step-01) — Co-author/
+// Editor keep a single continuous thread, Critic/Reader may hold several
+// named ones ("Новый читатель" etc.). The difference is in how the UI uses
+// this per role, not in the shape itself (see Step 04, not yet built).
+export type AssistantThreads = {
+  readonly coauthor: readonly AssistantThread[];
+  readonly editor: readonly AssistantThread[];
+  readonly critic: readonly AssistantThread[];
+  readonly reader: readonly AssistantThread[];
 };

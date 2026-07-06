@@ -111,17 +111,23 @@ assesses; a Revision changes.
 - What is a **Workspace**, and how does it relate to User and Book — is it per-Book, per-User,
   or a separate concept altogether?
 - Which specific **AI Expert(s)** does each **Product Role** use? **Resolved for Critic**
-  ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md)) and **Reader**
-  ([ADR-0006](../adr/ADR-0006-reader-expert-contract.md)): both now map 1:1 to their own
-  Expert (`/api/critic`, `/api/reader` respectively). **Still open for Editor and Co-author** —
-  both still call the Line Editor Expert under different labels; e.g. does "Editor" use Line
-  Editor alone, or Line Editor + Developmental Editor + Style Editor together? Nothing in
-  existing documentation specifies this.
-- **"Co-author" has no grounded mapping to any existing AI Expert.** The six AI Experts named
-  in ADR-0002 (Line Editor, Developmental Editor, Style Editor, Continuity Checker, Fact
-  Checker, Research Assistant) are all editorial/review-oriented — none performs original
-  drafting or co-writing. If "Co-author" requires generative drafting capability, that is a
-  capability gap relative to the currently-documented Expert set, not merely a naming gap.
+  ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md)), **Reader**
+  ([ADR-0006](../adr/ADR-0006-reader-expert-contract.md)), **Editor**
+  ([ADR-0004](../adr/ADR-0004-expert-contract-specification.md)), and **Co-author**
+  ([ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md)): all four now map 1:1 to their own
+  Expert (`/api/critic`, `/api/reader`, `/api/line-editor`, `/api/coauthor` respectively) —
+  whether "Editor" ought to eventually be Line Editor + Developmental Editor + Style Editor
+  together, rather than Line Editor alone, remains unspecified by any existing document, but the
+  Product Role no longer lacks a mapping. As of Sprint 12, Editor's Expert (Line Editor) also
+  optionally receives the whole Book as context, for consistency only — it does not gain
+  drafting/generative capability by doing so (see ADR-0004's Sprint 12 revision section and
+  ADR-0008's per-Expert context-scope table).
+- **"Co-author" is resolved** ([ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md)): a new
+  Expert, `/api/coauthor`, was added specifically because the six AI Experts named in ADR-0002
+  (Line Editor, Developmental Editor, Style Editor, Continuity Checker, Fact Checker, Research
+  Assistant) are all editorial/review-oriented and none performed original drafting. Co-author
+  is the first genuinely generative Expert and the first to receive the whole Book (all
+  chapters, scenes, characters, and metadata) as context, not just the current Scene.
 - Similarly, **"Reader" (3–4 Readers per MVP scope)** has no grounded mapping to any existing
   AI Expert.
 - Does a Review always produce exactly one Revision, or can multiple Reviews accumulate before

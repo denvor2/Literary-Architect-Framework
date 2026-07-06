@@ -1,127 +1,137 @@
 # Current Sprint
 
-**Sprint 11 — Multi-Book Workspace** — **closed**
+**Sprint 12 — Co-author Expert + Editor Book Context** — **closed**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
-sprint in progress. History for Sprint 06/08/09/10 lives in `docs/reports/SPRINT_06_REPORT.md` /
-this file's own git history; Sprint 11 has no separate closeout report at this time.
+sprint in progress. History for Sprint 06/08/09/10/11 lives in `docs/reports/SPRINT_06_REPORT.md`
+/ this file's own git history; Sprint 12 has no separate closeout report at this time.
 
 - **Status:** Closed. All 5 planned steps plus 2 emergency fixes completed, validated, and
   committed.
 - **Phase:** Phase 1 (MVP)
-- **Sprint 12:** Not started. No scope has been defined yet.
-- **[ADR-0007](../adr/ADR-0007-multi-book-workspace.md) ratified** this sprint — the project's
-  first ADR for a domain-model/architecture change that isn't an AI Expert Contract
-  (ADR-0004/0005/0006 cover those separately).
+- **Sprint 13:** Not started. No scope has been defined yet — the vision document
+  (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 15) records what is expected to move
+  there (assistant-switcher UI consolidation, mode persistence, chat mechanism), but this is not
+  itself a scoped Step Card.
+- **[ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) ratified** this sprint — the
+  project's fourth AI Expert Contract, and the first genuinely generative one.
+  **[ADR-0004](../adr/ADR-0004-expert-contract-specification.md) revised** (not superseded) —
+  Line Editor's contract gained an optional `bookContext` field.
 
 ## Goal
 
-Replace the single-book `Workspace` with a multi-book one, closing a real data-loss risk
-discovered during Sprint 10: creating a new book completely replaced whatever book existed
-before, with no recovery path. **The Product Owner actually lost their first book this way,
-before this Sprint's migration existed** — recorded plainly, not softened.
+Give Co-author (until now the one Product Role in `docs/product/DOMAIN_MODEL.md`'s Open
+Questions with no grounded AI Expert mapping at all) a real, generative Expert — and let Editor
+optionally see the whole book for consistency, without changing what Editor's task is.
 
 ## Summary
 
-- **Step 01 — domain model + storage migration.** `Book` became self-contained (`chapters`/
-  `characters` moved inside it, out of `Workspace`); `Workspace` became `{ books: Book[],
-  activeBookId, selection fields }`; `workspaceStorage.ts` gained `migrateIfNeeded()` to detect
-  and migrate the old single-book format. The riskiest step in the project so far — worked
-  through it slowly, verified the migration against real mocked old-format data before moving
-  on. Introduced a naming collision (`selectBook()` repurposed from Sprint 10's "return to book
-  overview" to "switch active book") — caught in review, restored as `deselectAll()`.
-- **Step 02 — multi-book UI.** Sidebar shows a list of books instead of one; `page.tsx` gained
-  `handleSelectBook()` (click active book → `deselectAll()`, click another → `selectBook()`);
-  the temporary `book` alias from Step 01 was removed, `activeBook` exported directly;
-  `NewBookDialog.tsx`'s `onCreate` type fixed to match the new `Book` shape.
-- **Step 03 — editable book overview.** Title/Genre/Language/Premise, previously static text in
-  the book overview, became editable fields (`updateBook()`), matching the parity already given
-  to Chapter/Character/Scene in Sprint 10.
-- **Step 04 — Genre/Language selects everywhere + new Book fields.** Genre/Language became
-  `<select>` in the overview too (previously text input there, `<select>` only in the creation
-  dialog); added `tags`/`shortAnnotation`/`fullAnnotation` to `Book`. Required a flagged,
-  Architect-approved touch of a Forbidden path (`workspaceStorage.ts`) to keep the Step Card's
-  own "0 type errors" requirement achievable — the same class of situation as Sprint-10-Step-06.
-- **Emergency fix — `normalizeBook()`.** A real crash (`book.tags.join(...)` on `undefined`, for
-  books saved in the new `books[]` format but before Step 04 added the new fields) became the
-  trigger for a systemic fix instead of another one-off patch: `normalizeBook()` centralizes
-  defaulting for every `Book` field, applied in both `migrateIfNeeded()` branches. Third
-  occurrence of this exact bug class this project (Workspace `characters`, `Chapter.subtitle`,
-  now `Book` fields) — recorded in ADR-0007 as mandatory future practice.
-- **Sprint-11-Step-05 (this step) — [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) +
-  closeout.**
+- **Step 01 — `/api/coauthor` discovery implementation.** New route, genuinely generative
+  (writes/continues manuscript text, not a Review), the first Expert to receive the whole `Book`
+  (all chapters/scenes/characters/metadata), not just the current scene. `currentText` may be
+  empty (blank-page draft); `bookContext` is required. Live-verified with 4 scenarios (missing
+  `bookContext` → 400; missing `currentText` → 400; empty `currentText` + realistic context →
+  draft genuinely reflecting characters/premise; non-empty `currentText` → real continuation).
+- **Step 02 — optional `bookContext` for `/api/line-editor`.** Backward-compatible (byte-identical
+  request/response when absent); system prompt explicitly constrains `bookContext` to
+  consistency only, never to rewrite or expand `text`. Live-verified: an unusual character name
+  present only in context was preserved verbatim; output did not expand beyond the input's scope.
+- **Step 03 — AI Bus `coauthor_draft` operation + `bookContext` passthrough.** `AIOperation`
+  gained a 4th variant with a genuinely different payload shape (`{ currentText, bookContext }`
+  instead of `{ text, sceneId?, chapterId? }`), which required moving the previously shared
+  `const { text } = operation.payload` destructure into each branch individually. `improve_text`
+  gained optional `bookContext`, forwarded unchanged to the Expert.
+- **Step 04 — wire Co-author, extend Editor with book context.** `EditorArea.tsx`'s
+  `handleCoauthor()` sends the whole scene text as `currentText` + `bookContext: book`, reusing
+  the same generic Original/Improved preview as Editor (both produce a Revision). `handleImprove()`
+  now also sends `bookContext: book`. Two additional defects were self-identified and fixed within
+  this same Allowed-path file, both necessary for the Step Card's own required live-verification
+  scenarios to even be possible: the shared button's `disabled` condition blocked Co-author from
+  running on an empty scene (fixed to exempt Co-author from the non-empty-text requirement); a
+  stale module-level comment claiming all modes call the same endpoint was corrected to reflect
+  the real per-mode endpoints.
+- **Emergency fix — `Fix-Assistant-Button-Label`.** Real bug from a Product Owner screenshot: the
+  assistant button's label was hardcoded `"Редактор"` regardless of the selected mode. Fixed to
+  read `mode`.
+- **Emergency fix — `Fix-Assistant-Button-Label-Ask`.** Product Owner follow-up refinement: since
+  the mode is already visible in the `<select>` above the button, showing it a second time on the
+  button itself was redundant — unified to a single constant label, `"Спросить"`, regardless of
+  mode.
+- **Sprint-12-Step-05 (this step) — [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) +
+  revision of [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) + closeout.**
 
 ## Out of Scope (held constant this sprint)
 
-- Book Series (books sharing Characters/context) — vision document
-  (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`) Section 8, an idea, not designed or scheduled.
-- Collapsible/unified book-level view (all chapters/scenes visible at once, collapsible per
-  level) — vision document Section 2's amendment, explicitly "an idea, under discussion," not a
-  decision for this or any specific future sprint.
-- Trash/Archive (undo for deletions) — vision document Section 9, not designed.
-- Per-book selection state (remembering which chapter/scene/character was selected per book) —
-  deliberately not implemented; switching books always resets selection (see ADR-0007).
-- Co-author/Editor → AI Expert mapping — unrelated, untouched by this sprint.
+- Assistant-switcher UI consolidation (cards + responsive bottom list) and persisting the
+  selected mode across sessions — deferred to Sprint 13
+  (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 15).
+- Co-author/Editor chat mechanism (continuous book-level context, multi-turn) — deferred to
+  Sprint 13, bundled with the switcher consolidation to avoid reworking the same UI surface
+  twice.
+- Localizing remaining English UI copy (`MODE_INFO` and similar service text) — deferred to
+  Sprint 14.
+- Everything else already recorded as out of scope in prior sprints and unaffected here (Book
+  Series, Trash/Archive, collapsible unified book view, AI provider/model selection, ЛитРес
+  genre-list integration, export/import formats) — see
+  `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md` Sections 1, 2, 8, 9, 11, 12, 14.
 
 ## Tasks (Development Strategy)
 
-- [x] **Step 01 — multi-book domain model + storage migration.** Committed `385d10e`.
-- [x] **Step 02 — multi-book UI, fix NewBookDialog types, remove temporary book alias.**
-  Committed `6793fa4`.
-- [x] **Step 03 — editable book fields in overview.** Committed `3b96695`.
-- [x] **Step 04 — Genre/Language selects, book tags/annotations.** Committed `beaab6e`.
-- [x] **Fix — normalizeBook centralizes Book field defaults**, resolves `book.tags` crash on
-  pre-Step-04 data. Committed `f99910c`.
-- [x] **Step 05 — ADR-0007 + Sprint closeout.** Documentation only.
+- [x] **Step 01 — `/api/coauthor` discovery implementation.** Committed `05c820c`.
+- [x] **Step 02 — optional `bookContext` for `/api/line-editor`.** Committed `4b2f7c5`.
+- [x] **Step 03 — AI Bus `coauthor_draft` operation + `bookContext` passthrough.** Committed
+  `5ba7929`.
+- [x] **Step 04 — wire Co-author, extend Editor with book context.** Committed `bee042e`.
+- [x] **Fix — assistant button label reflects selected mode.** Committed `5785ce2`.
+- [x] **Fix — unify assistant button label to "Спросить".** Committed `18b4f21`.
+- [x] **Step 05 — ADR-0008, ADR-0004 revision, DOMAIN_MODEL.md/vision updates, closeout.**
+  Documentation only.
 
-Two unrelated, independent vision-document additions were also processed in this window but are
-not Sprint 11 steps: `Add-Deployment-Readiness-Vision-Note` (+ Amendment, sections 10–12),
-`Add-Security-Strategy-Vision-Note` (section 13), and `Add-Collapsible-View-Vision-Note`
-(amendment to section 2) — all documentation-only, tracked in `docs/task-bus/queue/done/`.
+One unrelated, independent vision-document addition was also processed in this window but is not
+a Sprint 12 step: `Add-Model-Selection-Vision-Note` (Section 14, AI provider/model selection
+idea), tracked in `docs/task-bus/queue/done/`.
 
 ## Definition of Done
 
-- Each code step validated by `npm run build`, `npm run lint`, `npx prettier --check`, and
-  `npx tsc --noEmit` (this sprint's steps required 0 type errors across the whole project, not
-  just the Allowed-path files, given how foundational the `Workspace` shape change was) — met
-  for all steps.
+- Each code step validated by `npm run build`, `npm run lint`, `npx prettier --check`, and (where
+  the Step Card required it) `npx tsc --noEmit` — met for all steps. One transient Google Fonts
+  network failure occurred during Step 03's build (unrelated to code changes, resolved on retry),
+  flagged honestly and confirmed by the Architect as not a code defect.
 - Architect Review (ARP, `STATUS: OK`) delivered and approved for each step before commit — met
-  for every step, including two explicitly-flagged, explicitly-approved deviations touching
-  Forbidden paths (Step 04's `workspaceStorage.ts` fix, and the emergency `normalizeBook` fix
-  itself), both required to keep a Step Card's own validation criteria achievable.
-- The migration's correctness against real old-format data was verified by executing the actual
-  compiled `loadWorkspace()` against mocked `localStorage` snapshots — not just code review —
-  for Step 01 and for the `normalizeBook` emergency fix.
-- Product Owner performed live browser verification for the UI-facing steps, compensating for
-  this environment's standing lack of browser automation.
+  for every step.
+- Live verification against the real, non-mocked backend/AI Bus was performed for every
+  code-touching step, using this environment's established scratchpad-script technique
+  (monkey-patched `global.fetch` against a real `next start` server) to compensate for the
+  standing lack of browser automation — reused consistently since Sprint 09.
+- Two real UI bugs found via Product Owner screenshots during this sprint were fixed as
+  out-of-queue-order emergency Step Cards, per the established `Fix-*` pattern, rather than
+  silently folded into an unrelated step.
 
 ## Completed
 
 All items in Tasks above are committed and archived to `docs/task-bus/queue/done/`.
 
-## Known Open Items (carried forward, not part of Sprint 11 scope)
+## Known Open Items (carried forward, not part of Sprint 12 scope)
 
-- **The first book lost before this sprint's migration existed cannot be recovered.** Recorded
-  permanently in ADR-0007 — this Sprint prevents recurrence, it does not undo the original loss.
+- Assistant-switcher UI consolidation and mode persistence — Sprint 13
+  (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Sections 2–5, 15).
+- Co-author/Editor chat mechanism (continuous book-level context surviving book close/reopen) —
+  Sprint 13, bundled with the above.
+- Remaining English UI copy (`MODE_INFO` and similar) — Sprint 14.
+- Line Editor's and Critic's prompts remain unlocalized (English, no Russian instruction) — still
+  planned for Sprint 14, unchanged from Sprint 11's carried-forward item.
 - Book Series and Collapsible View remain vision-only ideas
   (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Sections 8 and 2's amendment) — not designed,
   not scheduled.
 - The AI Bus v5 architecture (Sprint 06) still has no ADR of its own — only described in
   `docs/reports/SPRINT_06_REPORT.md`. Still not addressed.
-- Co-author and Editor → AI Expert mapping remains unresolved
-  (`docs/product/DOMAIN_MODEL.md`'s Open Questions) — untouched by Sprint 11.
-- Line Editor's and Critic's prompts remain unlocalized (English, no Russian instruction) —
-  planned for Sprint 14.
-- `normalizeBook()`'s discipline (update it whenever `Book` gains a field) is now a documented
-  practice (ADR-0007) but not enforced by any automated check — relies on the Step Card/reviewer
-  remembering it.
-- No browser automation tool is available in this environment — every UI step's live
-  verification has relied on build/lint/code review plus, where possible, direct execution of
-  the real compiled logic against simulated data, not actual click-through testing. The Product
-  Owner performed the actual browser verification for this sprint's UI steps. Recorded again
-  here as a standing, unresolved environment limitation.
+- No browser automation tool is available in this environment — every UI step's live verification
+  has relied on build/lint/code review plus, where possible, direct execution of the real
+  compiled logic against a running server, not actual click-through testing. Recorded again here
+  as a standing, unresolved environment limitation.
 
 ## Next Action
 
-Sprint 12 has not been started and has no defined scope. Scoping it is a Product Owner /
-Architect decision, not yet made.
+Sprint 13 has not been started and has no defined scope beyond the vision document's own note
+that assistant-switcher consolidation and the chat mechanism should be scoped together. Scoping
+it is a Product Owner / Architect decision, not yet made.

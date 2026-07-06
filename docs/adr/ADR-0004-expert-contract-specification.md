@@ -10,6 +10,12 @@
 the contract below against that second real example. This ADR's Decision text is unchanged by
 that annotation.
 
+**2026-07-06 annotation:** Sprint 12 extended `/api/line-editor` with an optional `bookContext`
+field — see "Revision (Sprint 12): optional `bookContext`" below, and
+[ADR-0008](ADR-0008-coauthor-expert-contract.md) (Co-author Expert Contract), which records the
+change from the new Expert's side. The Request/Response Schema section above still accurately
+describes the contract when `bookContext` is absent; it is not rewritten by this annotation.
+
 ## Context
 
 [ADR-0002](ADR-0002-expert-contract-vision.md) deliberately deferred the concrete Expert
@@ -190,3 +196,36 @@ Revisit (supersede) this ADR when any of the following occurs:
   revisited at that exact point, not before.
 - The Expert's determinism guarantee is found to be violated in practice (e.g. a future Expert
   or a future version of this one exhibits cross-call memory).
+
+## Revision (Sprint 12): optional `bookContext`
+
+This section is an addition, not a rewrite — the Request/Response Schema section above remains
+the accurate description of this Expert's contract whenever `bookContext` is absent from the
+request.
+
+- **What changed:** `POST /api/line-editor` now also accepts an optional `bookContext` field in
+  its JSON body: `{ text: string, bookContext?: object }`.
+  Source: `apps/studio/src/app/api/line-editor/route.ts:14-16`
+  (`const text = body?.text; const bookContext = body?.bookContext;`).
+- **Backward compatible by construction:** when `bookContext` is absent, `userContent` is
+  `text` unchanged (`route.ts:27-29`) — byte-identical to the pre-Sprint-12 request this ADR
+  originally described. No existing caller of this Expert is required to change.
+- **What did not change: the task.** The system prompt still instructs the model to fix
+  grammar/punctuation/word choice and preserve voice and meaning; the added sentence is
+  explicitly scoped to *consistency only* — "use it only to keep character names and
+  established facts consistent — never use it to rewrite, extend, or add new content beyond the
+  given text." Source: `route.ts:34`. When `bookContext` is present, the user-content prefix
+  repeats the same constraint (`route.ts:28`: "for consistency only... do not use it to rewrite
+  or expand the text beyond what is given below"). Editor did not become a generative Expert —
+  see [ADR-0008](ADR-0008-coauthor-expert-contract.md) for the Expert (Co-author) that owns
+  that generative role, and for the per-Expert context-scope table recording why Editor gets
+  the whole `Book` optionally while Critic/Reader do not get it at all.
+- **Live-verified, not just read from the diff** (Sprint-12-Step-02, repeated in
+  Sprint-12-Step-04 through the real UI path): an unusual character name present only in
+  `bookContext` was preserved verbatim in the edited output, and the output did not expand
+  beyond the scope of the input `text` even though the full book preceded it in the prompt.
+- **"Scope: One Expert" (above) is updated by this revision, not superseded by it:** a fourth
+  visible mode, Co-author, now maps to a *different* Expert (`/api/coauthor`, ADR-0008) rather
+  than relabeling this same one — the claim in that section that "all four visible modes...
+  call this same Expert" is, as of Sprint 12, accurate only for Editor, Critic, and Reader.
+  Ratified as of Sprint 12.

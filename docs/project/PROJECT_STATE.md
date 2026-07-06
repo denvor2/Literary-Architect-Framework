@@ -4,11 +4,11 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-06 (Sprint 11 closing)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 11 are all complete and
-committed; no blocking issues. The data-loss risk that drove Sprint 11's scope (creating a new
-book replaced the previous one) is now resolved — see Current Architecture and
-[ADR-0007](../adr/ADR-0007-multi-book-workspace.md).
+**Last updated:** 2026-07-06 (Sprint 12 closing)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 12 are all complete and
+committed; no blocking issues. Co-author now has a real, generative AI Expert
+([ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md)), resolving the last unmapped Product
+Role from `docs/product/DOMAIN_MODEL.md`'s Open Questions.
 **Current Phase:** Phase 1 (MVP).
 
 ## Source of Truth
@@ -19,13 +19,15 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 11 — Multi-Book Workspace (closed). Replaced the single-book `Workspace` with a
-multi-book one (`books: Book[]`, `activeBookId`); `Book` became a self-contained container for
-its own `chapters`/`characters`; `workspaceStorage.ts` gained a migration for old saved data and
-`normalizeBook()` to defend against missing fields on future `Book` changes.
-[ADR-0007](../adr/ADR-0007-multi-book-workspace.md) ratifies this — the project's first ADR for
-a domain-model change outside the AI Expert Contract family (ADR-0004/0005/0006). See
-[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the full closing summary.
+Sprint 12 — Co-author Expert + Editor Book Context (closed). Built `/api/coauthor`, the
+project's first genuinely generative AI Expert and the first to receive the whole `Book` as
+context; extended `/api/line-editor` with an optional `bookContext` field for consistency only
+(Editor's task did not change); wired both into the AI Bus (`coauthor_draft` operation,
+`improve_text`'s `bookContext` passthrough) and the UI.
+[ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) ratifies the Co-author Expert contract;
+[ADR-0004](../adr/ADR-0004-expert-contract-specification.md) is revised (not superseded) to
+record Editor's optional book-context extension. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for
+the full closing summary.
 
 ## Completed Milestones
 
@@ -113,6 +115,22 @@ a domain-model change outside the AI Expert Contract family (ADR-0004/0005/0006)
   [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) ratifies this — the project's first ADR
   outside the AI Expert Contract family. Committed `385d10e`, `6793fa4`, `3b96695`, `beaab6e`,
   `f99910c`.
+- **Sprint 12** — built the project's fourth AI Expert, Co-author, end to end: `/api/coauthor`
+  backend (discovery implementation, the first genuinely generative Expert — produces a
+  Revision, not a Review — and the first to receive the whole `Book` as context, not just the
+  current scene; `currentText` may be empty for a blank-page draft, `bookContext` is required);
+  `aiBus.execute()`'s fourth dispatch branch (`coauthor_draft`, requiring the previously shared
+  `{ text }` destructure to move into each branch individually since Co-author's payload shape
+  differs); `/api/line-editor` extended with an optional `bookContext` (consistency only, task
+  unchanged, backward compatible); Co-author UI wiring in `EditorArea.tsx` (`handleCoauthor()`,
+  reusing Editor's Original/Improved preview since both produce Revisions); and
+  [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md), ratifying the Co-author Expert
+  contract and resolving `docs/product/DOMAIN_MODEL.md`'s last open Product Role → AI Expert
+  mapping question. [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) revised (not
+  superseded) to record Editor's book-context extension. Two real UI bugs found via Product
+  Owner screenshots and fixed as emergency Step Cards (assistant button label not reflecting
+  mode, then unified to a single "Спросить" label). Committed `05c820c`, `4b2f7c5`, `5ba7929`,
+  `bee042e`, `5785ce2`, `18b4f21`.
 
 ## Current Architecture
 
@@ -120,9 +138,10 @@ a domain-model change outside the AI Expert Contract family (ADR-0004/0005/0006)
   `framework/` (the Expert/workflow/memory system), `prompts/`, and `docs/`. See
   [ADR-0001](../adr/ADR-0001-repository-structure.md).
 - The Expert Contract has been ratified as
-  [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) (Line Editor),
-  [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) (Critic), and
-  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) (Reader) — request/response schema,
+  [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) (Line Editor, revised Sprint 12),
+  [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) (Critic),
+  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) (Reader), and
+  [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) (Co-author) — request/response schema,
   AI Bus v5 chain position, error model, and deterministic behavior, each grounded in a
   file+line citation against the running code. ADR-0004 supersedes
   [ADR-0002](../adr/ADR-0002-expert-contract-vision.md).
@@ -130,15 +149,21 @@ a domain-model change outside the AI Expert Contract family (ADR-0004/0005/0006)
   Workspace change — the first ADR outside this Expert Contract family.
 - The technology stack is fixed by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) —
   any new framework, SDK, or runtime dependency should be checked against it before being added.
-- `apps/studio/` has a working Anthropic integration with three Experts: Line Editor
-  (`/api/line-editor`, Test Connection), Critic (`/api/critic`), and Reader (`/api/reader`), all
-  live-validated with real Claude responses.
-- **AI Bus layering (Sprint 06, extended Sprint 08, Sprint 09):**
+- `apps/studio/` has a working Anthropic integration with four Experts: Line Editor
+  (`/api/line-editor`, Test Connection), Critic (`/api/critic`), Reader (`/api/reader`), and
+  Co-author (`/api/coauthor`), all live-validated with real Claude responses. Line Editor and
+  Co-author both optionally/always (respectively) receive the whole `Book` as context; Critic
+  and Reader remain scene/selection-scoped by design (see ADR-0008's per-Expert context-scope
+  table).
+- **AI Bus layering (Sprint 06, extended Sprint 08/09/12):**
   `UI (page.tsx, orchestration only) → Workspace Controller (useWorkspaceController) →
   Workspace (domain/workspace.ts) → AI Bus (aiBus.execute, dispatches by operation.type) →
   Operation → Context Envelope → Response → Applied Response → /api/line-editor |
-  /api/critic | /api/reader`. `aiBus.execute()` performs real dispatch since Sprint 08 Step 02 —
-  previously `operation.type` was read only decoratively.
+  /api/critic | /api/reader | /api/coauthor`. `aiBus.execute()` performs real dispatch since
+  Sprint 08 Step 02 — previously `operation.type` was read only decoratively. Since Sprint 12,
+  `AIOperation` has four variants with two distinct payload shapes (`{ text, sceneId?,
+  chapterId? }` vs. Co-author's `{ currentText, bookContext }`), and `aiBus.execute()` no longer
+  destructures `text` once at the top — each branch destructures its own payload fields.
 - **Domain Model (extended Sprint 11 — [ADR-0007](../adr/ADR-0007-multi-book-workspace.md)):**
   `Workspace` now holds `books: Book[]` + `activeBookId` (previously a single `book: Book |
   null`); `Book` is a self-contained container — `chapters`/`characters` live inside it, not as
@@ -148,10 +173,13 @@ a domain-model change outside the AI Expert Contract family (ADR-0004/0005/0006)
   `apps/studio/src/storage/workspaceStorage.ts`, which also holds `migrateIfNeeded()` (old-format
   migration) and `normalizeBook()` (centralized field-defaulting for `Book`, a documented
   practice per ADR-0007 for any future field added to `Book`).
-- Product Role → AI Expert mapping: Critic → Critic Expert and Reader → Reader Expert are now
-  both 1:1 ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md),
-  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md)). Co-author and Editor still call the
-  Line Editor Expert under different UI labels — unresolved.
+- Product Role → AI Expert mapping: all four Product Roles now map 1:1 to their own Expert —
+  Critic → Critic Expert ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md)), Reader →
+  Reader Expert ([ADR-0006](../adr/ADR-0006-reader-expert-contract.md)), Editor → Line Editor
+  Expert ([ADR-0004](../adr/ADR-0004-expert-contract-specification.md)), and Co-author →
+  Co-author Expert ([ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md), Sprint 12 —
+  resolving the last unmapped Product Role). Whether Editor should eventually be a composite of
+  several ADR-0002 Experts remains unspecified.
 
 ## Accepted ADRs
 
@@ -160,10 +188,11 @@ a domain-model change outside the AI Expert Contract family (ADR-0004/0005/0006)
 | [ADR-0001](../adr/ADR-0001-repository-structure.md) | Repository Structure | Accepted |
 | [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) | Expert Contract Vision | Superseded by ADR-0004 |
 | [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) | Technology Stack Strategy | Accepted |
-| [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) | Expert Contract Specification | Accepted |
+| [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) | Expert Contract Specification | Accepted, revised Sprint 12 |
 | [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) | Critic Expert Contract | Accepted |
 | [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) | Reader Expert Contract | Accepted |
 | [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) | Multi-Book Workspace | Accepted |
+| [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) | Co-author Expert Contract | Accepted |
 
 ## Technology Stack
 
@@ -182,13 +211,16 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 ## Current Priorities
 
 1. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
-2. Scope Sprint 12 into Step Cards — no scope defined yet.
+2. Scope Sprint 13 into Step Cards — no scope defined yet, though the vision document
+   (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 15) names what is expected to land
+   there: assistant-switcher UI consolidation, mode persistence, and the Co-author/Editor chat
+   mechanism, bundled together.
 
 ## Open Decisions
 
 - **Pricing and detailed security requirements** — Sprint 02 conclusions not yet backfilled;
   see `docs/vision/pricing.md` and `docs/vision/security.md`.
-- **Sprint 12 scope** — not defined. Requires a Product Owner / Architect planning pass before
+- **Sprint 13 scope** — not defined. Requires a Product Owner / Architect planning pass before
   any implementation work starts.
 
 ## Known Risks
@@ -207,5 +239,5 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-None defined. Sprint 11 is closed; Sprint 12 has not been started and has no scope in this
+None defined. Sprint 12 is closed; Sprint 13 has not been started and has no scope in this
 repository yet.

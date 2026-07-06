@@ -1,3 +1,56 @@
+# ARP — Sprint-12-Step-04
+
+**Шаг:** UI: подключить Co-author + расширить Editor контекстом книги
+**Статус выполнения:** Готово к ревью
+
+## Что сделано, по пунктам Step Card
+
+### 1. Co-author — подключён реально
+
+Добавлена `handleCoauthor()` — использует `text` целиком (весь текст сцены — проп `SceneImprove`
+получает от родителя, не `getSelectedText()`), вызывает `coauthor_draft` с `bookContext: book`.
+Вывод переиспользует уже существующую generic-ветку `if (status === "preview")` (Original/
+Improved + "Заменить текст"/"Оставить как есть") — новая ветка не понадобилась, поскольку
+Co-author производит Revision, как и Editor, просто через другой backend.
+
+`SceneImprove` получил новый обязательный проп `book: Book` (родитель, `EditorArea`, уже
+гарантирует, что `book` не `null` в этой точке — компонент вообще не рендерится без книги).
+Кнопка в call site (`<SceneImprove book={book} .../>`) обновлена соответствующе.
+
+### 2. Editor — расширен контекстом книги
+
+`handleImprove()` теперь передаёт `bookContext: book` в payload `improve_text`, рядом с уже
+существующим `text`. Остальная логика (`getSelectedText()`, preview, кнопки) не менялась.
+
+### 3. Critic/Reader — не тронуты
+
+`handleCritic`/`handleReader` — без изменений, оба вне таблицы контекстов.
+
+## Отклонения от Step Card — два замеченных и исправленных попутных дефекта
+
+Оба — в пределах единственного Allowed path (`EditorArea.tsx`), не расширение объёма задачи, а
+необходимое условие для того, чтобы явно требуемая Step Card живая проверка ("нажать 'Co-author'
+на сцене (пустой и непустой)") вообще была осуществима:
+
+1. **Общая кнопка "Редактор" была задизейблена при пустом тексте сцены для ЛЮБОГО режима**
+   (`disabled={status === "loading" || text.trim().length === 0}`), включая Co-author — но
+   Co-author по своему собственному контракту (Sprint-12-Step-01) обязан работать на пустой
+   сцене (черновик с нуля). Без исправления кнопку было бы физически невозможно нажать на
+   пустой сцене — Step Card's же живая проверка была бы невыполнима. Исправлено: дизейблинг по
+   пустому тексту теперь применяется ко всем режимам, КРОМЕ Co-author
+   (`mode !== "Co-author" && text.trim().length === 0`).
+2. **Модульный комментарий над `AssistantMode`** ("Perception layer only: every mode calls the
+   exact same /api/line-editor endpoint...") был уже неточен до этого шага (Critic/Reader давно
+   получили свои эндпоинты), но с подключением Co-author стал ещё более явно неверным прямо
+   рядом с новым кодом, который его опровергает. Переписан, чтобы отражать текущую реальность
+   (какой режим на самом деле каким эндпоинтом обслуживается), без изменения по существу — чисто
+   документационная правка.
+
+## Изменённый файл целиком
+
+### apps/studio/src/components/EditorArea.tsx
+
+```tsx
 import { useRef, useState } from "react";
 import * as aiBus from "@/ai/aiBus";
 import type { Book, Chapter } from "@/domain/model";
@@ -888,3 +941,50 @@ export function EditorArea({
     </main>
   );
 }
+```
+
+## Валидация
+
+```
+npx tsc --noEmit → 0 ошибок
+npm run build → успешно (Compiled successfully)
+npm run lint  → чисто
+npx prettier --check → чисто
+git status --short → ровно 1 файл (EditorArea.tsx, M) — единственный Allowed path
+```
+
+### Живая проверка — реальный `aiBus.execute()` против запущенного сервера
+
+Нет браузера — та же честная оговорка, что и всегда. Вместо кликов воспроизвёл ровно то, что
+теперь вызывают `handleCoauthor()`/`handleImprove()` — реальный `aiBus.execute()` с теми же
+payload, что строит новый код, против настоящего `next start` (порт 4177).
+
+**Co-author на пустой сцене** (`currentText: ""`, `bookContext` с персонажем "Гризельда Ковач",
+премиз про неё же):
+```
+Co-author (empty scene) result (first 200 chars): "Рынок Аркона просыпался раньше солнца...
+                                                     Гризельда Ковач шла между рядами..."
+PASS: reflects book context (character name)
+```
+
+**Co-author на непустой сцене** (`currentText`, содержащий начало сцены с тем же персонажем):
+результат продолжает именно эту сцену (см. Sprint-12-Step-01's аналогичную проверку —
+поведение идентично, здесь дополнительно подтверждено, что вызов из UI-кода строит тот же
+payload).
+
+**Editor с `bookContext`** (необычное имя персонажа тем же алфавитом, что и текст — избегая
+транслитерации, которая исказила бы вывод предыдущей неудачной попытки теста с
+кириллицей-в-английском-предложении — честно отмечаю, что моя первая попытка теста была
+некорректно сконструирована, вторая попытка с самосогласованными данными прошла):
+```
+Editor (with bookContext, same-script name) result: "Zhefyrinne walked into the room, and she
+                                                       didn't know what to do."
+PASS: unusual same-script character name preserved
+PASS: did not expand into new scenes (stayed short)
+```
+
+## Стоп-условие
+
+Не коммичу — жду `REVIEW.md` со `STATUS: OK` от Architect.
+
+Жду REVIEW.md.

@@ -4,9 +4,11 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-05 (Sprint 09 closing)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 09 are all complete and
-committed; no blocking issues. See Known Risks for open, non-blocking items.
+**Last updated:** 2026-07-06 (Sprint 10 closing)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 10 are all complete and
+committed; no blocking issues. See Known Risks for open, non-blocking items — notably a
+newly-discovered data-loss risk (creating a new book replaces the previous one) driving Sprint
+11's scope.
 **Current Phase:** Phase 1 (MVP).
 
 ## Source of Truth
@@ -17,9 +19,13 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 09 — Third AI Expert: Reader (closed). All four steps (backend, AI Bus dispatch, UI
-wiring, ADR-0006 + closeout) complete. See
-[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the closing summary.
+Sprint 10 — Characters + Chapter/Scene parity (closed). Character introduced as a new domain
+entity with its own editing panel; Chapter gained a `subtitle` field and editing panel; Scene
+gained an editable title; navigation and creation-button conventions unified
+(`docs/design/UI_STYLE_GUIDE.md`, new this sprint); two real bugs found and fixed along the way.
+**No ADR produced** — this was a pure domain/UI extension, no new AI Expert, no AI Bus change;
+ADR-0004/0005/0006 remain the complete Expert Contract set. See
+[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the full closing summary.
 
 ## Completed Milestones
 
@@ -84,6 +90,19 @@ wiring, ADR-0006 + closeout) complete. See
   and resolving `docs/product/DOMAIN_MODEL.md`'s Product Role → AI Expert mapping question for
   Reader specifically (Co-author/Editor remain unresolved). Committed `5418ff3`, `bb9df12`,
   `6ad8aac`.
+- **Sprint 10** — Character introduced as a new domain entity (`id`/`name`/`description`/
+  `notes`/`photoUrl`) with its own editing panel, auto-selection on creation, and a red-accented
+  delete button; Chapter gained a `subtitle` field and its own editing panel; Scene gained an
+  editable title (separate from its text content) and auto-selection on creation, including
+  when created for a non-currently-selected chapter; Sidebar navigation gained a path back to
+  the book overview and unified creation buttons for Book/Chapter/Scene/Character; new
+  `docs/design/UI_STYLE_GUIDE.md` codified button/color conventions, applied retroactively.
+  Two real bugs found and fixed: a Scene-highlight collision across chapters with colliding
+  ids, and controlled/uncontrolled input warnings on pre-sprint saved data missing new fields.
+  **No ADR produced this sprint** — pure domain/UI extension, no new AI Expert or AI Bus
+  change; not an oversight, see [CURRENT_SPRINT.md](CURRENT_SPRINT.md). Committed `0e0668c`,
+  `2a0107b`, `03f0b0e`, `d4c7172`, `3b62f5f`, `3159229`, plus several small fix/UX commits in
+  the same window (see CURRENT_SPRINT.md's Tasks list for the complete, honest set).
 
 ## Current Architecture
 
@@ -108,8 +127,8 @@ wiring, ADR-0006 + closeout) complete. See
   Operation → Context Envelope → Response → Applied Response → /api/line-editor |
   /api/critic | /api/reader`. `aiBus.execute()` performs real dispatch since Sprint 08 Step 02 —
   previously `operation.type` was read only decoratively.
-  Domain types (`Book`/`Chapter`/`Scene`/`Workspace`) live in `apps/studio/src/domain/` as the
-  single source of truth; `localStorage` access is isolated in
+  Domain types (`Book`/`Chapter`/`Scene`/`Character`/`Workspace`) live in
+  `apps/studio/src/domain/` as the single source of truth; `localStorage` access is isolated in
   `apps/studio/src/storage/workspaceStorage.ts`.
 - Product Role → AI Expert mapping: Critic → Critic Expert and Reader → Reader Expert are now
   both 1:1 ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md),
@@ -144,17 +163,23 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 ## Current Priorities
 
 1. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
-2. Decide Sprint 10 scope — not yet started, no plan exists in the repository.
+2. Scope Sprint 11 (multi-book support) into Step Cards — elevated above the previously-planned
+   Co-author work due to a data-loss risk found during Sprint 10 (creating a new book replaces
+   the previous one with no recovery path).
 
 ## Open Decisions
 
 - **Pricing and detailed security requirements** — Sprint 02 conclusions not yet backfilled;
   see `docs/vision/pricing.md` and `docs/vision/security.md`.
-- **Sprint 10 scope** — not defined. Requires a Product Owner / Architect planning pass
-  before any implementation work starts.
+- **Sprint 11 scope (multi-book support)** — prioritized, not yet broken into Step Cards.
+  Requires a Product Owner / Architect planning pass before any implementation work starts.
 
 ## Known Risks
 
+- **Data loss on new book creation** — creating a new book via `NewBookDialog` completely
+  replaces the previous book's `Workspace` (single-book storage model, unchanged since Sprint
+  05); there is no multi-book support and no recovery path. Discovered during Sprint 10 live
+  testing; drives Sprint 11's scope. This is the most significant currently-known risk.
 - Sprint 02 decisions (pricing, detailed security requirements) remain partially undocumented
   in-repo.
 - Sprint 06's commit (`f82f650`) necessarily bundled the entire, previously-never-committed
@@ -164,5 +189,6 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-None defined. Sprint 09 is closed; Sprint 10 has not been started and has no scope in this
-repository yet.
+Sprint 11 — multi-book support, prioritized above the previously-planned Co-author work because
+of the data-loss risk above. Sprint 10 is closed; Sprint 11 has not been broken into Step Cards
+yet.

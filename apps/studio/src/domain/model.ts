@@ -23,10 +23,13 @@ export type Chapter = {
 };
 
 export type Book = {
+  readonly id: string;
   readonly title: string;
   readonly genre: string;
   readonly language: string;
   readonly premise: string;
+  readonly chapters: readonly Chapter[];
+  readonly characters: readonly Character[];
 };
 
 export type Character = {

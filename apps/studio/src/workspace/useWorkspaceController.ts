@@ -9,11 +9,10 @@ import { loadWorkspace, saveWorkspace } from "@/storage/workspaceStorage";
 // below) — must match server render, so it cannot itself call
 // loadWorkspace(), which depends on window.localStorage.
 const EMPTY_WORKSPACE: Workspace = {
-  book: null,
-  chapters: [],
+  books: [],
+  activeBookId: null,
   selectedChapterId: null,
   selectedSceneId: null,
-  characters: [],
   selectedCharacterId: null,
 };
 
@@ -21,15 +20,21 @@ const EMPTY_WORKSPACE: Workspace = {
 // extracted unchanged from page.tsx (Sprint 06 Step 09). No new behavior:
 // each exported function here is a straight move of the previous handler,
 // same body, same call sites.
+//
+// Sprint-11-Step-01: rewritten for multi-book Workspace. Every mutation that
+// used to read/write `previous.chapters`/`previous.characters` directly now
+// finds the active Book via `previous.activeBookId`, applies the change to
+// that Book's chapters/characters, and writes the updated Book back into
+// `books` (immutable map over `books`, the same way every function used to
+// map over `chapters`).
 export function useWorkspaceController() {
   const [workspace, setWorkspace] = useState<Workspace>(EMPTY_WORKSPACE);
   const [isLoaded, setIsLoaded] = useState(false);
   const {
-    book,
-    chapters,
+    books,
+    activeBookId,
     selectedChapterId,
     selectedSceneId,
-    characters,
     selectedCharacterId,
   } = workspace;
 
@@ -52,6 +57,9 @@ export function useWorkspaceController() {
     saveWorkspace(workspace);
   }, [workspace, isLoaded]);
 
+  const activeBook = books.find((book) => book.id === activeBookId);
+  const chapters = activeBook?.chapters ?? [];
+  const characters = activeBook?.characters ?? [];
   const selectedChapter = chapters.find(
     (chapter) => chapter.id === selectedChapterId,
   );
@@ -62,28 +70,49 @@ export function useWorkspaceController() {
     (character) => character.id === selectedCharacterId,
   );
 
-  function createBook(newBook: Book) {
-    setWorkspace({
-      book: newBook,
-      chapters: [
-        {
-          id: "1",
-          title: "Chapter 1",
-          subtitle: "",
-          scenes: [{ id: "1", title: "Scene 1", text: "" }],
-        },
-      ],
-      selectedChapterId: null,
-      selectedSceneId: null,
-      // A new book starts with no characters — the writer adds them later.
-      characters: [],
-      selectedCharacterId: null,
+  // Sprint-11-Step-01 TEMPORARY ALIAS: exported as `book` so the current
+  // (not-yet-updated) page.tsx/components keep compiling against a single
+  // active book for one more step. Remove when Step 02 updates the UI layer
+  // to consume `books`/`activeBookId` directly.
+  const book = activeBook ?? null;
+
+  function createBook(
+    newBookData: Omit<Book, "id" | "chapters" | "characters">,
+  ) {
+    setWorkspace((previous) => {
+      const nextNumber = previous.books.length + 1;
+      const newBook: Book = {
+        id: String(nextNumber),
+        ...newBookData,
+        chapters: [
+          {
+            id: "1",
+            title: "Chapter 1",
+            subtitle: "",
+            scenes: [{ id: "1", title: "Scene 1", text: "" }],
+          },
+        ],
+        // A new book starts with no characters — the writer adds them later.
+        characters: [],
+      };
+      return {
+        ...previous,
+        books: [...previous.books, newBook],
+        activeBookId: newBook.id,
+        selectedChapterId: null,
+        selectedSceneId: null,
+        selectedCharacterId: null,
+      };
     });
   }
 
   function createChapter() {
     setWorkspace((previous) => {
-      const nextNumber = previous.chapters.length + 1;
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      const nextNumber = activeBook.chapters.length + 1;
       const newChapter: Chapter = {
         id: String(nextNumber),
         title: `Chapter ${nextNumber}`,
@@ -92,7 +121,11 @@ export function useWorkspaceController() {
       };
       return {
         ...previous,
-        chapters: [...previous.chapters, newChapter],
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? { ...book, chapters: [...book.chapters, newChapter] }
+            : book,
+        ),
         selectedChapterId: newChapter.id,
         selectedSceneId: null,
         selectedCharacterId: null,
@@ -104,19 +137,38 @@ export function useWorkspaceController() {
     chapterId: string,
     fields: Partial<Pick<Chapter, "title" | "subtitle">>,
   ) {
-    setWorkspace((previous) => ({
-      ...previous,
-      chapters: previous.chapters.map((chapter) =>
-        chapter.id === chapterId ? { ...chapter, ...fields } : chapter,
-      ),
-    }));
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                chapters: book.chapters.map((chapter) =>
+                  chapter.id === chapterId
+                    ? { ...chapter, ...fields }
+                    : chapter,
+                ),
+              }
+            : book,
+        ),
+      };
+    });
   }
 
   function createScene(chapterId?: string) {
     setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
       const targetChapterId = chapterId ?? previous.selectedChapterId;
       if (!targetChapterId) return previous;
-      const targetChapter = previous.chapters.find(
+      const targetChapter = activeBook.chapters.find(
         (chapter) => chapter.id === targetChapterId,
       );
       if (!targetChapter) return previous;
@@ -124,16 +176,27 @@ export function useWorkspaceController() {
       const newSceneId = String(nextNumber);
       return {
         ...previous,
-        chapters: previous.chapters.map((chapter) =>
-          chapter.id === targetChapterId
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
             ? {
-                ...chapter,
-                scenes: [
-                  ...chapter.scenes,
-                  { id: newSceneId, title: `Scene ${nextNumber}`, text: "" },
-                ],
+                ...book,
+                chapters: book.chapters.map((chapter) =>
+                  chapter.id === targetChapterId
+                    ? {
+                        ...chapter,
+                        scenes: [
+                          ...chapter.scenes,
+                          {
+                            id: newSceneId,
+                            title: `Scene ${nextNumber}`,
+                            text: "",
+                          },
+                        ],
+                      }
+                    : chapter,
+                ),
               }
-            : chapter,
+            : book,
         ),
         selectedChapterId: targetChapterId,
         selectedSceneId: newSceneId,
@@ -143,33 +206,59 @@ export function useWorkspaceController() {
   }
 
   function updateSceneText(chapterId: string, sceneId: string, text: string) {
-    setWorkspace((previous) => ({
-      ...previous,
-      chapters: previous.chapters.map((chapter) => {
-        if (chapter.id !== chapterId) return chapter;
-        return {
-          ...chapter,
-          scenes: chapter.scenes.map((scene) =>
-            scene.id === sceneId ? { ...scene, text } : scene,
-          ),
-        };
-      }),
-    }));
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                chapters: book.chapters.map((chapter) => {
+                  if (chapter.id !== chapterId) return chapter;
+                  return {
+                    ...chapter,
+                    scenes: chapter.scenes.map((scene) =>
+                      scene.id === sceneId ? { ...scene, text } : scene,
+                    ),
+                  };
+                }),
+              }
+            : book,
+        ),
+      };
+    });
   }
 
   function updateSceneTitle(chapterId: string, sceneId: string, title: string) {
-    setWorkspace((previous) => ({
-      ...previous,
-      chapters: previous.chapters.map((chapter) => {
-        if (chapter.id !== chapterId) return chapter;
-        return {
-          ...chapter,
-          scenes: chapter.scenes.map((scene) =>
-            scene.id === sceneId ? { ...scene, title } : scene,
-          ),
-        };
-      }),
-    }));
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                chapters: book.chapters.map((chapter) => {
+                  if (chapter.id !== chapterId) return chapter;
+                  return {
+                    ...chapter,
+                    scenes: chapter.scenes.map((scene) =>
+                      scene.id === sceneId ? { ...scene, title } : scene,
+                    ),
+                  };
+                }),
+              }
+            : book,
+        ),
+      };
+    });
   }
 
   function selectChapter(chapterId: string) {
@@ -192,7 +281,11 @@ export function useWorkspaceController() {
 
   function createCharacter() {
     setWorkspace((previous) => {
-      const nextNumber = previous.characters.length + 1;
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      const nextNumber = activeBook.characters.length + 1;
       const newCharacter: Character = {
         id: String(nextNumber),
         name: "",
@@ -202,7 +295,11 @@ export function useWorkspaceController() {
       };
       return {
         ...previous,
-        characters: [...previous.characters, newCharacter],
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? { ...book, characters: [...book.characters, newCharacter] }
+            : book,
+        ),
         selectedCharacterId: newCharacter.id,
         selectedChapterId: null,
         selectedSceneId: null,
@@ -216,21 +313,49 @@ export function useWorkspaceController() {
       Pick<Character, "name" | "description" | "notes" | "photoUrl">
     >,
   ) {
-    setWorkspace((previous) => ({
-      ...previous,
-      characters: previous.characters.map((character) =>
-        character.id === characterId ? { ...character, ...fields } : character,
-      ),
-    }));
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                characters: book.characters.map((character) =>
+                  character.id === characterId
+                    ? { ...character, ...fields }
+                    : character,
+                ),
+              }
+            : book,
+        ),
+      };
+    });
   }
 
   function deleteCharacter(characterId: string) {
-    setWorkspace((previous) => ({
-      ...previous,
-      characters: previous.characters.filter(
-        (character) => character.id !== characterId,
-      ),
-    }));
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                characters: book.characters.filter(
+                  (character) => character.id !== characterId,
+                ),
+              }
+            : book,
+        ),
+      };
+    });
   }
 
   function selectCharacter(characterId: string) {
@@ -242,7 +367,29 @@ export function useWorkspaceController() {
     }));
   }
 
-  function selectBook() {
+  // Sprint-11-Step-01: replaces the previous zero-argument `selectBook()`
+  // (Sprint 10 Step 04 — "deselect chapter/scene/character, return to the
+  // current book's overview"). That was a naming collision, not the same
+  // operation — switching the active book and returning to the current
+  // book's overview are two different actions and always needed separate
+  // names. This `selectBook` switches which book is active; the restored
+  // "return to overview" behavior lives in `deselectAll()` below.
+  function selectBook(bookId: string) {
+    setWorkspace((previous) => ({
+      ...previous,
+      activeBookId: bookId,
+      selectedChapterId: null,
+      selectedSceneId: null,
+      selectedCharacterId: null,
+    }));
+  }
+
+  // Restores the Sprint-10-Step-04 "return to book overview" behavior,
+  // lost when selectBook() was repurposed in Sprint-11-Step-01 to mean
+  // "switch active book" instead. Deliberately does not touch
+  // activeBookId — only clears the chapter/scene/character selection
+  // within the currently active book.
+  function deselectAll() {
     setWorkspace((previous) => ({
       ...previous,
       selectedChapterId: null,
@@ -254,6 +401,8 @@ export function useWorkspaceController() {
   return {
     workspace,
     book,
+    books,
+    activeBookId,
     chapters,
     selectedChapterId,
     selectedSceneId,
@@ -275,5 +424,6 @@ export function useWorkspaceController() {
     deleteCharacter,
     selectCharacter,
     selectBook,
+    deselectAll,
   };
 }

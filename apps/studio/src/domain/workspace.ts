@@ -1,10 +1,9 @@
-import type { Book, Chapter, Character } from "./model";
+import type { Book } from "./model";
 
 export type Workspace = {
-  book: Book | null;
-  chapters: readonly Chapter[];
+  books: readonly Book[];
+  activeBookId: string | null;
   selectedChapterId: string | null;
   selectedSceneId: string | null;
-  characters: readonly Character[];
   selectedCharacterId: string | null;
 };

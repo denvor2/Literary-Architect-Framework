@@ -567,7 +567,7 @@ function SceneImprove({
         }
         className="self-start rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
       >
-        {status === "loading" ? info.preamble : mode}
+        {status === "loading" ? info.preamble : "Спросить"}
       </button>
       {status === "error" && (
         <p className="text-sm text-red-600 dark:text-red-400">

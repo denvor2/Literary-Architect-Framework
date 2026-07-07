@@ -20,52 +20,87 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 06 (Architecture Refactor) is closed. Sprint 07 has not been started and has no
-defined scope. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for live status.
+Sprint 13 (unified chat mechanism for all four Product Roles) is in progress. Steps 01-03 are
+committed: `assistantThreads` domain model + persisted assistant mode (Step 01); all four Expert
+routes accept client-managed `messages` history, server stays stateless (Step 02); AI Bus
+operations use `sceneText` + `messages` (Step 03). Step 04 (workspace-controller mutations —
+`appendMessage`/`createThread`) is active, awaiting Architect review before commit. Sprints
+06 through 12 are all closed. As of this update, [CURRENT_SPRINT.md](CURRENT_SPRINT.md) itself
+has not yet been refreshed past Sprint 12's closing — `git log` and `docs/task-bus/queue/done/`
+are the more current source until it is; treat this note as temporary and remove it once
+CURRENT_SPRINT.md is updated to match.
 
 ## Architecture
 
 - Repository is an ecosystem monorepo, not just an app: `apps/` (delivery applications) sits
   alongside `framework/` (the Expert/workflow/memory system), `prompts/`, and `docs/`. See
   [ADR-0001](../adr/ADR-0001-repository-structure.md).
-- The Expert Contract is deliberately not yet designed — evolutionary architecture. The first
-  Expert implementation is expected to *discover* the contract, not implement a predefined one.
-  See [ADR-0002](../adr/ADR-0002-expert-contract-vision.md).
+- The Expert Contract, originally left deliberately undesigned (evolutionary architecture — see
+  the now-superseded [ADR-0002](../adr/ADR-0002-expert-contract-vision.md)), was discovered from
+  the Line Editor implementation and ratified as
+  [ADR-0004](../adr/ADR-0004-expert-contract-specification.md), then reused for three more
+  Experts: [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) (Critic),
+  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) (Reader), and
+  [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) (Co-author). All four Product Roles
+  now have a ratified Expert contract — this is no longer an open architectural question.
 - The technology stack (below) is fixed by
   [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) — check it before adding any new
   framework, SDK, or runtime dependency.
 
 ## Current Status
 
-- `apps/studio/` is a working Literary Studio MVP: Book → Chapter → Scene structure, a real
-  scene text editor, AI-assisted editing via the Line Editor Expert, Focus Mode, and
-  `localStorage` persistence (all from Sprint 05) — layered on top of a domain-driven
-  architecture (from Sprint 06).
-- **Architecture (post-Sprint-06):**
+- `apps/studio/` is a working Literary Studio MVP: multi-book Workspace (`books: Book[]` +
+  `activeBookId`, Sprint 11), Book → Chapter → Scene structure, Characters, a real scene text
+  editor, Focus Mode, and `localStorage` persistence — layered on a domain-driven architecture
+  (Sprint 06) with four live AI Experts.
+- **AI Experts (all live-validated with real Claude responses):** Line Editor (`/api/line-editor`,
+  Sprint 04), Critic (`/api/critic`, Sprint 08), Reader (`/api/reader`, Sprint 09), Co-author
+  (`/api/coauthor`, Sprint 12 — the first genuinely generative Expert, receiving the whole `Book`
+  as context). All four Product Roles now map 1:1 to their own Expert. As of Sprint 13 Step 02,
+  all four routes accept a client-managed `messages` history array — the server remains
+  stateless (ADR-0004); nothing is persisted between calls.
+- **Architecture:**
   `UI (page.tsx, orchestration only) → Workspace Controller (useWorkspaceController) →
-  Workspace (domain/workspace.ts) → AI Bus (aiBus.execute) → Operation → Context Envelope →
-  Response → Applied Response → /api/line-editor (unchanged since Sprint 04)`.
-  - `apps/studio/src/domain/` — single source of truth for `Book`/`Chapter`/`Scene`/`Workspace`.
+  Workspace (domain/workspace.ts) → AI Bus (aiBus.execute, dispatches by operation.type) →
+  Operation → Context Envelope → Response → Applied Response → /api/line-editor | /api/critic |
+  /api/reader | /api/coauthor`.
+  - `apps/studio/src/domain/` — single source of truth for
+    `Book`/`Chapter`/`Scene`/`Character`/`Workspace`. `Book` also holds `assistantThreads`
+    (Sprint 13 Step 01) — one or more named dialogs per Product Role (Co-author/Editor: always
+    one continuous thread; Critic/Reader: may hold several).
   - `apps/studio/src/ai/` — AI Bus v5 contracts (`operations.ts`, `context.ts`, `response.ts`,
-    `applier.ts`, `aiBus.ts`).
-  - `apps/studio/src/storage/workspaceStorage.ts` — the only place that touches `localStorage`.
+    `applier.ts`, `aiBus.ts`). Since Sprint 13 Step 03, `AIOperation` payloads use `sceneText`
+    (not `text`/`currentText`) plus a required `messages` array.
+  - `apps/studio/src/storage/workspaceStorage.ts` — the only place that touches `localStorage`;
+    also holds `migrateIfNeeded()` (old single-book format) and `normalizeBook()` (centralized
+    field-defaulting for `Book`).
   - `apps/studio/src/workspace/useWorkspaceController.ts` — owns all `Workspace` state and
-    mutation logic.
-- **Known gap:** `apps/studio/src/components/LineEditorPanel.tsx` still calls
-  `/api/line-editor` directly, bypassing the AI Bus — out of scope for every Sprint 06 step,
-  carried forward as an open item.
+    mutation logic. As of Sprint 13 Step 04 (active, not yet committed), also owns
+    `appendMessage`/`createThread` for `assistantThreads`.
+- `apps/studio/src/components/LineEditorPanel.tsx` no longer bypasses the AI Bus — routed through
+  `aiBus.execute()` since Sprint 07 Step 02. The previously tracked "known gap" here is closed.
+- Sprint 13 Steps 01-03 changed the AI Bus operation payload shape (`text`/`currentText` →
+  `sceneText`); the UI layer (`EditorArea.tsx`, `LineEditorPanel.tsx`, `NewBookDialog.tsx`) has
+  not been updated yet (Step 05, not started) — `npx tsc --noEmit` will show errors confined to
+  those files until then. This is expected, not a regression.
 - `framework/`, `prompts/`, `templates/`, `examples/`, `tests/`, `assets/` are still empty
   scaffolding from Sprint 01.
 - Documentation (this file included) was substantially expanded in Sprint 03 via an
-  Architecture Review process, and again updated at Sprint 06 closeout.
+  Architecture Review process, updated at Sprint 06 closeout, and refreshed again here mid
+  Sprint 13 after drift was found at a new session's bootstrap.
 
 ## Accepted ADRs
 
 | ADR | Title | Status |
 |-----|-------|--------|
 | [ADR-0001](../adr/ADR-0001-repository-structure.md) | Repository Structure | Accepted |
-| [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) | Expert Contract Vision | Proposed |
+| [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) | Expert Contract Vision | Superseded by ADR-0004 |
 | [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) | Technology Stack Strategy | Accepted |
+| [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) | Expert Contract Specification | Accepted, revised Sprint 12 |
+| [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) | Critic Expert Contract | Accepted |
+| [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) | Reader Expert Contract | Accepted |
+| [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) | Multi-Book Workspace | Accepted |
+| [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) | Co-author Expert Contract | Accepted |
 
 ## Current Tech Stack
 
@@ -83,18 +118,22 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-None defined in the repository. Sprint 06 is closed; Sprint 07 has not been scoped. Scoping
-the next sprint is a Product Owner / Architect decision that has not yet been made — do not
-start implementation work under an assumed Sprint 07 scope.
+Sprint 13 Step 04 (`useWorkspaceController.ts` — `appendMessage`/`createThread` mutations) is
+implemented and has an ARP in `docs/task-bus/queue/active/`, awaiting `STATUS: OK` from the
+Architect before commit. After that, Step 05 (wire the new mutations into the UI — the
+assistant-switcher consolidation and chat mechanism described in
+`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 15) is expected next, though it is not
+yet a scoped Step Card in this repository.
 
 ## Current Priorities
 
-1. Formalize the Expert Contract extraction (Sprint 04) as the superseding ADR that
-   [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) calls for — still pending.
-2. Backfill remaining Sprint 02 context (pricing, security) — see
+1. Get Sprint 13 Step 04 reviewed and committed.
+2. Scope and implement Sprint 13 Step 05 (UI wiring for the chat mechanism).
+3. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
-   [docs/vision/security.md](../vision/security.md), both placeholders.
-3. Decide Sprint 07 scope with the Product Owner / Architect.
+   [docs/vision/security.md](../vision/security.md), both still placeholders.
+4. [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) has already been superseded by
+   [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) — no longer an open item.
 
 ## Working Style
 
@@ -105,8 +144,10 @@ continuing.
 
 ## Important Rules
 
-- **Evolutionary architecture:** do not design the Expert Contract, or add a second Expert,
-  before the Line Editor implementation validates one. See ADR-0002's Review Trigger.
+- **Evolutionary architecture:** the principle still applies to future, not-yet-built
+  capabilities — earn contracts from a working example before generalizing them. The specific
+  historical trigger (don't add a second Expert before the Line Editor validates the contract)
+  is resolved: the Expert Contract is ratified (ADR-0004) and reused by three more Experts.
 - **Documentation-first discipline:** architectural decisions get an ADR; sprint work gets a
   report in `docs/reports/`; project snapshots live in `docs/project/`. Don't let decisions
   live only in conversation.
@@ -119,8 +160,9 @@ continuing.
 
 ## Avoid
 
-- Designing the Expert Contract, or adding a second Expert, before the Line Editor discovers
-  the contract (see ADR-0002's Review Trigger).
+- Speculatively designing contracts for capabilities that don't exist yet — earn them from a
+  working example first (the general evolutionary-architecture principle; the specific
+  historical Expert Contract instance of it is resolved, see Architecture above).
 - Committing without an Architecture Review pass, or committing on someone else's behalf.
 - Adding functionality, dependencies, or scope beyond what was explicitly requested.
 - Treating conversation history as a source of truth — if a decision isn't in the repository,

@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Book, Chapter, Character } from "@/domain/model";
+import type {
+  AssistantThread,
+  Book,
+  Chapter,
+  ChatMessage,
+  Character,
+} from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
 import { loadWorkspace, saveWorkspace } from "@/storage/workspaceStorage";
 
@@ -446,6 +452,86 @@ export function useWorkspaceController() {
     }));
   }
 
+  // Sprint-13-Step-04: appends to the active dialog (last element of the
+  // role's thread array) — see createThread() below for how "active" is
+  // defined for Critic/Reader (multiple threads) vs Co-author/Editor
+  // (always threads[0], the array's only and therefore also last element).
+  function appendMessage(
+    mode: "coauthor" | "editor" | "critic" | "reader",
+    message: ChatMessage,
+  ) {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      const threads = activeBook.assistantThreads[mode];
+      const lastIndex = threads.length - 1;
+      const updatedThreads = threads.map((thread, index) =>
+        index === lastIndex
+          ? { ...thread, messages: [...thread.messages, message] }
+          : thread,
+      );
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                assistantThreads: {
+                  ...book.assistantThreads,
+                  [mode]: updatedThreads,
+                },
+              }
+            : book,
+        ),
+      };
+    });
+  }
+
+  // Adds a new empty dialog at the end of the role's thread array, which
+  // (by the "active = last element" rule above) immediately becomes active.
+  function createThread(mode: "coauthor" | "editor" | "critic" | "reader") {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      const threads = activeBook.assistantThreads[mode];
+      const nextNumber = threads.length + 1;
+      const newThread: AssistantThread = {
+        id: String(nextNumber),
+        name: `Диалог ${nextNumber}`,
+        messages: [],
+      };
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                assistantThreads: {
+                  ...book.assistantThreads,
+                  [mode]: [...threads, newThread],
+                },
+              }
+            : book,
+        ),
+      };
+    });
+  }
+
+  // Derived convenience value for Step 05's UI — the active dialog per role
+  // of the active book (last element of each role's thread array).
+  const activeThreads = activeBook
+    ? {
+        coauthor: activeBook.assistantThreads.coauthor.at(-1),
+        editor: activeBook.assistantThreads.editor.at(-1),
+        critic: activeBook.assistantThreads.critic.at(-1),
+        reader: activeBook.assistantThreads.reader.at(-1),
+      }
+    : undefined;
+
   return {
     workspace,
     activeBook,
@@ -475,5 +561,8 @@ export function useWorkspaceController() {
     selectBook,
     deselectAll,
     selectAssistantMode,
+    appendMessage,
+    createThread,
+    activeThreads,
   };
 }

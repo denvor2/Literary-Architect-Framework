@@ -1,137 +1,115 @@
 # Current Sprint
 
-**Sprint 12 — Co-author Expert + Editor Book Context** — **closed**
+**Sprint 13 — Unified Chat Mechanism for All Four Product Roles** — **in progress**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
-sprint in progress. History for Sprint 06/08/09/10/11 lives in `docs/reports/SPRINT_06_REPORT.md`
-/ this file's own git history; Sprint 12 has no separate closeout report at this time.
+sprint in progress. History for Sprint 06/08/09/10/11/12 lives in
+`docs/reports/SPRINT_06_REPORT.md` / this file's own git history.
 
-- **Status:** Closed. All 5 planned steps plus 2 emergency fixes completed, validated, and
-  committed.
+**This file is only updated at sprint boundaries (start/close) — for the single most recently
+completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
+this file alone as current mid-sprint.** (This note exists because relying on this file alone
+mid-sprint caused real confusion at least twice in one day — see `Fix-CurrentSprint-Lag` in
+`docs/task-bus/queue/done/`.)
+
+- **Status:** In progress. Steps 01-04 committed and pushed to `origin/main`. Step 05 (UI
+  wiring) is next, not yet started.
 - **Phase:** Phase 1 (MVP)
-- **Sprint 13:** Not started. No scope has been defined yet — the vision document
-  (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 15) records what is expected to move
-  there (assistant-switcher UI consolidation, mode persistence, chat mechanism), but this is not
-  itself a scoped Step Card.
-- **[ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) ratified** this sprint — the
-  project's fourth AI Expert Contract, and the first genuinely generative one.
-  **[ADR-0004](../adr/ADR-0004-expert-contract-specification.md) revised** (not superseded) —
-  Line Editor's contract gained an optional `bookContext` field.
+- **Scope source:** `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 15 — bundles three
+  things deferred from Sprint 12: assistant-switcher UI consolidation, mode persistence (done,
+  Step 01), and the Co-author/Editor/Critic/Reader chat mechanism.
 
 ## Goal
 
-Give Co-author (until now the one Product Role in `docs/product/DOMAIN_MODEL.md`'s Open
-Questions with no grounded AI Expert mapping at all) a real, generative Expert — and let Editor
-optionally see the whole book for consistency, without changing what Editor's task is.
+Give every Product Role (Co-author, Editor, Critic, Reader) a real, persisted message history
+instead of the previous one-shot, memory-less request model — Co-author/Editor as one
+continuous thread per book, Critic/Reader as zero or more user-managed named threads (see
+vision document Section 5 for the per-role session model Product Owner specified).
 
 ## Summary
 
-- **Step 01 — `/api/coauthor` discovery implementation.** New route, genuinely generative
-  (writes/continues manuscript text, not a Review), the first Expert to receive the whole `Book`
-  (all chapters/scenes/characters/metadata), not just the current scene. `currentText` may be
-  empty (blank-page draft); `bookContext` is required. Live-verified with 4 scenarios (missing
-  `bookContext` → 400; missing `currentText` → 400; empty `currentText` + realistic context →
-  draft genuinely reflecting characters/premise; non-empty `currentText` → real continuation).
-- **Step 02 — optional `bookContext` for `/api/line-editor`.** Backward-compatible (byte-identical
-  request/response when absent); system prompt explicitly constrains `bookContext` to
-  consistency only, never to rewrite or expand `text`. Live-verified: an unusual character name
-  present only in context was preserved verbatim; output did not expand beyond the input's scope.
-- **Step 03 — AI Bus `coauthor_draft` operation + `bookContext` passthrough.** `AIOperation`
-  gained a 4th variant with a genuinely different payload shape (`{ currentText, bookContext }`
-  instead of `{ text, sceneId?, chapterId? }`), which required moving the previously shared
-  `const { text } = operation.payload` destructure into each branch individually. `improve_text`
-  gained optional `bookContext`, forwarded unchanged to the Expert.
-- **Step 04 — wire Co-author, extend Editor with book context.** `EditorArea.tsx`'s
-  `handleCoauthor()` sends the whole scene text as `currentText` + `bookContext: book`, reusing
-  the same generic Original/Improved preview as Editor (both produce a Revision). `handleImprove()`
-  now also sends `bookContext: book`. Two additional defects were self-identified and fixed within
-  this same Allowed-path file, both necessary for the Step Card's own required live-verification
-  scenarios to even be possible: the shared button's `disabled` condition blocked Co-author from
-  running on an empty scene (fixed to exempt Co-author from the non-empty-text requirement); a
-  stale module-level comment claiming all modes call the same endpoint was corrected to reflect
-  the real per-mode endpoints.
-- **Emergency fix — `Fix-Assistant-Button-Label`.** Real bug from a Product Owner screenshot: the
-  assistant button's label was hardcoded `"Редактор"` regardless of the selected mode. Fixed to
-  read `mode`.
-- **Emergency fix — `Fix-Assistant-Button-Label-Ask`.** Product Owner follow-up refinement: since
-  the mode is already visible in the `<select>` above the button, showing it a second time on the
-  button itself was redundant — unified to a single constant label, `"Спросить"`, regardless of
-  mode.
-- **Sprint-12-Step-05 (this step) — [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) +
-  revision of [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) + closeout.**
+- **Step 01 — `assistantThreads` domain model + persisted assistant mode.** `Book` gained
+  `assistantThreads: { coauthor, editor, critic, reader: AssistantThread[] }`
+  (`AssistantThread = { id, name, messages: ChatMessage[] }`); `Workspace.selectedAssistantMode`
+  persists the selected role across sessions (previously reset on reload).
+  `normalizeBook()`/migration extended, same centralized-defaults pattern as Sprint 11's
+  `Character`/`Chapter.subtitle`. Committed `f68e676`.
+- **Step 02 — all four Expert routes accept `messages` history.** `/api/line-editor`,
+  `/api/critic`, `/api/reader`, `/api/coauthor` all gained a required `messages: ChatMessage[]`
+  field — server stays fully stateless (ADR-0004 unchanged), the client sends the whole
+  conversation on every call. Committed `5c2d3e9`.
+- **Step 03 — AI Bus operations use `sceneText` + `messages`.** `AIOperation`'s four variants
+  renamed `text`/`currentText` → `sceneText` uniformly and each gained a required `messages`
+  field, matching Step 02's route schema. `aiBus.execute()` forwards `messages` to every route.
+  UI callers (`EditorArea.tsx`, `LineEditorPanel.tsx`, `NewBookDialog.tsx`) were deliberately
+  left broken by this step (Forbidden path, UI is Step 05) — `npx tsc --noEmit` errors in those
+  three files are expected until Step 05, not a regression. Committed `db8b510`.
+- **Step 04 — controller mutations for assistant threads.** `useWorkspaceController.ts` gained
+  `appendMessage(mode, message)` (appends to the active — last — thread of a role),
+  `createThread(mode)` (starts a new empty thread, becomes active), and a derived
+  `activeThreads` value (last thread per role). Live-verified with a pure-reducer script
+  (9/9 scenarios: message lands in the correct thread, `createThread` results in
+  `activeThreads` pointing at the new thread, single-thread roles behave correctly). Committed
+  `af18c4b`.
 
 ## Out of Scope (held constant this sprint)
 
-- Assistant-switcher UI consolidation (cards + responsive bottom list) and persisting the
-  selected mode across sessions — deferred to Sprint 13
-  (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 15).
-- Co-author/Editor chat mechanism (continuous book-level context, multi-turn) — deferred to
-  Sprint 13, bundled with the switcher consolidation to avoid reworking the same UI surface
-  twice.
-- Localizing remaining English UI copy (`MODE_INFO` and similar service text) — deferred to
-  Sprint 14.
-- Everything else already recorded as out of scope in prior sprints and unaffected here (Book
-  Series, Trash/Archive, collapsible unified book view, AI provider/model selection, ЛитРес
-  genre-list integration, export/import formats) — see
-  `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md` Sections 1, 2, 8, 9, 11, 12, 14.
+- Everything already recorded as out of scope in prior sprints and unaffected here (Book
+  Series, Trash/Archive, ЛитРес genre-list integration, export/import formats, AI
+  provider/model selection) — see `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md` Sections 1, 8,
+  9, 11, 12, 14.
+- Localizing remaining English UI copy (`MODE_INFO` and similar service text) and Line
+  Editor's/Critic's system prompts — deferred to Sprint 14, unchanged from prior sprints.
+- The full "unified book view" redesign (Section 2 of the vision document — showing the whole
+  book as one scrollable document with a collapsible tree) — separate, larger, not-yet-designed
+  epic; Step 05's switcher consolidation is a smaller, unrelated piece of UI.
 
 ## Tasks (Development Strategy)
 
-- [x] **Step 01 — `/api/coauthor` discovery implementation.** Committed `05c820c`.
-- [x] **Step 02 — optional `bookContext` for `/api/line-editor`.** Committed `4b2f7c5`.
-- [x] **Step 03 — AI Bus `coauthor_draft` operation + `bookContext` passthrough.** Committed
-  `5ba7929`.
-- [x] **Step 04 — wire Co-author, extend Editor with book context.** Committed `bee042e`.
-- [x] **Fix — assistant button label reflects selected mode.** Committed `5785ce2`.
-- [x] **Fix — unify assistant button label to "Спросить".** Committed `18b4f21`.
-- [x] **Step 05 — ADR-0008, ADR-0004 revision, DOMAIN_MODEL.md/vision updates, closeout.**
-  Documentation only.
+- [x] **Step 01 — `assistantThreads` domain model + persisted assistant mode.** Committed
+  `f68e676`.
+- [x] **Step 02 — all four Expert routes accept `messages` history.** Committed `5c2d3e9`.
+- [x] **Step 03 — AI Bus operations use `sceneText` + `messages`.** Committed `db8b510`.
+- [x] **Step 04 — controller mutations for assistant threads.** Committed `af18c4b`.
+- [ ] **Step 05 — UI wiring.** Not started. Fixes the payload-shape breakage left open by Step
+  03 (`EditorArea.tsx`, `LineEditorPanel.tsx`, `NewBookDialog.tsx`) and wires the real chat
+  mechanism + assistant-switcher consolidation (cards / responsive bottom list, per vision
+  document Section 15) into the UI, replacing the currently-decorative, unwired
+  `AssistantPanel.tsx` and the one-shot `SceneImprove` inside `EditorArea.tsx`.
 
-One unrelated, independent vision-document addition was also processed in this window but is not
-a Sprint 12 step: `Add-Model-Selection-Vision-Note` (Section 14, AI provider/model selection
-idea), tracked in `docs/task-bus/queue/done/`.
+Two unrelated process/documentation fixes were also processed in this window, not Sprint 13
+steps: `Fix-Stale-HANDOVER`, `Add-Roadmap-And-Final-Vision-Notes`,
+`Remove-Legacy-Numbered-Docs`, `Remove-Root-MASTER-Duplicate`, `Fix-CurrentSprint-Lag` (this
+file) — all tracked in `docs/task-bus/queue/done/`.
 
 ## Definition of Done
 
-- Each code step validated by `npm run build`, `npm run lint`, `npx prettier --check`, and (where
-  the Step Card required it) `npx tsc --noEmit` — met for all steps. One transient Google Fonts
-  network failure occurred during Step 03's build (unrelated to code changes, resolved on retry),
-  flagged honestly and confirmed by the Architect as not a code defect.
-- Architect Review (ARP, `STATUS: OK`) delivered and approved for each step before commit — met
-  for every step.
-- Live verification against the real, non-mocked backend/AI Bus was performed for every
-  code-touching step, using this environment's established scratchpad-script technique
-  (monkey-patched `global.fetch` against a real `next start` server) to compensate for the
-  standing lack of browser automation — reused consistently since Sprint 09.
-- Two real UI bugs found via Product Owner screenshots during this sprint were fixed as
-  out-of-queue-order emergency Step Cards, per the established `Fix-*` pattern, rather than
-  silently folded into an unrelated step.
+- Each code step validated by `npm run build`/`npx tsc --noEmit` (where applicable given Step
+  03's deliberate UI breakage), `npm run lint`, `npx prettier --check`.
+- Live verification performed for every code-touching step — Steps 01-03 against a real,
+  non-mocked backend/AI Bus (established scratchpad-script technique); Step 04 via a
+  pure-reducer script (no server needed — the change was pure `Workspace` state transforms).
+- Review before commit: Steps 01-04 were reviewed by the Architect role (`STATUS: OK`) before
+  commit. Later in this same sprint window, this project transitioned to working without a
+  separate Architect session — the Product Owner reviews directly instead (see
+  `docs/project/HANDOVER.md` for the current state of this).
 
-## Completed
+## Known Open Items (carried forward)
 
-All items in Tasks above are committed and archived to `docs/task-bus/queue/done/`.
-
-## Known Open Items (carried forward, not part of Sprint 12 scope)
-
-- Assistant-switcher UI consolidation and mode persistence — Sprint 13
-  (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Sections 2–5, 15).
-- Co-author/Editor chat mechanism (continuous book-level context surviving book close/reopen) —
-  Sprint 13, bundled with the above.
-- Remaining English UI copy (`MODE_INFO` and similar) — Sprint 14.
-- Line Editor's and Critic's prompts remain unlocalized (English, no Russian instruction) — still
-  planned for Sprint 14, unchanged from Sprint 11's carried-forward item.
-- Book Series and Collapsible View remain vision-only ideas
-  (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Sections 8 and 2's amendment) — not designed,
+- Step 05 (UI wiring) — see Tasks above.
+- Remaining English UI copy (`MODE_INFO` and similar), Line Editor's/Critic's unlocalized
+  system prompts — Sprint 14.
+- Book Series and the full unified-book-view redesign remain vision-only ideas — not designed,
   not scheduled.
 - The AI Bus v5 architecture (Sprint 06) still has no ADR of its own — only described in
-  `docs/reports/SPRINT_06_REPORT.md`. Still not addressed.
-- No browser automation tool is available in this environment — every UI step's live verification
-  has relied on build/lint/code review plus, where possible, direct execution of the real
-  compiled logic against a running server, not actual click-through testing. Recorded again here
-  as a standing, unresolved environment limitation.
+  `docs/reports/SPRINT_06_REPORT.md`.
+- No browser automation tool is available in this environment — UI steps' live verification
+  relies on build/lint/code review plus, where possible, direct execution of compiled logic
+  against a running server or pure-function scripts, not actual click-through testing.
 
 ## Next Action
 
-Sprint 13 has not been started and has no defined scope beyond the vision document's own note
-that assistant-switcher consolidation and the chat mechanism should be scoped together. Scoping
-it is a Product Owner / Architect decision, not yet made.
+Step 05 (UI wiring) — scope agreed with Product Owner as a full bundle (payload-shape fixes +
+real chat mechanism + switcher consolidation, not a smaller slice). Technical planning was
+started, then paused to handle this file's own lag first (`Fix-CurrentSprint-Lag`) — not yet
+a committed Step Card.

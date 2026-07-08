@@ -22,6 +22,12 @@ Task Bus Documentation Fragmentation risk registered in [TASK_BUS_V4.md](TASK_BU
 - `docs/project/CURRENT_SPRINT.md`
 - `docs/project/CURRENT_STEP.md`
 
+  `CURRENT_SPRINT.md` reflects the state as of the last sprint **close** — mid-sprint, it can
+  be stale by definition (it is not updated per-step, only at sprint boundaries). Check
+  `CURRENT_STEP.md` (updated per-step, see its own header) and `docs/task-bus/queue/done/` for
+  the true latest state. This caused real confusion at least twice in one day before being
+  written down here — see `Fix-CurrentSprint-Lag` in `docs/task-bus/queue/done/`.
+
 **Level 3 — Ratified Decisions**
 - All Accepted ADRs under `docs/adr/`
 

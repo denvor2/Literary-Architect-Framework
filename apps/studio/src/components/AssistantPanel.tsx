@@ -97,6 +97,310 @@ function parseReviews(content: string): ReviewItem[] | null {
   }
 }
 
+// Sprint-14-Step-02: Reader gets a distinct sub-UI — multiple named,
+// comparable instances instead of a single chat. Local state here
+// (selected/compared thread ids, the create/rename forms) is ephemeral,
+// same treatment as `isFocusMode` in page.tsx — only the threads
+// themselves (`book.assistantThreads.reader`) are persisted, via Step 01's
+// controller mutations.
+function ReaderPanel({
+  threads,
+  scopedText,
+  onAppendMessage,
+  onCreateThread,
+  onRenameThread,
+  onDeleteThread,
+}: {
+  threads: readonly AssistantThread[];
+  scopedText: string;
+  onAppendMessage: (message: ChatMessage, threadId: string) => void;
+  onCreateThread: (options?: { name?: string; persona?: string }) => void;
+  onRenameThread: (threadId: string, name: string) => void;
+  onDeleteThread: (threadId: string) => void;
+}) {
+  const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>(
+    threads.at(-1)?.id,
+  );
+  const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
+  const [input, setInput] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newPersona, setNewPersona] = useState("");
+
+  const selectedThread =
+    threads.find((thread) => thread.id === selectedThreadId) ?? threads.at(-1);
+  const canSend = scopedText.trim().length > 0;
+  const compareList = threads.filter((thread) => compareIds.has(thread.id));
+
+  function toggleCompare(id: string) {
+    setCompareIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  async function handleSend() {
+    if (!selectedThread) return;
+    setStatus("loading");
+    try {
+      const trimmedInput = input.trim();
+      const outgoingMessages: ChatMessage[] = trimmedInput
+        ? [...selectedThread.messages, { role: "user", content: trimmedInput }]
+        : [...selectedThread.messages];
+      if (trimmedInput) {
+        onAppendMessage(
+          { role: "user", content: trimmedInput },
+          selectedThread.id,
+        );
+      }
+      const result = await aiBus.execute({
+        operation: {
+          type: "reader_reaction",
+          payload: {
+            sceneText: scopedText,
+            messages: outgoingMessages,
+            ...(selectedThread.persona
+              ? { persona: selectedThread.persona }
+              : {}),
+          },
+        },
+        context: {},
+      });
+      onAppendMessage(
+        { role: "assistant", content: result.response.text },
+        selectedThread.id,
+      );
+      setInput("");
+      setStatus("idle");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  function handleCreate() {
+    const name = newName.trim();
+    if (!name) return;
+    onCreateThread({ name, persona: newPersona.trim() || undefined });
+    setNewName("");
+    setNewPersona("");
+    setCreating(false);
+  }
+
+  function startRename(thread: AssistantThread) {
+    setRenamingId(thread.id);
+    setRenameValue(thread.name);
+  }
+
+  function commitRename() {
+    if (renamingId && renameValue.trim()) {
+      onRenameThread(renamingId, renameValue.trim());
+    }
+    setRenamingId(null);
+  }
+
+  return (
+    <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
+      <div className="flex flex-wrap gap-2">
+        {threads.map((thread) => {
+          const isSelected = thread.id === selectedThread?.id;
+          const inCompare = compareIds.has(thread.id);
+          return (
+            <div
+              key={thread.id}
+              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${
+                isSelected
+                  ? "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950"
+                  : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+              }`}
+            >
+              {renamingId === thread.id ? (
+                <input
+                  autoFocus
+                  value={renameValue}
+                  onChange={(event) => setRenameValue(event.target.value)}
+                  onBlur={commitRename}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") commitRename();
+                  }}
+                  className="w-24 rounded border border-zinc-300 bg-white px-1 text-xs text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                />
+              ) : (
+                <button
+                  onClick={() => setSelectedThreadId(thread.id)}
+                  className="font-medium text-black dark:text-zinc-50"
+                >
+                  {thread.name}
+                </button>
+              )}
+              <button
+                onClick={() => toggleCompare(thread.id)}
+                title="Сравнить"
+                className={
+                  inCompare
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-zinc-400"
+                }
+              >
+                ⇄
+              </button>
+              <button
+                onClick={() => startRename(thread)}
+                title="Переименовать"
+                className="text-zinc-400"
+              >
+                ✎
+              </button>
+              <button
+                onClick={() => onDeleteThread(thread.id)}
+                disabled={threads.length <= 1}
+                title="Удалить"
+                className="text-zinc-400 disabled:opacity-30"
+              >
+                ✕
+              </button>
+            </div>
+          );
+        })}
+        {!creating && (
+          <button
+            onClick={() => setCreating(true)}
+            className="rounded-full border border-dashed border-zinc-300 px-2.5 py-1 text-xs text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+          >
+            + Новый читатель
+          </button>
+        )}
+      </div>
+
+      {creating && (
+        <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+          <input
+            value={newName}
+            onChange={(event) => setNewName(event.target.value)}
+            placeholder="Имя (например, Молодой читатель)"
+            className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          />
+          <input
+            value={newPersona}
+            onChange={(event) => setNewPersona(event.target.value)}
+            placeholder="Персонаж (необязательно, например: подросток 16 лет)"
+            className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={handleCreate}
+              disabled={!newName.trim()}
+              className="rounded-full bg-black px-3 py-1 text-xs font-medium text-white disabled:opacity-50 dark:bg-white dark:text-black"
+            >
+              Создать
+            </button>
+            <button
+              onClick={() => setCreating(false)}
+              className="rounded-full px-3 py-1 text-xs text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
+      )}
+
+      {compareList.length >= 2 ? (
+        <div className="grid flex-1 grid-cols-1 gap-3 overflow-y-auto lg:grid-cols-2">
+          {compareList.map((thread) => (
+            <div
+              key={thread.id}
+              className="flex flex-col gap-2 overflow-y-auto rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+            >
+              <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                {thread.name}
+              </p>
+              {thread.persona && (
+                <p className="text-xs italic text-zinc-500 dark:text-zinc-400">
+                  {thread.persona}
+                </p>
+              )}
+              {thread.messages.length === 0 ? (
+                <p className="text-xs text-zinc-400 dark:text-zinc-600">
+                  Пока нет сообщений.
+                </p>
+              ) : (
+                thread.messages.slice(-4).map((message, index) => (
+                  <p
+                    key={index}
+                    className={`whitespace-pre-wrap text-sm ${
+                      message.role === "user"
+                        ? "rounded-lg bg-zinc-200 p-2 text-black dark:bg-zinc-800 dark:text-zinc-50"
+                        : "text-black dark:text-zinc-50"
+                    }`}
+                  >
+                    {message.content}
+                  </p>
+                ))
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {selectedThread?.persona && (
+            <p className="text-xs italic text-zinc-500 dark:text-zinc-400">
+              Персонаж: {selectedThread.persona}
+            </p>
+          )}
+          <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
+            {(!selectedThread || selectedThread.messages.length === 0) && (
+              <p className="text-xs text-zinc-400 dark:text-zinc-600">
+                See how a reader would react.
+              </p>
+            )}
+            {selectedThread?.messages.map((message, index) => (
+              <p
+                key={index}
+                className={`whitespace-pre-wrap text-sm leading-relaxed ${
+                  message.role === "user"
+                    ? "rounded-lg bg-zinc-200 p-2.5 text-black dark:bg-zinc-800 dark:text-zinc-50"
+                    : "text-black dark:text-zinc-50"
+                }`}
+              >
+                {message.content}
+              </p>
+            ))}
+          </div>
+          <div className="flex flex-col gap-2">
+            <textarea
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Что именно интересует? (необязательно)"
+              rows={2}
+              disabled={status === "loading"}
+              className="w-full resize-none rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            />
+            <button
+              onClick={handleSend}
+              disabled={status === "loading" || !canSend || !selectedThread}
+              className="self-start rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            >
+              {status === "loading" ? "…" : "Спросить"}
+            </button>
+            {status === "error" && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                Assistant unavailable. Try again.
+              </p>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
   if (reviews.length === 0) {
     return (
@@ -145,8 +449,20 @@ type AssistantPanelProps = {
     critic?: AssistantThread;
     reader?: AssistantThread;
   };
-  onAppendMessage: (mode: AssistantMode, message: ChatMessage) => void;
-  onCreateThread: (mode: AssistantMode) => void;
+  // Sprint-14-Step-02: threadId lets Reader's multi-instance UI target a
+  // specific thread instead of always the last one — omitted, behavior is
+  // unchanged for Co-author/Editor/Critic (see useWorkspaceController.ts).
+  onAppendMessage: (
+    mode: AssistantMode,
+    message: ChatMessage,
+    threadId?: string,
+  ) => void;
+  onCreateThread: (
+    mode: AssistantMode,
+    options?: { name?: string; persona?: string },
+  ) => void;
+  onRenameThread: (mode: AssistantMode, threadId: string, name: string) => void;
+  onDeleteThread: (mode: AssistantMode, threadId: string) => void;
   onReplaceSceneText?: (text: string) => void;
 };
 
@@ -159,6 +475,8 @@ export function AssistantPanel({
   activeThreads,
   onAppendMessage,
   onCreateThread,
+  onRenameThread,
+  onDeleteThread,
   onReplaceSceneText,
 }: AssistantPanelProps) {
   const [input, setInput] = useState("");
@@ -291,9 +609,9 @@ export function AssistantPanel({
           <p className={`text-xs font-medium ${meta.accent}`}>
             {meta.emoji} {meta.label}
           </p>
-          {(selectedMode === "critic" || selectedMode === "reader") && (
+          {selectedMode === "critic" && (
             <button
-              onClick={() => onCreateThread(selectedMode)}
+              onClick={() => onCreateThread("critic")}
               className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
               Начать заново
@@ -301,70 +619,90 @@ export function AssistantPanel({
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
-          {messages.length === 0 && (
-            <p className="text-xs text-zinc-400 dark:text-zinc-600">
-              {meta.description}
-            </p>
-          )}
-          {messages.map((message, index) => {
-            if (message.role === "user") {
-              return (
-                <p
-                  key={index}
-                  className="whitespace-pre-wrap rounded-lg bg-zinc-200 p-2.5 text-sm text-black dark:bg-zinc-800 dark:text-zinc-50"
-                >
-                  {message.content}
-                </p>
-              );
+        {selectedMode === "reader" ? (
+          <ReaderPanel
+            threads={book.assistantThreads.reader}
+            scopedText={scopedText}
+            onAppendMessage={(message, threadId) =>
+              onAppendMessage("reader", message, threadId)
             }
-            const reviews =
-              selectedMode === "critic" ? parseReviews(message.content) : null;
-            return (
-              <div key={index} className="flex flex-col gap-2">
-                {reviews ? (
-                  <ReviewList reviews={reviews} />
-                ) : (
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-black dark:text-zinc-50">
-                    {message.content}
-                  </p>
-                )}
-                {(selectedMode === "coauthor" || selectedMode === "editor") &&
-                  onReplaceSceneText && (
-                    <button
-                      onClick={() => onReplaceSceneText(message.content)}
-                      className="self-start rounded-full bg-black px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                    >
-                      Вставить в сцену
-                    </button>
-                  )}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <textarea
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            placeholder={meta.placeholder}
-            rows={2}
-            disabled={status === "loading"}
-            className="w-full resize-none rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            onCreateThread={(options) => onCreateThread("reader", options)}
+            onRenameThread={(threadId, name) =>
+              onRenameThread("reader", threadId, name)
+            }
+            onDeleteThread={(threadId) => onDeleteThread("reader", threadId)}
           />
-          <button
-            onClick={handleSend}
-            disabled={status === "loading" || !canSend}
-            className="self-start rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-          >
-            {status === "loading" ? "…" : "Спросить"}
-          </button>
-          {status === "error" && (
-            <p className="text-sm text-red-600 dark:text-red-400">
-              Assistant unavailable. Try again.
-            </p>
-          )}
-        </div>
+        ) : (
+          <>
+            <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
+              {messages.length === 0 && (
+                <p className="text-xs text-zinc-400 dark:text-zinc-600">
+                  {meta.description}
+                </p>
+              )}
+              {messages.map((message, index) => {
+                if (message.role === "user") {
+                  return (
+                    <p
+                      key={index}
+                      className="whitespace-pre-wrap rounded-lg bg-zinc-200 p-2.5 text-sm text-black dark:bg-zinc-800 dark:text-zinc-50"
+                    >
+                      {message.content}
+                    </p>
+                  );
+                }
+                const reviews =
+                  selectedMode === "critic"
+                    ? parseReviews(message.content)
+                    : null;
+                return (
+                  <div key={index} className="flex flex-col gap-2">
+                    {reviews ? (
+                      <ReviewList reviews={reviews} />
+                    ) : (
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-black dark:text-zinc-50">
+                        {message.content}
+                      </p>
+                    )}
+                    {(selectedMode === "coauthor" ||
+                      selectedMode === "editor") &&
+                      onReplaceSceneText && (
+                        <button
+                          onClick={() => onReplaceSceneText(message.content)}
+                          className="self-start rounded-full bg-black px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                        >
+                          Вставить в сцену
+                        </button>
+                      )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <textarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                placeholder={meta.placeholder}
+                rows={2}
+                disabled={status === "loading"}
+                className="w-full resize-none rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+              />
+              <button
+                onClick={handleSend}
+                disabled={status === "loading" || !canSend}
+                className="self-start rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              >
+                {status === "loading" ? "…" : "Спросить"}
+              </button>
+              {status === "error" && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  Assistant unavailable. Try again.
+                </p>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </aside>
   );

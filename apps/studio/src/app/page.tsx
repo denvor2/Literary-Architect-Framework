@@ -42,6 +42,8 @@ export default function Home() {
     selectAssistantMode,
     appendMessage,
     createThread,
+    renameThread,
+    deleteThread,
     activeThreads,
   } = useWorkspaceController();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -132,6 +134,8 @@ export default function Home() {
             activeThreads={activeThreads}
             onAppendMessage={appendMessage}
             onCreateThread={createThread}
+            onRenameThread={renameThread}
+            onDeleteThread={deleteThread}
             onReplaceSceneText={
               selectedChapter && selectedScene
                 ? (text) =>

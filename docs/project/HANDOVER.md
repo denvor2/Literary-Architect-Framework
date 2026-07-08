@@ -20,11 +20,15 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 14 (Reader multiple named instances + systematic localization) is in progress, not yet
-started at code level. Sprint 13 (unified chat mechanism for all four Product Roles) closed —
-every Product Role now has a real, persisted message history instead of the previous one-shot
-request model; see [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current Sprint 14 goal (its
-git history holds Sprint 13's full closing summary). Sprints 06 through 13 are all closed.
+Sprint 14 (Reader multiple named instances) is in progress, not yet started at code level —
+needs a planning pass first. Sprint 13 (unified chat mechanism for all four Product Roles)
+closed — every Product Role now has a real, persisted message history instead of the previous
+one-shot request model; see [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current Sprint 14
+goal (its git history holds Sprint 13's full closing summary). Sprints 06 through 13 are all
+closed. Systematic localization (Line Editor's/Critic's system prompts, English UI-copy audit)
+is Sprint 15 per `docs/vision/SPRINT_ROADMAP.md`, not Sprint 14 — an earlier version of this
+sprint's scope briefly and incorrectly bundled the two together; fixed in
+[CURRENT_SPRINT.md](CURRENT_SPRINT.md) before any code was written under the wrong scope.
 
 **Process note:** this project is currently working without a separate Architect session — the
 Product Owner reviews Step Cards directly instead (see "Architecture Review before commit"
@@ -120,17 +124,16 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Sprint 14's two Goal items (see CURRENT_SPRINT.md) have different readiness: localization
-(Line Editor's/Critic's system prompts, English UI-copy audit) is well-scoped and ready for a
-Step Card; Reader multiple named instances needs a planning pass first — last sprint's
-`createThread`/"Начать заново" alone doesn't satisfy it (older threads aren't visible/
-comparable, only the active one is), and the vision document itself only records the intent,
-not a UX design.
+Sprint 14 (Reader multiple named instances, see CURRENT_SPRINT.md) needs a planning pass before
+any Step Card — last sprint's `createThread`/"Начать заново" alone doesn't satisfy it (older
+threads aren't visible/comparable, only the active one is), and the vision document itself only
+records the intent, not a UX design. Localization (Line Editor's/Critic's system prompts,
+English UI-copy audit) is Sprint 15, ready for a Step Card once Sprint 14 closes — not before.
 
 ## Current Priorities
 
-1. Sprint 14 Goal item 2 — localization (Step Card-ready).
-2. Sprint 14 Goal item 1 — Reader multi-instance planning pass, then implementation.
+1. Sprint 14 — Reader multi-instance planning pass, then implementation.
+2. Sprint 15 — localization (Step Card-ready once Sprint 14 closes).
 3. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both still placeholders.

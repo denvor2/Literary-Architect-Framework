@@ -20,9 +20,10 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 14 — Reader Multiple Named Instances + Systematic Localization (in progress, not yet
-started at code level). See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current goal and
-[CURRENT_STEP.md](CURRENT_STEP.md) for the single most recently completed Step Card.
+Sprint 14 — Reader Multiple Named Instances (in progress, not yet started at code level — needs
+a planning pass first). See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current goal and
+[CURRENT_STEP.md](CURRENT_STEP.md) for the single most recently completed Step Card. Systematic
+localization is Sprint 15, not this sprint (`docs/vision/SPRINT_ROADMAP.md`).
 
 **Sprint 13 — Unified Chat Mechanism (closed).** Gave every Product Role a real, persisted
 message history: `assistantThreads` domain model + persisted assistant mode; all four Expert
@@ -227,11 +228,11 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Current Priorities
 
-1. Sprint 14, Goal item 2 (localization: Line Editor's/Critic's system prompts, English UI
-   copy audit) — well-scoped, ready for a Step Card.
-2. Sprint 14, Goal item 1 (Reader multiple named instances) — needs a planning pass before it
-   can become a Step Card; see CURRENT_SPRINT.md's Sprint 13 finding for why last sprint's
+1. Sprint 14 (Reader multiple named instances) — needs a planning pass before it can become a
+   Step Card; see CURRENT_SPRINT.md's Sprint 13 finding for why last sprint's
    `createThread`/"Начать заново" alone doesn't satisfy this.
+2. Sprint 15 (systematic localization: Line Editor's/Critic's system prompts, English UI-copy
+   audit) — well-scoped, ready for a Step Card once Sprint 14 closes.
 3. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
 
 ## Open Decisions
@@ -258,5 +259,4 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-Sprint 14, Goal item 1 (Reader multiple named instances) once its planning pass produces a
-concrete design — the larger of Sprint 14's two work areas.
+Sprint 14 (Reader multiple named instances) once its planning pass produces a concrete design.

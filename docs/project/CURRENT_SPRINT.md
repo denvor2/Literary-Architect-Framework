@@ -1,11 +1,13 @@
 # Current Sprint
 
-**Sprint 14 — Reader Multiple Named Instances + Systematic Localization** — **in progress**
+**Sprint 14 — Reader Multiple Named Instances** — **in progress**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress. History for Sprint 06/08/09/10/11/12/13 lives in
 `docs/reports/SPRINT_06_REPORT.md` / this file's own git history (Sprint 13's full closing
-summary is preserved in the git history of this same file, one commit before this rewrite).
+summary is preserved in the git history of this same file, two commits before this rewrite —
+the immediately preceding commit incorrectly bundled Sprint 15's localization scope into this
+file; see the note below).
 
 **This file is only updated at sprint boundaries (start/close) — for the single most recently
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
@@ -13,9 +15,14 @@ this file alone as current mid-sprint.**
 
 - **Status:** In progress. Not yet started at code level.
 - **Phase:** Phase 1 (MVP)
-- **Scope source:** `docs/vision/SPRINT_ROADMAP.md` (Sprint 14 row) +
-  `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md` Section 6 (localization) and Section 7 (Reader
-  multi-instance).
+- **Scope source:** `docs/vision/SPRINT_ROADMAP.md` (Sprint 14 row: "Reader — несколько
+  именованных экземпляров") + `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md` Section 7.
+
+**Correction:** the version of this file committed right after Sprint 13 closed bundled
+"Systematic localization" into Sprint 14 as a second Goal item. That was a misread of
+`docs/vision/SPRINT_ROADMAP.md` — localization is the Sprint **15** row, not Sprint 14, which
+is Reader multi-instance only. Fixed here before any Sprint 14 implementation started (no code
+was written under the wrong scope).
 
 ## Sprint 13 — closed
 
@@ -42,22 +49,21 @@ UI cannot show or return to a non-active thread at all. This is real, not yet de
 
 ## Sprint 14 — Goal
 
-Two independent work areas, bundled by the roadmap into one sprint (not by any technical
-dependency between them):
+**Reader — multiple named instances.** Per vision document Section 7 and the finding above:
+distinct, comparable Reader assistants (not just resettable thread history within one Reader),
+each presumably with its own name/persona, visible/switchable independently — not yet designed
+at the UX level. Open questions:
 
-1. **Reader — multiple named instances.** Per vision document Section 7 and the finding above:
-   distinct, comparable Reader assistants (not just resettable thread history within one
-   Reader), each presumably with its own name/persona, visible/switchable independently — not
-   yet designed at the UX level (open question: how are they created/named/deleted/switched
-   between, and does an equivalent apply to Critic's future subcategories per Section 7 or is
-   this Reader-specific for now). Needs a planning pass before implementation, same as Step 05
-   needed one.
-2. **Systematic localization.** Line Editor's and Critic's system prompts still carry no
-   Russian instruction (English-only, unchanged since their original discovery
-   implementations — Sprint 04/08). Remaining English UI copy — reduced by Step 05's removal of
-   `MODE_INFO`'s perception layer, but not audited yet for what's left (error messages,
-   placeholders, button labels). Full product localization remains Sprint 30-40 per the
-   roadmap; this sprint's slice is specifically the two items named above, not a general pass.
+- How are instances created/named/deleted/switched between?
+- Does an equivalent apply to Critic's future thematic subcategories (Section 7, Sprint 18), or
+  is this mechanism Reader-specific for now?
+- Does this reuse `assistantThreads.reader` (multiple `AssistantThread`s already exist there —
+  Sprint 13) by surfacing all of them instead of only the active one, or does it need a new
+  domain concept (a named Reader "instance" is arguably a different thing from a named
+  "dialog")?
+
+Needs a planning pass before implementation, same as Sprint-13-Step-05 needed one before its
+own switcher-consolidation piece.
 
 ## Out of Scope (held constant this sprint)
 
@@ -67,17 +73,19 @@ dependency between them):
   2, 8, 9, 11, 12, 14.
 - Critic's thematic subcategories (Continuity/Fact/Developmental/Style) — Section 7, but
   assigned to Sprint 18 by the roadmap, not this sprint.
-- Full product localization (Sprint 30-40) — this sprint is exactly Line Editor's/Critic's
-  prompts plus a scoped UI-copy audit, not a general pass.
+- **Systematic localization** (Line Editor's/Critic's system prompts, English UI-copy audit) —
+  Sprint **15** per the roadmap, not this sprint. (Corrected here — see note above.)
 
 ## Tasks (Development Strategy)
 
-Not yet scoped into Step Cards. Next Action below.
+Not yet scoped into Step Cards — the Goal's open questions need a planning pass first.
 
 ## Known Open Items (carried forward)
 
-- Reader multi-instance design (this sprint's own Goal item 1) needs a planning pass before a
-  Step Card can be written.
+- Reader multi-instance design (this sprint's own Goal) needs a planning pass before a Step
+  Card can be written.
+- Line Editor's/Critic's system prompts remain unlocalized (English, no Russian instruction) —
+  Sprint 15, not this sprint.
 - Book Series and the full unified-book-view redesign remain vision-only ideas — not designed,
   not scheduled.
 - The AI Bus v5 architecture (Sprint 06) still has no ADR of its own — only described in
@@ -90,6 +98,5 @@ Not yet scoped into Step Cards. Next Action below.
 
 ## Next Action
 
-Start with localization (Goal item 2, well-scoped, no design ambiguity) as Sprint-14-Step-01.
-Reader multi-instance (Goal item 1) needs its own planning pass first, same as Sprint-13-Step-05
-did, before it can become a Step Card.
+Planning pass for Reader multi-instance UX (the Goal's open questions above), before any Step
+Card can be written — same process as Sprint-13-Step-05's design decisions.

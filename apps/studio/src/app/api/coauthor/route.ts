@@ -48,6 +48,14 @@ export async function POST(request: Request) {
   }
 
   const sceneText = body?.sceneText ?? "";
+  // Sprint-15-Step-01: the drafted/continued text must be written in the
+  // book's own declared language, not a hardcoded one — for Co-author
+  // specifically, "respond" means the actual manuscript prose, so this
+  // matters even more directly than for the Review-producing Experts.
+  const bookLanguage =
+    typeof bookContext.language === "string" && bookContext.language
+      ? bookContext.language
+      : "Russian";
 
   try {
     const client = getAnthropicClient();
@@ -59,8 +67,7 @@ export async function POST(request: Request) {
     const message = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1024,
-      system:
-        "You are a co-author — a generative writer, not a critic and not an editor. You will be given the entire book's context (metadata, all chapters and scenes written so far, all characters) and the current scene's text, followed by the ongoing conversation with the author about this scene. Use the full book context — plot, characters, established style and voice — when writing. If the current scene's text is non-empty, continue it directly, matching its style and picking up where it leaves off; if it is empty, write a new scene draft that fits the book's premise, characters, and what has already been written. This is a continuing dialogue, not a one-shot request: take the prior conversation into account, and if the author has not asked anything specific yet (no conversation so far), proceed directly to drafting or continuing the scene. Respond in Russian, regardless of the language of the input, unless the user explicitly asks for another language.",
+      system: `You are a co-author — a generative writer, not a critic and not an editor. You will be given the entire book's context (metadata, all chapters and scenes written so far, all characters) and the current scene's text, followed by the ongoing conversation with the author about this scene. Use the full book context — plot, characters, established style and voice — when writing. If the current scene's text is non-empty, continue it directly, matching its style and picking up where it leaves off; if it is empty, write a new scene draft that fits the book's premise, characters, and what has already been written. This is a continuing dialogue, not a one-shot request: take the prior conversation into account, and if the author has not asked anything specific yet (no conversation so far), proceed directly to drafting or continuing the scene. Respond in ${bookLanguage}, regardless of the language of the input, unless the user explicitly asks for another language.`,
       messages: anthropicMessages,
     });
     const block = message.content.find((item) => item.type === "text");

@@ -106,6 +106,7 @@ function parseReviews(content: string): ReviewItem[] | null {
 function ReaderPanel({
   threads,
   scopedText,
+  bookLanguage,
   onAppendMessage,
   onCreateThread,
   onRenameThread,
@@ -113,6 +114,7 @@ function ReaderPanel({
 }: {
   threads: readonly AssistantThread[];
   scopedText: string;
+  bookLanguage: string;
   onAppendMessage: (message: ChatMessage, threadId: string) => void;
   onCreateThread: (options?: { name?: string; persona?: string }) => void;
   onRenameThread: (threadId: string, name: string) => void;
@@ -167,6 +169,7 @@ function ReaderPanel({
           payload: {
             sceneText: scopedText,
             messages: outgoingMessages,
+            bookLanguage,
             ...(selectedThread.persona
               ? { persona: selectedThread.persona }
               : {}),
@@ -548,16 +551,28 @@ export function AssistantPanel({
         const result = await aiBus.execute({
           operation: {
             type: "critic_review",
-            payload: { sceneText: scopedText, messages: outgoingMessages },
+            payload: {
+              sceneText: scopedText,
+              messages: outgoingMessages,
+              bookLanguage: book!.language,
+            },
           },
           context: {},
         });
         resultText = result.response.text;
       } else {
+        // Reader's own send path is ReaderPanel's handleSend below — this
+        // branch is unreachable from the UI (Reader renders ReaderPanel
+        // instead of the shared input/button), kept only so `handleSend`
+        // stays exhaustive over AssistantMode.
         const result = await aiBus.execute({
           operation: {
             type: "reader_reaction",
-            payload: { sceneText: scopedText, messages: outgoingMessages },
+            payload: {
+              sceneText: scopedText,
+              messages: outgoingMessages,
+              bookLanguage: book!.language,
+            },
           },
           context: {},
         });
@@ -623,6 +638,7 @@ export function AssistantPanel({
           <ReaderPanel
             threads={book.assistantThreads.reader}
             scopedText={scopedText}
+            bookLanguage={book.language}
             onAppendMessage={(message, threadId) =>
               onAppendMessage("reader", message, threadId)
             }

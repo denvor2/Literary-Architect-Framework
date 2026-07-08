@@ -43,6 +43,11 @@ export type AIOperation =
         sceneId?: string;
         chapterId?: string;
         messages: ChatMessage[];
+        // Sprint-15-Step-01: just the book's declared language, not the
+        // whole `bookContext` — Critic stays scene/selection-scoped by
+        // design (ADR-0008), this is the minimal addition that lets its
+        // comments follow the book's language.
+        bookLanguage?: string;
       };
     }
   | {
@@ -56,6 +61,9 @@ export type AIOperation =
         // (e.g. "молодой читатель") — forwarded to /api/reader, which
         // folds it into the system prompt when present.
         persona?: string;
+        // Sprint-15-Step-01: same minimal, scene-scoped addition as
+        // critic_review's bookLanguage above.
+        bookLanguage?: string;
       };
     }
   | {

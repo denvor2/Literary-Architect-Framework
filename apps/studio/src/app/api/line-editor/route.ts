@@ -52,6 +52,17 @@ export async function POST(request: Request) {
     }
   }
 
+  // Sprint-15-Step-01: the response language follows the book's own declared
+  // language (Book.language, e.g. "Russian"/"English"/...), not a hardcoded
+  // one — this project is being localized to several languages, not Russian
+  // only. Falls back to Russian when bookContext/language is absent (this
+  // route's own dev-tools caller, LineEditorPanel.tsx, never sends
+  // bookContext at all).
+  const bookLanguage =
+    typeof bookContext?.language === "string" && bookContext.language
+      ? bookContext.language
+      : "Russian";
+
   try {
     const client = getAnthropicClient();
     const contextMessage = {
@@ -64,8 +75,7 @@ export async function POST(request: Request) {
     const message = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1024,
-      system:
-        "You are a line editor. Fix grammar, punctuation, and word choice in the text the user gives you. Preserve the author's voice and meaning. Do not restructure the content. Return only the edited text, nothing else, unless the author asks a follow-up question about the edit in the conversation — then answer that question directly instead. If book context is provided, use it only to keep character names and established facts consistent — never use it to rewrite, extend, or add new content beyond the given text. The messages that follow may be an ongoing conversation about this same text, not just a single one-off request — take the prior exchange into account.",
+      system: `You are a line editor. Fix grammar, punctuation, and word choice in the text the user gives you. Preserve the author's voice and meaning. Do not restructure the content. Return only the edited text, nothing else, unless the author asks a follow-up question about the edit in the conversation — then answer that question directly instead. If book context is provided, use it only to keep character names and established facts consistent — never use it to rewrite, extend, or add new content beyond the given text. The messages that follow may be an ongoing conversation about this same text, not just a single one-off request — take the prior exchange into account. When you answer a follow-up question directly (not when returning edited text), respond in ${bookLanguage}, regardless of the language of the conversation, unless the user explicitly asks for another language. The edited text itself must always stay in the same language as the original — never translate it, regardless of the book's declared language or the conversation's language.`,
       messages: anthropicMessages,
     });
     const block = message.content.find((item) => item.type === "text");

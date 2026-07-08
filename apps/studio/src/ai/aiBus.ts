@@ -44,11 +44,15 @@ export async function execute(
     }
     resultText = data.result;
   } else if (operation.type === "critic_review") {
-    const { sceneText, messages } = operation.payload;
+    const { sceneText, messages, bookLanguage } = operation.payload;
     const response = await fetch("/api/critic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sceneText, messages }),
+      body: JSON.stringify(
+        bookLanguage
+          ? { sceneText, messages, bookLanguage }
+          : { sceneText, messages },
+      ),
     });
     const data = await response.json();
     if (!data.ok) {
@@ -59,13 +63,16 @@ export async function execute(
     // still shaped for a single text result and are not reworked here.
     resultText = JSON.stringify(data.reviews);
   } else if (operation.type === "reader_reaction") {
-    const { sceneText, messages, persona } = operation.payload;
+    const { sceneText, messages, persona, bookLanguage } = operation.payload;
     const response = await fetch("/api/reader", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(
-        persona ? { sceneText, messages, persona } : { sceneText, messages },
-      ),
+      body: JSON.stringify({
+        sceneText,
+        messages,
+        ...(persona ? { persona } : {}),
+        ...(bookLanguage ? { bookLanguage } : {}),
+      }),
     });
     const data = await response.json();
     if (!data.ok) {

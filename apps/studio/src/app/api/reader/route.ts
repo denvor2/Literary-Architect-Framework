@@ -20,6 +20,13 @@ export async function POST(request: Request) {
   const sceneText = body?.sceneText;
   const messages = body?.messages;
   const persona = typeof body?.persona === "string" ? body.persona : undefined;
+  // Sprint-15-Step-01: same minimal, scene-scoped addition as Critic's
+  // bookLanguage — just the language string, not the whole bookContext
+  // (which would widen Reader's scope beyond ADR-0008's design).
+  const bookLanguage =
+    typeof body?.bookLanguage === "string" && body.bookLanguage
+      ? body.bookLanguage
+      : "Russian";
 
   if (!sceneText || typeof sceneText !== "string") {
     return NextResponse.json(
@@ -56,8 +63,7 @@ export async function POST(request: Request) {
     const client = getAnthropicClient();
     const contextMessage = { role: "user" as const, content: sceneText };
     const anthropicMessages = [contextMessage, ...messages];
-    const baseSystem =
-      "You are a reader reacting to the text the user gives you — not an editor and not a literary critic. Do not comment on grammar, punctuation, or wording. Do not produce a structured, categorized assessment. Instead, share your subjective impressions as an engaged reader: what caught your attention, what confused or surprised you, how the pacing felt, what you expect or hope happens next. Write your reaction as flowing prose, in your own voice, not as a list. The messages that follow may be a continuing conversation about your reaction, not just the initial text — if the author asks a follow-up question about what you already said, answer it directly, still as the same engaged reader, not as an editor or critic. Respond in Russian, regardless of the language of the text you are given, unless the user explicitly asks for another language.";
+    const baseSystem = `You are a reader reacting to the text the user gives you — not an editor and not a literary critic. Do not comment on grammar, punctuation, or wording. Do not produce a structured, categorized assessment. Instead, share your subjective impressions as an engaged reader: what caught your attention, what confused or surprised you, how the pacing felt, what you expect or hope happens next. Write your reaction as flowing prose, in your own voice, not as a list. The messages that follow may be a continuing conversation about your reaction, not just the initial text — if the author asks a follow-up question about what you already said, answer it directly, still as the same engaged reader, not as an editor or critic. Respond in ${bookLanguage}, regardless of the language of the text you are given, unless the user explicitly asks for another language.`;
     const system = persona
       ? `You are reading and reacting as: ${persona}. Stay in this persona throughout.\n\n${baseSystem}`
       : baseSystem;

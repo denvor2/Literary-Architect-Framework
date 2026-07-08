@@ -7,7 +7,7 @@ export function Header() {
         </span>
         <span className="text-zinc-300 dark:text-zinc-700">/</span>
         <span className="text-sm text-zinc-600 dark:text-zinc-400">
-          Untitled Book
+          Без названия
         </span>
       </div>
     </header>

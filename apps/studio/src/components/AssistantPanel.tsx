@@ -48,32 +48,32 @@ const MODE_META: Record<
 > = {
   coauthor: {
     emoji: "🟡",
-    label: "Co-author",
-    description: "Draft and develop new material together.",
+    label: "Соавтор",
+    description: "Пишет и развивает текст вместе с вами.",
     accent: "text-amber-600 dark:text-amber-400",
     activeBorder: "border-amber-400 dark:border-amber-600",
     placeholder: "Что дальше в этой книге? (необязательно)",
   },
   editor: {
     emoji: "🟢",
-    label: "Editor",
-    description: "Polish grammar, clarity, and flow.",
+    label: "Редактор",
+    description: "Улучшает грамматику, ясность и стиль.",
     accent: "text-emerald-600 dark:text-emerald-400",
     activeBorder: "border-emerald-400 dark:border-emerald-600",
     placeholder: "Что улучшить в этой сцене? (необязательно)",
   },
   critic: {
     emoji: "🔴",
-    label: "Critic",
-    description: "Get an assessment of your writing.",
+    label: "Критик",
+    description: "Даёт оценку вашему тексту.",
     accent: "text-red-600 dark:text-red-400",
     activeBorder: "border-red-400 dark:border-red-600",
     placeholder: "На что обратить внимание? (необязательно)",
   },
   reader: {
     emoji: "🔵",
-    label: "Reader",
-    description: "See how a reader would react.",
+    label: "Читатель",
+    description: "Показывает, как отреагирует читатель.",
     accent: "text-blue-600 dark:text-blue-400",
     activeBorder: "border-blue-400 dark:border-blue-600",
     placeholder: "Что именно интересует? (необязательно)",
@@ -394,7 +394,7 @@ function ReaderPanel({
             </button>
             {status === "error" && (
               <p className="text-sm text-red-600 dark:text-red-400">
-                Assistant unavailable. Try again.
+                Помощник недоступен. Попробуйте ещё раз.
               </p>
             )}
           </div>
@@ -408,7 +408,7 @@ function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
   if (reviews.length === 0) {
     return (
       <p className="rounded-lg border border-zinc-200 p-3 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-        No issues found.
+        Замечаний не найдено.
       </p>
     );
   }
@@ -489,7 +489,7 @@ export function AssistantPanel({
     return (
       <aside className="flex w-full shrink-0 flex-col gap-2 border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:w-80 lg:border-l lg:border-t-0">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Create your first book to talk to an assistant.
+          Создайте первую книгу, чтобы поговорить с помощником.
         </p>
       </aside>
     );
@@ -713,7 +713,7 @@ export function AssistantPanel({
               </button>
               {status === "error" && (
                 <p className="text-sm text-red-600 dark:text-red-400">
-                  Assistant unavailable. Try again.
+                  Помощник недоступен. Попробуйте ещё раз.
                 </p>
               )}
             </div>

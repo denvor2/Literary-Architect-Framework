@@ -16,7 +16,7 @@ export function TestConnectionButton() {
       const data: Result = await response.json();
       setResult(data);
     } catch {
-      setResult({ ok: false, error: "Request failed." });
+      setResult({ ok: false, error: "Запрос не выполнен." });
     } finally {
       setStatus("idle");
     }
@@ -29,7 +29,7 @@ export function TestConnectionButton() {
         disabled={status === "loading"}
         className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
       >
-        {status === "loading" ? "Testing..." : "Test Claude Connection"}
+        {status === "loading" ? "Проверка..." : "Проверить связь с Claude"}
       </button>
       {result && (
         <p
@@ -39,7 +39,7 @@ export function TestConnectionButton() {
               : "text-sm text-red-600 dark:text-red-400"
           }
         >
-          {result.ok ? result.text : `Error: ${result.error}`}
+          {result.ok ? result.text : `Ошибка: ${result.error}`}
         </p>
       )}
     </div>

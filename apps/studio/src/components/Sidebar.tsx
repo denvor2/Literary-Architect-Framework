@@ -40,18 +40,18 @@ export function Sidebar({
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Book
+            Книга
           </h2>
           <button
             onClick={() => onNewBook?.()}
             className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
           >
-            + New Book
+            + Новая книга
           </button>
         </div>
         {books.length === 0 ? (
           <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            No books yet
+            Пока нет книг
           </p>
         ) : (
           <ul className="flex flex-col gap-1">
@@ -65,7 +65,7 @@ export function Sidebar({
                       : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
                   }`}
                 >
-                  {book.title || "Untitled Book"}
+                  {book.title || "Без названия"}
                 </button>
               </li>
             ))}
@@ -75,18 +75,18 @@ export function Sidebar({
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Chapters
+            Главы
           </h2>
           <button
             onClick={() => onCreateChapter?.()}
             className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
           >
-            + New Chapter
+            + Новая глава
           </button>
         </div>
         {chapters.length === 0 ? (
           <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            No chapters yet
+            Пока нет глав
           </p>
         ) : (
           <ul className="flex flex-col gap-1">
@@ -107,7 +107,7 @@ export function Sidebar({
                     onClick={() => onCreateScene?.(chapter.id)}
                     className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                   >
-                    + New Scene
+                    + Новая сцена
                   </button>
                 </div>
                 {chapter.scenes.length > 0 && (
@@ -137,18 +137,18 @@ export function Sidebar({
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Characters
+            Персонажи
           </h2>
           <button
             onClick={() => onCreateCharacter?.()}
             className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
           >
-            + New Character
+            + Новый персонаж
           </button>
         </div>
         {characters.length === 0 ? (
           <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            No characters yet
+            Пока нет персонажей
           </p>
         ) : (
           <ul className="flex flex-col gap-1">
@@ -162,7 +162,7 @@ export function Sidebar({
                       : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
                   }`}
                 >
-                  {character.name || "Untitled Character"}
+                  {character.name || "Без имени"}
                 </button>
               </li>
             ))}

@@ -15,8 +15,8 @@ export function DeveloperTools() {
         onClick={() => setOpen((value) => !value)}
         className="flex w-full items-center justify-between px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
       >
-        <span>Developer Tools</span>
-        <span>{open ? "Hide" : "Show"}</span>
+        <span>Инструменты разработчика</span>
+        <span>{open ? "Скрыть" : "Показать"}</span>
       </button>
       {open && (
         <div className="flex flex-col items-center gap-4 border-t border-zinc-200 p-4 dark:border-zinc-800">

@@ -72,7 +72,7 @@ export function EditorArea({
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
         <p className="text-lg text-zinc-500 dark:text-zinc-400">
-          Create your first book to get started
+          Создайте первую книгу, чтобы начать
         </p>
       </main>
     );
@@ -113,14 +113,14 @@ export function EditorArea({
                   textareaRef?.current?.focus();
                 }
               }}
-              placeholder="Scene title..."
+              placeholder="Название сцены..."
               className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-lg font-medium tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
             <button
               onClick={onToggleFocusMode}
               className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
-              {isFocusMode ? "Exit Focus" : "Фокус"}
+              {isFocusMode ? "Выйти из фокуса" : "Фокус"}
             </button>
           </div>
           <textarea
@@ -133,11 +133,11 @@ export function EditorArea({
                 event.target.value,
               )
             }
-            placeholder="Start writing your scene..."
+            placeholder="Начните писать сцену..."
             className="w-full flex-1 resize-none bg-transparent p-6 text-base leading-relaxed text-black outline-none dark:text-white"
           />
           <p className="text-xs text-zinc-400 dark:text-zinc-600">
-            Words: {wordCount} · Characters: {characterCount}
+            Слов: {wordCount} · Символов: {characterCount}
           </p>
         </div>
       </main>
@@ -155,7 +155,7 @@ export function EditorArea({
                 title: event.target.value,
               })
             }
-            placeholder="Chapter title..."
+            placeholder="Название главы..."
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-center text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
           />
           <input
@@ -165,13 +165,13 @@ export function EditorArea({
                 subtitle: event.target.value,
               })
             }
-            placeholder="Subtitle..."
+            placeholder="Подзаголовок..."
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-center text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
           />
         </div>
         {selectedChapter.scenes.length === 0 ? (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No scenes yet
+            Пока нет сцен
           </p>
         ) : (
           <ul className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -184,7 +184,7 @@ export function EditorArea({
           onClick={onNewScene}
           className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
-          New Scene
+          Новая сцена
         </button>
       </main>
     );
@@ -198,7 +198,7 @@ export function EditorArea({
           onChange={(event) =>
             onUpdateBook?.(book.id, { title: event.target.value })
           }
-          placeholder="Book title..."
+          placeholder="Название книги..."
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
         />
         <div className="flex gap-2">
@@ -234,7 +234,7 @@ export function EditorArea({
           onChange={(event) =>
             onUpdateBook?.(book.id, { premise: event.target.value })
           }
-          placeholder="What is this book about?"
+          placeholder="О чём эта книга?"
           rows={4}
           className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
         />
@@ -248,7 +248,7 @@ export function EditorArea({
                 .filter((tag) => tag.length > 0),
             })
           }
-          placeholder="Tags (comma-separated)..."
+          placeholder="Теги (через запятую)..."
           className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
         />
         <textarea
@@ -256,7 +256,7 @@ export function EditorArea({
           onChange={(event) =>
             onUpdateBook?.(book.id, { shortAnnotation: event.target.value })
           }
-          placeholder="Short annotation..."
+          placeholder="Краткая аннотация..."
           rows={2}
           className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
         />
@@ -265,7 +265,7 @@ export function EditorArea({
           onChange={(event) =>
             onUpdateBook?.(book.id, { fullAnnotation: event.target.value })
           }
-          placeholder="Full annotation..."
+          placeholder="Полная аннотация..."
           rows={6}
           className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
         />
@@ -273,11 +273,11 @@ export function EditorArea({
 
       <div>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          Chapters
+          Главы
         </h2>
         {chapters.length === 0 ? (
           <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            No chapters yet
+            Пока нет глав
           </p>
         ) : (
           <ul className="text-sm text-zinc-600 dark:text-zinc-400">

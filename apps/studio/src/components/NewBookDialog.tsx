@@ -56,26 +56,26 @@ export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-lg font-semibold text-black dark:text-zinc-50">
-          New Book
+          Новая книга
         </h2>
 
         <div className="flex flex-col gap-4">
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Book Title
+              Название книги
             </span>
             <input
               type="text"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Enter a title..."
+              placeholder="Введите название..."
               className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
             />
           </label>
 
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Genre
+              Жанр
             </span>
             <select
               value={genre}
@@ -92,7 +92,7 @@ export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {
 
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Language
+              Язык
             </span>
             <select
               value={language}
@@ -109,13 +109,13 @@ export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {
 
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Premise / Idea
+              Премиса / Идея
             </span>
             <textarea
               value={premise}
               onChange={(event) => setPremise(event.target.value)}
               rows={4}
-              placeholder="What is this book about?"
+              placeholder="О чём эта книга?"
               className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
             />
           </label>
@@ -126,14 +126,14 @@ export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {
             onClick={onCancel}
             className="rounded-full border border-zinc-300 px-4 py-1.5 text-sm font-medium text-black transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
           >
-            Cancel
+            Отмена
           </button>
           <button
             onClick={handleCreate}
             disabled={!canCreate}
             className="rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            Create Book
+            Создать книгу
           </button>
         </div>
       </div>

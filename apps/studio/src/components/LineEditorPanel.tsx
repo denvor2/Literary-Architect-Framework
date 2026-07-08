@@ -28,7 +28,7 @@ export function LineEditorPanel() {
       });
       setOutput(result.response.text);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Request failed.");
+      setError(err instanceof Error ? err.message : "Запрос не выполнен.");
     } finally {
       setStatus("idle");
     }
@@ -39,7 +39,7 @@ export function LineEditorPanel() {
       <textarea
         value={input}
         onChange={(event) => setInput(event.target.value)}
-        placeholder="Paste a passage to line-edit..."
+        placeholder="Вставьте отрывок текста для правки..."
         rows={6}
         className="w-full rounded-md border border-zinc-300 bg-white p-3 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
       />
@@ -48,7 +48,7 @@ export function LineEditorPanel() {
         disabled={status === "loading" || input.trim().length === 0}
         className="self-start rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
       >
-        {status === "loading" ? "Editing..." : "Line Edit"}
+        {status === "loading" ? "Правка..." : "Отредактировать"}
       </button>
       {output && (
         <p className="whitespace-pre-wrap rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100">
@@ -56,7 +56,9 @@ export function LineEditorPanel() {
         </p>
       )}
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">Error: {error}</p>
+        <p className="text-sm text-red-600 dark:text-red-400">
+          Ошибка: {error}
+        </p>
       )}
     </div>
   );

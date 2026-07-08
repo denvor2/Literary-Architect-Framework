@@ -32,7 +32,7 @@ export function CharacterPanel({
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
         <p className="text-lg text-zinc-500 dark:text-zinc-400">
-          Select a character
+          Выберите персонажа
         </p>
       </main>
     );
@@ -43,7 +43,7 @@ export function CharacterPanel({
       <div className="flex w-full flex-1 flex-col gap-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-            {character.name || "Untitled Character"}
+            {character.name || "Безымянный персонаж"}
           </h1>
           <button
             onClick={() => {
@@ -59,20 +59,20 @@ export function CharacterPanel({
 
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Name
+            Имя
           </label>
           <input
             ref={nameInputRef}
             value={character.name}
             onChange={(event) => onUpdate?.({ name: event.target.value })}
-            placeholder="Character name..."
+            placeholder="Имя персонажа..."
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Photo URL
+            Ссылка на фото
           </label>
           <input
             value={character.photoUrl}
@@ -84,7 +84,7 @@ export function CharacterPanel({
             // eslint-disable-next-line @next/next/no-img-element -- arbitrary external URL, not a build-time optimizable local asset
             <img
               src={character.photoUrl}
-              alt={character.name || "Character photo"}
+              alt={character.name || "Фото персонажа"}
               className="h-40 w-40 rounded-lg object-cover"
             />
           )}
@@ -92,26 +92,26 @@ export function CharacterPanel({
 
         <div className="flex flex-1 flex-col gap-1.5">
           <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Description
+            Описание
           </label>
           <textarea
             value={character.description}
             onChange={(event) =>
               onUpdate?.({ description: event.target.value })
             }
-            placeholder="Who is this character..."
+            placeholder="Кто этот персонаж..."
             className="min-h-32 w-full flex-1 resize-none rounded-md border border-zinc-300 bg-white p-3 text-base leading-relaxed text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
           />
         </div>
 
         <div className="flex flex-1 flex-col gap-1.5">
           <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Notes
+            Заметки
           </label>
           <textarea
             value={character.notes}
             onChange={(event) => onUpdate?.({ notes: event.target.value })}
-            placeholder="Additional notes..."
+            placeholder="Дополнительные заметки..."
             className="min-h-32 w-full flex-1 resize-none rounded-md border border-zinc-300 bg-white p-3 text-base leading-relaxed text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
           />
         </div>

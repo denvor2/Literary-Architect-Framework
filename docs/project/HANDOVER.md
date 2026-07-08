@@ -20,15 +20,15 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 13 (unified chat mechanism for all four Product Roles) is in progress. Steps 01-03 are
-committed: `assistantThreads` domain model + persisted assistant mode (Step 01); all four Expert
-routes accept client-managed `messages` history, server stays stateless (Step 02); AI Bus
-operations use `sceneText` + `messages` (Step 03). Step 04 (workspace-controller mutations —
-`appendMessage`/`createThread`) is active, awaiting Architect review before commit. Sprints
-06 through 12 are all closed. As of this update, [CURRENT_SPRINT.md](CURRENT_SPRINT.md) itself
-has not yet been refreshed past Sprint 12's closing — `git log` and `docs/task-bus/queue/done/`
-are the more current source until it is; treat this note as temporary and remove it once
-CURRENT_SPRINT.md is updated to match.
+Sprint 14 (Reader multiple named instances + systematic localization) is in progress, not yet
+started at code level. Sprint 13 (unified chat mechanism for all four Product Roles) closed —
+every Product Role now has a real, persisted message history instead of the previous one-shot
+request model; see [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current Sprint 14 goal (its
+git history holds Sprint 13's full closing summary). Sprints 06 through 13 are all closed.
+
+**Process note:** this project is currently working without a separate Architect session — the
+Product Owner reviews Step Cards directly instead (see "Architecture Review before commit"
+below).
 
 ## Architecture
 
@@ -66,28 +66,30 @@ CURRENT_SPRINT.md is updated to match.
   /api/reader | /api/coauthor`.
   - `apps/studio/src/domain/` — single source of truth for
     `Book`/`Chapter`/`Scene`/`Character`/`Workspace`. `Book` also holds `assistantThreads`
-    (Sprint 13 Step 01) — one or more named dialogs per Product Role (Co-author/Editor: always
-    one continuous thread; Critic/Reader: may hold several).
+    (Sprint 13) — one or more named dialogs per Product Role (Co-author/Editor: always one
+    continuous thread; Critic/Reader: may hold several — though only the last/active one is
+    currently visible in the UI, a real gap for Sprint 14's Reader-multi-instance goal, see
+    CURRENT_SPRINT.md).
   - `apps/studio/src/ai/` — AI Bus v5 contracts (`operations.ts`, `context.ts`, `response.ts`,
-    `applier.ts`, `aiBus.ts`). Since Sprint 13 Step 03, `AIOperation` payloads use `sceneText`
-    (not `text`/`currentText`) plus a required `messages` array.
+    `applier.ts`, `aiBus.ts`). Since Sprint 13, `AIOperation` payloads use `sceneText` (not
+    `text`/`currentText`) plus a required `messages` array, uniformly across all four variants.
   - `apps/studio/src/storage/workspaceStorage.ts` — the only place that touches `localStorage`;
     also holds `migrateIfNeeded()` (old single-book format) and `normalizeBook()` (centralized
     field-defaulting for `Book`).
   - `apps/studio/src/workspace/useWorkspaceController.ts` — owns all `Workspace` state and
-    mutation logic. As of Sprint 13 Step 04 (active, not yet committed), also owns
-    `appendMessage`/`createThread` for `assistantThreads`.
+    mutation logic, including `appendMessage`/`createThread`/`activeThreads` for
+    `assistantThreads` (Sprint 13).
+  - `apps/studio/src/components/AssistantPanel.tsx` — the single functional AI-interaction
+    surface (mode cards + real chat history + input, responsive `lg:` layout), since Sprint 13
+    Step 05. `EditorArea.tsx` went back to pure scene editing the same step — it no longer
+    contains any AI-calling code.
 - `apps/studio/src/components/LineEditorPanel.tsx` no longer bypasses the AI Bus — routed through
   `aiBus.execute()` since Sprint 07 Step 02. The previously tracked "known gap" here is closed.
-- Sprint 13 Steps 01-03 changed the AI Bus operation payload shape (`text`/`currentText` →
-  `sceneText`); the UI layer (`EditorArea.tsx`, `LineEditorPanel.tsx`, `NewBookDialog.tsx`) has
-  not been updated yet (Step 05, not started) — `npx tsc --noEmit` will show errors confined to
-  those files until then. This is expected, not a regression.
 - `framework/`, `prompts/`, `templates/`, `examples/`, `tests/`, `assets/` are still empty
   scaffolding from Sprint 01.
 - Documentation (this file included) was substantially expanded in Sprint 03 via an
-  Architecture Review process, updated at Sprint 06 closeout, and refreshed again here mid
-  Sprint 13 after drift was found at a new session's bootstrap.
+  Architecture Review process, updated at Sprint 06 closeout, and refreshed several times since
+  as drift was found (most recently at Sprint 13's close).
 
 ## Accepted ADRs
 
@@ -118,22 +120,20 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Sprint 13 Step 04 (`useWorkspaceController.ts` — `appendMessage`/`createThread` mutations) is
-implemented and has an ARP in `docs/task-bus/queue/active/`, awaiting `STATUS: OK` from the
-Architect before commit. After that, Step 05 (wire the new mutations into the UI — the
-assistant-switcher consolidation and chat mechanism described in
-`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 15) is expected next, though it is not
-yet a scoped Step Card in this repository.
+Sprint 14's two Goal items (see CURRENT_SPRINT.md) have different readiness: localization
+(Line Editor's/Critic's system prompts, English UI-copy audit) is well-scoped and ready for a
+Step Card; Reader multiple named instances needs a planning pass first — last sprint's
+`createThread`/"Начать заново" alone doesn't satisfy it (older threads aren't visible/
+comparable, only the active one is), and the vision document itself only records the intent,
+not a UX design.
 
 ## Current Priorities
 
-1. Get Sprint 13 Step 04 reviewed and committed.
-2. Scope and implement Sprint 13 Step 05 (UI wiring for the chat mechanism).
+1. Sprint 14 Goal item 2 — localization (Step Card-ready).
+2. Sprint 14 Goal item 1 — Reader multi-instance planning pass, then implementation.
 3. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both still placeholders.
-4. [ADR-0002](../adr/ADR-0002-expert-contract-vision.md) has already been superseded by
-   [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) — no longer an open item.
 
 ## Working Style
 
@@ -152,8 +152,11 @@ continuing.
   report in `docs/reports/`; project snapshots live in `docs/project/`. Don't let decisions
   live only in conversation.
 - **Architecture Review before commit:** documentation and architecture changes are reviewed
-  by the Product Owner and Architect before being committed. See
-  [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md).
+  before being committed. See [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md). As of Sprint
+  13, this project works without a separate Architect session — the Programmer (Executor) role
+  writes its own Step Cards, and the Product Owner reviews directly (`STATUS: OK`) instead of a
+  separate Architect. The two-role review principle itself (don't commit unreviewed) is
+  unchanged — only who plays Architect.
 - **Preferred terminology:** "Literary Studio", "AI-powered IDE for writers", "Expert" /
   "Professional Role", "Framework" (the `framework/` system), "Studio App" (the `apps/studio/`
   Next.js application).

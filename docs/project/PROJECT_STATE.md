@@ -4,11 +4,12 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-06 (Sprint 12 closing)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 12 are all complete and
-committed; no blocking issues. Co-author now has a real, generative AI Expert
-([ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md)), resolving the last unmapped Product
-Role from `docs/product/DOMAIN_MODEL.md`'s Open Questions.
+**Last updated:** 2026-07-08 (Sprint 13 closing)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 13 are all complete and
+committed; no blocking issues. Every Product Role now has a real, persisted message history
+(`assistantThreads`) instead of the previous one-shot request model. This project is currently
+working without a separate Architect session — the Product Owner reviews directly instead (see
+[HANDOVER.md](HANDOVER.md)).
 **Current Phase:** Phase 1 (MVP).
 
 ## Source of Truth
@@ -19,15 +20,22 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 12 — Co-author Expert + Editor Book Context (closed). Built `/api/coauthor`, the
-project's first genuinely generative AI Expert and the first to receive the whole `Book` as
-context; extended `/api/line-editor` with an optional `bookContext` field for consistency only
-(Editor's task did not change); wired both into the AI Bus (`coauthor_draft` operation,
-`improve_text`'s `bookContext` passthrough) and the UI.
-[ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) ratifies the Co-author Expert contract;
-[ADR-0004](../adr/ADR-0004-expert-contract-specification.md) is revised (not superseded) to
-record Editor's optional book-context extension. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for
-the full closing summary.
+Sprint 14 — Reader Multiple Named Instances + Systematic Localization (in progress, not yet
+started at code level). See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current goal and
+[CURRENT_STEP.md](CURRENT_STEP.md) for the single most recently completed Step Card.
+
+**Sprint 13 — Unified Chat Mechanism (closed).** Gave every Product Role a real, persisted
+message history: `assistantThreads` domain model + persisted assistant mode; all four Expert
+routes accept client-managed `messages` (server stays stateless, ADR-0004 unchanged); AI Bus
+operations renamed to `sceneText`+`messages`; controller mutations
+(`appendMessage`/`createThread`/`activeThreads`); and a real chat UI replacing the old
+one-shot dropdown+button, consolidated into a single functional `AssistantPanel.tsx` (mode
+cards + responsive `lg:` layout), which also meant deliberately dropping Sprint 05's old
+`MODE_INFO` "perception layer" (fake scene phase/consistency, a "no memory" disclosure that
+would now be literally false with real persisted history). No new ADR — a domain-model/UI
+extension of the already-ratified stateless Expert Contract, not a new Expert or contract
+change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full closing summary
+(one commit before the current Sprint 14 version of that file).
 
 ## Completed Milestones
 
@@ -131,6 +139,10 @@ the full closing summary.
   Owner screenshots and fixed as emergency Step Cards (assistant button label not reflecting
   mode, then unified to a single "Спросить" label). Committed `05c820c`, `4b2f7c5`, `5ba7929`,
   `bee042e`, `5785ce2`, `18b4f21`.
+- **Sprint 13** — see "Current Sprint" above for the full summary. Domain model
+  (`assistantThreads`), all four Expert routes, AI Bus, workspace controller, and UI all gained
+  real persisted per-role message history, replacing the one-shot request model used since
+  Sprint 05. Committed `f68e676`, `5c2d3e9`, `db8b510`, `af18c4b`, `39ee241`.
 
 ## Current Architecture
 
@@ -155,24 +167,29 @@ the full closing summary.
   Co-author both optionally/always (respectively) receive the whole `Book` as context; Critic
   and Reader remain scene/selection-scoped by design (see ADR-0008's per-Expert context-scope
   table).
-- **AI Bus layering (Sprint 06, extended Sprint 08/09/12):**
+- **AI Bus layering (Sprint 06, extended Sprint 08/09/12/13):**
   `UI (page.tsx, orchestration only) → Workspace Controller (useWorkspaceController) →
   Workspace (domain/workspace.ts) → AI Bus (aiBus.execute, dispatches by operation.type) →
   Operation → Context Envelope → Response → Applied Response → /api/line-editor |
   /api/critic | /api/reader | /api/coauthor`. `aiBus.execute()` performs real dispatch since
-  Sprint 08 Step 02 — previously `operation.type` was read only decoratively. Since Sprint 12,
-  `AIOperation` has four variants with two distinct payload shapes (`{ text, sceneId?,
-  chapterId? }` vs. Co-author's `{ currentText, bookContext }`), and `aiBus.execute()` no longer
-  destructures `text` once at the top — each branch destructures its own payload fields.
-- **Domain Model (extended Sprint 11 — [ADR-0007](../adr/ADR-0007-multi-book-workspace.md)):**
-  `Workspace` now holds `books: Book[]` + `activeBookId` (previously a single `book: Book |
-  null`); `Book` is a self-contained container — `chapters`/`characters` live inside it, not as
-  separate top-level `Workspace` fields as before. Domain types
-  (`Book`/`Chapter`/`Scene`/`Character`/`Workspace`) live in `apps/studio/src/domain/` as the
-  single source of truth; `localStorage` access is isolated in
-  `apps/studio/src/storage/workspaceStorage.ts`, which also holds `migrateIfNeeded()` (old-format
-  migration) and `normalizeBook()` (centralized field-defaulting for `Book`, a documented
-  practice per ADR-0007 for any future field added to `Book`).
+  Sprint 08 Step 02 — previously `operation.type` was read only decoratively. Since Sprint 13,
+  `AIOperation`'s four variants share a uniform `sceneText`+`messages` shape (`text`/
+  `currentText` unified into `sceneText`; `messages: ChatMessage[]` required on every variant —
+  the server stays stateless, ADR-0004 unchanged, the client sends the whole conversation on
+  every call).
+- **Domain Model (extended Sprint 11 — [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) —
+  and Sprint 13):** `Workspace` holds `books: Book[]` + `activeBookId` + `selectedAssistantMode`
+  (persisted across sessions since Sprint 13); `Book` is a self-contained container —
+  `chapters`/`characters`/`assistantThreads` all live inside it. `assistantThreads` (Sprint 13)
+  holds one or more named `AssistantThread`s (`{ id, name, messages: ChatMessage[] }`) per
+  Product Role — Co-author/Editor always use a single continuous thread, Critic/Reader may hold
+  several (only the last/active one is currently visible in the UI — see CURRENT_SPRINT.md's
+  Sprint 14 finding). Domain types (`Book`/`Chapter`/`Scene`/`Character`/`Workspace`/
+  `AssistantThread`/`ChatMessage`) live in `apps/studio/src/domain/` as the single source of
+  truth; `localStorage` access is isolated in `apps/studio/src/storage/workspaceStorage.ts`,
+  which also holds `migrateIfNeeded()` (old-format migration) and `normalizeBook()` (centralized
+  field-defaulting for `Book`, a documented practice per ADR-0007 for any future field added to
+  `Book`).
 - Product Role → AI Expert mapping: all four Product Roles now map 1:1 to their own Expert —
   Critic → Critic Expert ([ADR-0005](../adr/ADR-0005-critic-expert-contract.md)), Reader →
   Reader Expert ([ADR-0006](../adr/ADR-0006-reader-expert-contract.md)), Editor → Line Editor
@@ -210,18 +227,20 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Current Priorities
 
-1. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
-2. Scope Sprint 13 into Step Cards — no scope defined yet, though the vision document
-   (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 15) names what is expected to land
-   there: assistant-switcher UI consolidation, mode persistence, and the Co-author/Editor chat
-   mechanism, bundled together.
+1. Sprint 14, Goal item 2 (localization: Line Editor's/Critic's system prompts, English UI
+   copy audit) — well-scoped, ready for a Step Card.
+2. Sprint 14, Goal item 1 (Reader multiple named instances) — needs a planning pass before it
+   can become a Step Card; see CURRENT_SPRINT.md's Sprint 13 finding for why last sprint's
+   `createThread`/"Начать заново" alone doesn't satisfy this.
+3. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
 
 ## Open Decisions
 
 - **Pricing and detailed security requirements** — Sprint 02 conclusions not yet backfilled;
   see `docs/vision/pricing.md` and `docs/vision/security.md`.
-- **Sprint 13 scope** — not defined. Requires a Product Owner / Architect planning pass before
-  any implementation work starts.
+- **Reader multi-instance UX** — not designed. Open question: how are multiple named Reader
+  instances created/named/deleted/switched between, and whether the same mechanism should also
+  serve Critic's future thematic subcategories (Sprint 18) or is Reader-specific.
 
 ## Known Risks
 
@@ -239,5 +258,5 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-None defined. Sprint 12 is closed; Sprint 13 has not been started and has no scope in this
-repository yet.
+Sprint 14, Goal item 1 (Reader multiple named instances) once its planning pass produces a
+concrete design — the larger of Sprint 14's two work areas.

@@ -9,7 +9,7 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-13-Step-04
+id: Sprint-13-Step-05
 status: done
-next: [Sprint-13-Step-05]
+next: [Sprint-14-Step-01]
 ```

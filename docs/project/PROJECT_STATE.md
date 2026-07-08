@@ -4,12 +4,12 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-08 (Sprint 13 closing)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 13 are all complete and
-committed; no blocking issues. Every Product Role now has a real, persisted message history
-(`assistantThreads`) instead of the previous one-shot request model. This project is currently
-working without a separate Architect session — the Product Owner reviews directly instead (see
-[HANDOVER.md](HANDOVER.md)).
+**Last updated:** 2026-07-08 (Sprint 14 closing)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 14 are all complete and
+committed; no blocking issues. Reader now supports multiple named, persona'd instances that can
+be compared side by side, resolving Sprint 13's own carried-forward finding. This project is
+currently working without a separate Architect session — the Product Owner reviews directly
+instead (see [HANDOVER.md](HANDOVER.md)).
 **Current Phase:** Phase 1 (MVP).
 
 ## Source of Truth
@@ -20,10 +20,17 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 14 — Reader Multiple Named Instances (in progress, not yet started at code level — needs
-a planning pass first). See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current goal and
-[CURRENT_STEP.md](CURRENT_STEP.md) for the single most recently completed Step Card. Systematic
-localization is Sprint 15, not this sprint (`docs/vision/SPRINT_ROADMAP.md`).
+Sprint 15 — Systematic Localization (in progress, not yet scoped into Step Cards). See
+[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current goal and [CURRENT_STEP.md](CURRENT_STEP.md)
+for the single most recently completed Step Card.
+
+**Sprint 14 — Reader Multiple Named Instances (closed).** Resolved a real gap Sprint 13 left
+open: Reader now supports several named, persona'd instances (not just a resettable single
+thread) — `AssistantThread` gained an optional `persona` field, `/api/reader` folds it into the
+system prompt, and `AssistantPanel.tsx`'s Reader mode got instance chips (create/rename/delete),
+single-view switching, and a side-by-side compare grid for 2+ selected instances.
+[ADR-0006](../adr/ADR-0006-reader-expert-contract.md) revised (not superseded) to record this,
+same principle as ADR-0004's Sprint 12 `bookContext` revision.
 
 **Sprint 13 — Unified Chat Mechanism (closed).** Gave every Product Role a real, persisted
 message history: `assistantThreads` domain model + persisted assistant mode; all four Expert
@@ -140,10 +147,15 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
   Owner screenshots and fixed as emergency Step Cards (assistant button label not reflecting
   mode, then unified to a single "Спросить" label). Committed `05c820c`, `4b2f7c5`, `5ba7929`,
   `bee042e`, `5785ce2`, `18b4f21`.
-- **Sprint 13** — see "Current Sprint" above for the full summary. Domain model
-  (`assistantThreads`), all four Expert routes, AI Bus, workspace controller, and UI all gained
-  real persisted per-role message history, replacing the one-shot request model used since
-  Sprint 05. Committed `f68e676`, `5c2d3e9`, `db8b510`, `af18c4b`, `39ee241`.
+- **Sprint 13** — Domain model (`assistantThreads`), all four Expert routes, AI Bus, workspace
+  controller, and UI all gained real persisted per-role message history, replacing the one-shot
+  request model used since Sprint 05. Committed `f68e676`, `5c2d3e9`, `db8b510`, `af18c4b`,
+  `39ee241`.
+- **Sprint 14** — see "Current Sprint" above for the full summary. Reader gained multiple named,
+  persona'd instances (create/rename/delete, single-view switching, side-by-side compare) —
+  `AssistantThread`'s optional `persona` field, `/api/reader`'s system-prompt injection, and
+  `AssistantPanel.tsx`'s `ReaderPanel` sub-UI. Committed `e41793e`, `49f27ca`.
+  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) revised (not superseded).
 
 ## Current Architecture
 
@@ -153,7 +165,7 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
 - The Expert Contract has been ratified as
   [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) (Line Editor, revised Sprint 12),
   [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) (Critic),
-  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) (Reader), and
+  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) (Reader, revised Sprint 14), and
   [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) (Co-author) — request/response schema,
   AI Bus v5 chain position, error model, and deterministic behavior, each grounded in a
   file+line citation against the running code. ADR-0004 supersedes
@@ -182,12 +194,14 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
   and Sprint 13):** `Workspace` holds `books: Book[]` + `activeBookId` + `selectedAssistantMode`
   (persisted across sessions since Sprint 13); `Book` is a self-contained container —
   `chapters`/`characters`/`assistantThreads` all live inside it. `assistantThreads` (Sprint 13)
-  holds one or more named `AssistantThread`s (`{ id, name, messages: ChatMessage[] }`) per
-  Product Role — Co-author/Editor always use a single continuous thread, Critic/Reader may hold
-  several (only the last/active one is currently visible in the UI — see CURRENT_SPRINT.md's
-  Sprint 14 finding). Domain types (`Book`/`Chapter`/`Scene`/`Character`/`Workspace`/
-  `AssistantThread`/`ChatMessage`) live in `apps/studio/src/domain/` as the single source of
-  truth; `localStorage` access is isolated in `apps/studio/src/storage/workspaceStorage.ts`,
+  holds one or more named `AssistantThread`s (`{ id, name, messages: ChatMessage[], persona?:
+  string }`) per Product Role — Co-author/Editor always use a single continuous thread; Critic
+  still only exposes the last/active one in the UI (unchanged, out of Sprint 14 scope); Reader
+  (Sprint 14) surfaces all of them as named, comparable instances, each optionally carrying a
+  `persona` that's folded into `/api/reader`'s system prompt when present. Domain types
+  (`Book`/`Chapter`/`Scene`/`Character`/`Workspace`/`AssistantThread`/`ChatMessage`) live in
+  `apps/studio/src/domain/` as the single source of truth; `localStorage` access is isolated in
+  `apps/studio/src/storage/workspaceStorage.ts`,
   which also holds `migrateIfNeeded()` (old-format migration) and `normalizeBook()` (centralized
   field-defaulting for `Book`, a documented practice per ADR-0007 for any future field added to
   `Book`).
@@ -228,20 +242,17 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Current Priorities
 
-1. Sprint 14 (Reader multiple named instances) — needs a planning pass before it can become a
-   Step Card; see CURRENT_SPRINT.md's Sprint 13 finding for why last sprint's
-   `createThread`/"Начать заново" alone doesn't satisfy this.
-2. Sprint 15 (systematic localization: Line Editor's/Critic's system prompts, English UI-copy
-   audit) — well-scoped, ready for a Step Card once Sprint 14 closes.
-3. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
+1. Sprint 15 (systematic localization: Line Editor's/Critic's system prompts, English UI-copy
+   audit) — well-scoped, ready for Step Cards.
+2. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
 
 ## Open Decisions
 
 - **Pricing and detailed security requirements** — Sprint 02 conclusions not yet backfilled;
   see `docs/vision/pricing.md` and `docs/vision/security.md`.
-- **Reader multi-instance UX** — not designed. Open question: how are multiple named Reader
-  instances created/named/deleted/switched between, and whether the same mechanism should also
-  serve Critic's future thematic subcategories (Sprint 18) or is Reader-specific.
+- **Whether Critic should reuse Reader's Sprint 14 multi-instance mechanism** for its own future
+  thematic subcategories (Sprint 18), or needs a genuinely different shape — open, recorded in
+  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md)'s Review Trigger.
 
 ## Known Risks
 
@@ -259,4 +270,4 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-Sprint 14 (Reader multiple named instances) once its planning pass produces a concrete design.
+Sprint 15 (systematic localization) — both Goal items are well-scoped, ready to implement.

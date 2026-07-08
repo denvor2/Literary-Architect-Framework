@@ -79,8 +79,11 @@ not designed in the abstract.
 - `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`'s Section 7 envisions multiple named Reader
   instances (3–4, matching the original MVP Scope) rather than the single generic Reader
   implemented here — explicitly future work, not attempted by this ADR or Sprint 09.
+  **Resolved by the Sprint 14 revision below** — this bullet is historical (accurate as of
+  Sprint 09), not current.
 - Line Editor and Critic's prompts are not localized to Russian — planned for Sprint 14, not
-  addressed here.
+  addressed here. **Still open** — moved to Sprint 15 per `docs/vision/SPRINT_ROADMAP.md`; the
+  Sprint 14 revision below addresses `persona`/multiple instances only, not this.
 - As with Critic, `result`/`result.response.text` is not validated at runtime beyond being a
   string — consistent with the same discovery-stage tolerance already accepted for both prior
   Experts.
@@ -100,8 +103,46 @@ not designed in the abstract.
 **Still not decided by this ADR:**
 
 - The Co-author/Editor → Expert mapping.
-- Whether/when multiple named Reader instances (per the vision document) will be built.
-- Localization of Line Editor/Critic's prompts (Sprint 14).
+- ~~Whether/when multiple named Reader instances (per the vision document) will be built.~~
+  Built, Sprint 14 — see the Revision section below.
+- Localization of Line Editor/Critic's prompts (moved to Sprint 15,
+  `docs/vision/SPRINT_ROADMAP.md`).
+
+## Revision (Sprint 14 Step 01/02): optional `persona`, multiple named instances
+
+This section is an addition, not a rewrite — the Request/Response Schema section above remains
+the accurate description of this Expert's contract whenever `persona` is absent from the
+request, exactly as ADR-0004's own `bookContext` revision did for Line Editor.
+
+- **What changed:** `POST /api/reader` now also accepts an optional `persona` field in its JSON
+  body. When present, it is prepended to the system prompt: `You are reading and reacting as:
+  ${persona}. Stay in this persona throughout.\n\n` + the existing prompt text.
+  Source: `apps/studio/src/app/api/reader/route.ts` (Sprint-14-Step-01).
+- **Backward compatible by construction:** when `persona` is absent, the system prompt is
+  byte-identical to before this revision — no existing caller is required to change.
+- **Live-verified, not just read from the diff** (Sprint-14-Step-01, repeated end-to-end through
+  the real UI path in Sprint-14-Step-02): the same scene text sent with two different personas
+  ("десятилетний ребёнок" vs. "суровый литературный критик со стажем 40 лет") produced genuinely
+  different reactions in tone and content, not a cosmetic label — confirming `persona` actually
+  changes model behavior, not just request shape.
+- **This resolves this ADR's own "Known Gap"/Review Trigger about multiple named Reader
+  instances** (vision document Section 7, "3–4 Readers" from the original MVP Scope): each
+  named instance is a `AssistantThread` (`apps/studio/src/domain/model.ts`) carrying its own
+  `name` + optional `persona` — not a new domain concept, the existing shared thread shape used
+  by all four Product Roles gained one optional field. The UI
+  (`apps/studio/src/components/AssistantPanel.tsx`'s `ReaderPanel`, Sprint-14-Step-02) surfaces
+  all of a book's Reader threads as named, comparable cards — create/rename/delete, single-view
+  switching, and a side-by-side compare grid for 2+ selected instances — rather than exposing
+  only the single most recent one, which is what Critic still does (out of scope for this
+  revision; Critic's own thematic subcategories are a different, later, not-yet-designed idea —
+  vision document Section 7, Sprint 18 per `docs/vision/SPRINT_ROADMAP.md`).
+- **Known gap this revision does not address:** this ADR's Request/Response Schema section above
+  still describes the pre-Sprint-13 `{ text: string }` request shape. Sprint-13-Step-02 renamed
+  this to `{ sceneText: string, messages: ChatMessage[] }` (stateless conversation history, per
+  the since-established convention across all four Experts) — that rename was never folded back
+  into this ADR. Recorded honestly here rather than left silently stale; a full schema refresh
+  is a separate task if/when needed, not attempted by this revision (out of this Step Card's
+  Scope).
 
 ## Review Trigger
 
@@ -110,8 +151,11 @@ Revisit (amend or supersede) this ADR when any of the following occurs:
 - A fourth `AIOperation` variant is added — check whether the two-shape pattern recorded here
   (string vs. structured array) still describes the field, or a third shape emerges.
 - Co-author or Editor gets a concrete Expert mapping distinct from Line Editor.
-- Multiple named Reader instances are implemented (per
-  `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 7) — this ADR describes a single
-  generic Reader only.
-- Line Editor's or Critic's prompts are localized to Russian (Sprint 14) — at that point
-  Reader would no longer be the only Expert with an explicit language instruction.
+- Line Editor's or Critic's prompts are localized to Russian (Sprint 15, per
+  `docs/vision/SPRINT_ROADMAP.md`) — at that point Reader would no longer be the only Expert
+  with an explicit language instruction.
+- Critic gains its own thematic subcategories (Sprint 18) — check whether it should reuse the
+  same named-instance mechanism this revision gave Reader, or needs a genuinely different shape.
+- This ADR's Request/Response Schema section is refreshed to reflect Sprint 13's
+  `sceneText`/`messages` rename (see the Known Gap immediately above) — until then, treat that
+  section as historical (accurate as of Sprint 09), not current.

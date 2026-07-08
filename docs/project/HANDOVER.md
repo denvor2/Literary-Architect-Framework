@@ -20,15 +20,11 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 14 (Reader multiple named instances) is in progress, not yet started at code level —
-needs a planning pass first. Sprint 13 (unified chat mechanism for all four Product Roles)
-closed — every Product Role now has a real, persisted message history instead of the previous
-one-shot request model; see [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current Sprint 14
-goal (its git history holds Sprint 13's full closing summary). Sprints 06 through 13 are all
-closed. Systematic localization (Line Editor's/Critic's system prompts, English UI-copy audit)
-is Sprint 15 per `docs/vision/SPRINT_ROADMAP.md`, not Sprint 14 — an earlier version of this
-sprint's scope briefly and incorrectly bundled the two together; fixed in
-[CURRENT_SPRINT.md](CURRENT_SPRINT.md) before any code was written under the wrong scope.
+Sprint 15 (systematic localization) is in progress, not yet scoped into Step Cards. Sprint 14
+(Reader multiple named instances) closed — Reader now supports several named, persona'd
+instances instead of a single resettable thread, resolving a real gap Sprint 13 left open; see
+[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current Sprint 15 goal (its git history holds
+Sprint 14's full closing summary). Sprints 06 through 14 are all closed.
 
 **Process note:** this project is currently working without a separate Architect session — the
 Product Owner reviews Step Cards directly instead (see "Architecture Review before commit"
@@ -58,11 +54,12 @@ below).
   editor, Focus Mode, and `localStorage` persistence — layered on a domain-driven architecture
   (Sprint 06) with four live AI Experts.
 - **AI Experts (all live-validated with real Claude responses):** Line Editor (`/api/line-editor`,
-  Sprint 04), Critic (`/api/critic`, Sprint 08), Reader (`/api/reader`, Sprint 09), Co-author
-  (`/api/coauthor`, Sprint 12 — the first genuinely generative Expert, receiving the whole `Book`
-  as context). All four Product Roles now map 1:1 to their own Expert. As of Sprint 13 Step 02,
-  all four routes accept a client-managed `messages` history array — the server remains
-  stateless (ADR-0004); nothing is persisted between calls.
+  Sprint 04), Critic (`/api/critic`, Sprint 08), Reader (`/api/reader`, Sprint 09, gained an
+  optional `persona` field Sprint 14), Co-author (`/api/coauthor`, Sprint 12 — the first
+  genuinely generative Expert, receiving the whole `Book` as context). All four Product Roles
+  now map 1:1 to their own Expert. As of Sprint 13, all four routes accept a client-managed
+  `messages` history array — the server remains stateless (ADR-0004); nothing is persisted
+  between calls.
 - **Architecture:**
   `UI (page.tsx, orchestration only) → Workspace Controller (useWorkspaceController) →
   Workspace (domain/workspace.ts) → AI Bus (aiBus.execute, dispatches by operation.type) →
@@ -71,9 +68,9 @@ below).
   - `apps/studio/src/domain/` — single source of truth for
     `Book`/`Chapter`/`Scene`/`Character`/`Workspace`. `Book` also holds `assistantThreads`
     (Sprint 13) — one or more named dialogs per Product Role (Co-author/Editor: always one
-    continuous thread; Critic/Reader: may hold several — though only the last/active one is
-    currently visible in the UI, a real gap for Sprint 14's Reader-multi-instance goal, see
-    CURRENT_SPRINT.md).
+    continuous thread; Critic: may hold several, but the UI still only shows the last/active
+    one; Reader (Sprint 14): surfaces all of them as named, comparable instances, each
+    optionally carrying a `persona` — `AssistantThread`'s one new optional field).
   - `apps/studio/src/ai/` — AI Bus v5 contracts (`operations.ts`, `context.ts`, `response.ts`,
     `applier.ts`, `aiBus.ts`). Since Sprint 13, `AIOperation` payloads use `sceneText` (not
     `text`/`currentText`) plus a required `messages` array, uniformly across all four variants.
@@ -86,7 +83,9 @@ below).
   - `apps/studio/src/components/AssistantPanel.tsx` — the single functional AI-interaction
     surface (mode cards + real chat history + input, responsive `lg:` layout), since Sprint 13
     Step 05. `EditorArea.tsx` went back to pure scene editing the same step — it no longer
-    contains any AI-calling code.
+    contains any AI-calling code. Reader's mode (Sprint 14) has its own sub-UI (`ReaderPanel`)
+    — named instance chips (create/rename/delete), single-view switching, and a side-by-side
+    compare grid for 2+ selected instances; Co-author/Editor/Critic are unaffected.
 - `apps/studio/src/components/LineEditorPanel.tsx` no longer bypasses the AI Bus — routed through
   `aiBus.execute()` since Sprint 07 Step 02. The previously tracked "known gap" here is closed.
 - `framework/`, `prompts/`, `templates/`, `examples/`, `tests/`, `assets/` are still empty
@@ -104,7 +103,7 @@ below).
 | [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) | Technology Stack Strategy | Accepted |
 | [ADR-0004](../adr/ADR-0004-expert-contract-specification.md) | Expert Contract Specification | Accepted, revised Sprint 12 |
 | [ADR-0005](../adr/ADR-0005-critic-expert-contract.md) | Critic Expert Contract | Accepted |
-| [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) | Reader Expert Contract | Accepted |
+| [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) | Reader Expert Contract | Accepted, revised Sprint 14 |
 | [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) | Multi-Book Workspace | Accepted |
 | [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) | Co-author Expert Contract | Accepted |
 
@@ -124,17 +123,15 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Sprint 14 (Reader multiple named instances, see CURRENT_SPRINT.md) needs a planning pass before
-any Step Card — last sprint's `createThread`/"Начать заново" alone doesn't satisfy it (older
-threads aren't visible/comparable, only the active one is), and the vision document itself only
-records the intent, not a UX design. Localization (Line Editor's/Critic's system prompts,
-English UI-copy audit) is Sprint 15, ready for a Step Card once Sprint 14 closes — not before.
+Sprint 15 (systematic localization, see CURRENT_SPRINT.md) — two well-scoped Goal items (Line
+Editor's/Critic's system prompts gain a Russian instruction; an English UI-copy audit), neither
+needs a planning pass like Sprint 14's Reader multi-instance UX did. Not yet split into Step
+Cards.
 
 ## Current Priorities
 
-1. Sprint 14 — Reader multi-instance planning pass, then implementation.
-2. Sprint 15 — localization (Step Card-ready once Sprint 14 closes).
-3. Backfill remaining Sprint 02 context (pricing, security) — see
+1. Sprint 15 — localization (Step Card-ready, no design ambiguity).
+2. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both still placeholders.
 

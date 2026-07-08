@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { EditorArea } from "@/components/EditorArea";
@@ -12,12 +12,15 @@ import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 
 export default function Home() {
   const {
+    workspace,
     activeBook,
     books,
     activeBookId,
     chapters,
     selectedChapterId,
     selectedSceneId,
+    selectedChapter,
+    selectedScene,
     createBook,
     updateBook,
     createChapter,
@@ -36,10 +39,33 @@ export default function Home() {
     selectCharacter,
     selectBook,
     deselectAll,
+    selectAssistantMode,
+    appendMessage,
+    createThread,
+    activeThreads,
   } = useWorkspaceController();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // Ephemeral UI state only — not part of Workspace, not persisted.
   const [isFocusMode, setIsFocusMode] = useState(false);
+  // Sprint-13-Step-05: lifted from EditorArea so AssistantPanel (a sibling,
+  // not a descendant) can read the current text selection for Critic/Reader
+  // scoping — same technique as before (Sprint-08-Step-03), one level up.
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function getSelectedText(): string {
+    const el = textareaRef.current;
+    const sceneText = selectedScene?.text ?? "";
+    if (!el) return sceneText;
+    const { selectionStart, selectionEnd, value } = el;
+    if (
+      selectionStart == null ||
+      selectionEnd == null ||
+      selectionStart === selectionEnd
+    ) {
+      return value;
+    }
+    return value.slice(selectionStart, selectionEnd);
+  }
 
   // Clicking the already-active book returns to its overview (Sprint 10
   // behavior); clicking a different book switches to it.
@@ -54,7 +80,7 @@ export default function Home() {
   return (
     <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
       <Header />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
         {!isFocusMode && (
           <Sidebar
             books={books}
@@ -93,9 +119,27 @@ export default function Home() {
             onUpdateBook={updateBook}
             isFocusMode={isFocusMode}
             onToggleFocusMode={() => setIsFocusMode((value) => !value)}
+            textareaRef={textareaRef}
           />
         )}
-        {!isFocusMode && <AssistantPanel />}
+        {!isFocusMode && (
+          <AssistantPanel
+            book={activeBook}
+            sceneText={selectedScene?.text ?? ""}
+            getSelectedText={getSelectedText}
+            selectedMode={workspace.selectedAssistantMode}
+            onSelectMode={selectAssistantMode}
+            activeThreads={activeThreads}
+            onAppendMessage={appendMessage}
+            onCreateThread={createThread}
+            onReplaceSceneText={
+              selectedChapter && selectedScene
+                ? (text) =>
+                    updateSceneText(selectedChapter.id, selectedScene.id, text)
+                : undefined
+            }
+          />
+        )}
       </div>
       {!isFocusMode && <DeveloperTools />}
 

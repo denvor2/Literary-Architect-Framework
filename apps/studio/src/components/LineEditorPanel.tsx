@@ -22,7 +22,7 @@ export function LineEditorPanel() {
       const result = await aiBus.execute({
         operation: {
           type: "improve_text",
-          payload: { text: input },
+          payload: { sceneText: input, messages: [] },
         },
         context: {},
       });

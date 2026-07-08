@@ -34,6 +34,7 @@ type NewBookDialogProps = {
       | "tags"
       | "shortAnnotation"
       | "fullAnnotation"
+      | "assistantThreads"
     >,
   ) => void;
 };

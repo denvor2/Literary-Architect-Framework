@@ -1,32 +1,371 @@
-const ASSISTANTS = [
-  {
-    name: "Co-author",
-    description: "Draft and develop new material together.",
-  },
-  { name: "Editor", description: "Polish grammar, clarity, and flow." },
-  { name: "Critic", description: "Get an assessment of your writing." },
-  { name: "Reader", description: "See how a reader would react." },
-];
+"use client";
 
-export function AssistantPanel() {
+import { useState } from "react";
+import * as aiBus from "@/ai/aiBus";
+import type { AssistantThread, Book, ChatMessage } from "@/domain/model";
+
+// Sprint-13-Step-05: single functional AI surface, replacing two previously
+// redundant ones — this file's old decorative, unwired card list, and the
+// one-shot `SceneImprove` that used to live inside EditorArea.tsx. Consumes
+// Sprint-13-Step-01/04's `assistantThreads`/`appendMessage`/`createThread`/
+// `activeThreads` directly; no local duplicate of thread state.
+
+export type AssistantMode = "coauthor" | "editor" | "critic" | "reader";
+
+// Sprint-08-Step-03: a Critic review, unlike every other entry here. Shape
+// matches /api/critic's response.reviews — not validated at runtime, per
+// that route's own documented discovery-stage risk.
+type ReviewItem = {
+  category?: string;
+  severity?: string;
+  comment?: string;
+};
+
+const SEVERITY_BADGE: Record<string, string> = {
+  low: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  medium: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+  high: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
+};
+const DEFAULT_SEVERITY_BADGE = SEVERITY_BADGE.low;
+
+// Sprint-13-Step-05: deliberately just display metadata (emoji/label/
+// description/accent/placeholder) — the previous MODE_INFO also carried a
+// "perception layer" (fake scene phase, consistency indicator, an explicit
+// "no memory" disclosure) built specifically to compensate for the absence
+// of real chat history. That history is now real and persisted, so the old
+// layer would be actively false, not just outdated — removed rather than
+// carried forward (confirmed with Product Owner).
+const MODE_META: Record<
+  AssistantMode,
+  {
+    emoji: string;
+    label: string;
+    description: string;
+    accent: string;
+    activeBorder: string;
+    placeholder: string;
+  }
+> = {
+  coauthor: {
+    emoji: "🟡",
+    label: "Co-author",
+    description: "Draft and develop new material together.",
+    accent: "text-amber-600 dark:text-amber-400",
+    activeBorder: "border-amber-400 dark:border-amber-600",
+    placeholder: "Что дальше в этой книге? (необязательно)",
+  },
+  editor: {
+    emoji: "🟢",
+    label: "Editor",
+    description: "Polish grammar, clarity, and flow.",
+    accent: "text-emerald-600 dark:text-emerald-400",
+    activeBorder: "border-emerald-400 dark:border-emerald-600",
+    placeholder: "Что улучшить в этой сцене? (необязательно)",
+  },
+  critic: {
+    emoji: "🔴",
+    label: "Critic",
+    description: "Get an assessment of your writing.",
+    accent: "text-red-600 dark:text-red-400",
+    activeBorder: "border-red-400 dark:border-red-600",
+    placeholder: "На что обратить внимание? (необязательно)",
+  },
+  reader: {
+    emoji: "🔵",
+    label: "Reader",
+    description: "See how a reader would react.",
+    accent: "text-blue-600 dark:text-blue-400",
+    activeBorder: "border-blue-400 dark:border-blue-600",
+    placeholder: "Что именно интересует? (необязательно)",
+  },
+};
+
+const ASSISTANT_MODES = Object.keys(MODE_META) as AssistantMode[];
+
+// Critic's assistant messages carry response.text verbatim, which is a JSON
+// string of reviews (aiBus.ts: `resultText = JSON.stringify(data.reviews)`,
+// unchanged by this step). Parsed at render time, not at receive time — the
+// data is now persisted (localStorage), so a malformed/older entry must not
+// crash the whole panel; the original one-shot code had no such boundary to
+// defend.
+function parseReviews(content: string): ReviewItem[] | null {
+  try {
+    const parsed: unknown = JSON.parse(content);
+    return Array.isArray(parsed) ? (parsed as ReviewItem[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
+  if (reviews.length === 0) {
+    return (
+      <p className="rounded-lg border border-zinc-200 p-3 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        No issues found.
+      </p>
+    );
+  }
   return (
-    <aside className="flex w-72 shrink-0 flex-col gap-3 overflow-y-auto border-l border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
+    <ul className="flex flex-col gap-2">
+      {reviews.map((review, index) => (
+        <li
+          key={index}
+          className="flex flex-col gap-1.5 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+        >
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+              {review.category ?? "General"}
+            </span>
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                SEVERITY_BADGE[review.severity ?? ""] ?? DEFAULT_SEVERITY_BADGE
+              }`}
+            >
+              {review.severity ?? "?"}
+            </span>
+          </div>
+          <p className="text-sm text-black dark:text-zinc-50">
+            {review.comment ?? ""}
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+type AssistantPanelProps = {
+  book?: Book | null;
+  sceneText: string;
+  getSelectedText: () => string;
+  selectedMode: AssistantMode;
+  onSelectMode: (mode: AssistantMode) => void;
+  activeThreads?: {
+    coauthor?: AssistantThread;
+    editor?: AssistantThread;
+    critic?: AssistantThread;
+    reader?: AssistantThread;
+  };
+  onAppendMessage: (mode: AssistantMode, message: ChatMessage) => void;
+  onCreateThread: (mode: AssistantMode) => void;
+  onReplaceSceneText?: (text: string) => void;
+};
+
+export function AssistantPanel({
+  book,
+  sceneText,
+  getSelectedText,
+  selectedMode,
+  onSelectMode,
+  activeThreads,
+  onAppendMessage,
+  onCreateThread,
+  onReplaceSceneText,
+}: AssistantPanelProps) {
+  const [input, setInput] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+
+  if (!book) {
+    return (
+      <aside className="flex w-full shrink-0 flex-col gap-2 border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:w-80 lg:border-l lg:border-t-0">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Create your first book to talk to an assistant.
+        </p>
+      </aside>
+    );
+  }
+
+  const meta = MODE_META[selectedMode];
+  const thread = activeThreads?.[selectedMode];
+  const messages = thread?.messages ?? [];
+  // Editor/Co-author always work on the whole current scene; Critic/Reader
+  // scope to the current text selection, falling back to the whole scene —
+  // same split as before this step, just relocated from EditorArea.tsx.
+  const scopedText =
+    selectedMode === "critic" || selectedMode === "reader"
+      ? getSelectedText()
+      : sceneText;
+  // Sprint-12-Step-04's rule, generalized: only Co-author may run with no
+  // source text at all (a blank-page draft is part of its own contract).
+  const canSend = selectedMode === "coauthor" || scopedText.trim().length > 0;
+
+  async function handleSend() {
+    setStatus("loading");
+    try {
+      const trimmedInput = input.trim();
+      const outgoingMessages: ChatMessage[] = trimmedInput
+        ? [...messages, { role: "user", content: trimmedInput }]
+        : [...messages];
+      if (trimmedInput) {
+        onAppendMessage(selectedMode, { role: "user", content: trimmedInput });
+      }
+
+      let resultText: string;
+      if (selectedMode === "coauthor") {
+        const result = await aiBus.execute({
+          operation: {
+            type: "coauthor_draft",
+            payload: {
+              sceneText,
+              bookContext: book!,
+              messages: outgoingMessages,
+            },
+          },
+          context: {},
+        });
+        resultText = result.response.text;
+      } else if (selectedMode === "editor") {
+        const result = await aiBus.execute({
+          operation: {
+            type: "improve_text",
+            payload: {
+              sceneText,
+              bookContext: book!,
+              messages: outgoingMessages,
+            },
+          },
+          context: {},
+        });
+        resultText = result.response.text;
+      } else if (selectedMode === "critic") {
+        const result = await aiBus.execute({
+          operation: {
+            type: "critic_review",
+            payload: { sceneText: scopedText, messages: outgoingMessages },
+          },
+          context: {},
+        });
+        resultText = result.response.text;
+      } else {
+        const result = await aiBus.execute({
+          operation: {
+            type: "reader_reaction",
+            payload: { sceneText: scopedText, messages: outgoingMessages },
+          },
+          context: {},
+        });
+        resultText = result.response.text;
+      }
+
+      onAppendMessage(selectedMode, { role: "assistant", content: resultText });
+      setInput("");
+      setStatus("idle");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  return (
+    <aside className="flex max-h-96 w-full shrink-0 flex-col gap-3 overflow-y-auto border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:h-full lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
       <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
         Assistants
       </h2>
-      {ASSISTANTS.map((assistant) => (
-        <button
-          key={assistant.name}
-          className="rounded-lg border border-zinc-200 bg-white p-3 text-left transition-colors hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
-        >
-          <p className="text-sm font-medium text-black dark:text-zinc-50">
-            {assistant.name}
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+        {ASSISTANT_MODES.map((mode) => {
+          const info = MODE_META[mode];
+          const isActive = mode === selectedMode;
+          return (
+            <button
+              key={mode}
+              onClick={() => onSelectMode(mode)}
+              className={`rounded-lg border p-3 text-left transition-colors ${
+                isActive
+                  ? `${info.activeBorder} bg-white dark:bg-black`
+                  : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
+              }`}
+            >
+              <p
+                className={`text-sm font-medium ${isActive ? info.accent : "text-black dark:text-zinc-50"}`}
+              >
+                {info.emoji} {info.label}
+              </p>
+              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                {info.description}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto border-t border-zinc-200 pt-3 dark:border-zinc-800">
+        <div className="flex items-center justify-between">
+          <p className={`text-xs font-medium ${meta.accent}`}>
+            {meta.emoji} {meta.label}
           </p>
-          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-            {assistant.description}
-          </p>
-        </button>
-      ))}
+          {(selectedMode === "critic" || selectedMode === "reader") && (
+            <button
+              onClick={() => onCreateThread(selectedMode)}
+              className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            >
+              Начать заново
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
+          {messages.length === 0 && (
+            <p className="text-xs text-zinc-400 dark:text-zinc-600">
+              {meta.description}
+            </p>
+          )}
+          {messages.map((message, index) => {
+            if (message.role === "user") {
+              return (
+                <p
+                  key={index}
+                  className="whitespace-pre-wrap rounded-lg bg-zinc-200 p-2.5 text-sm text-black dark:bg-zinc-800 dark:text-zinc-50"
+                >
+                  {message.content}
+                </p>
+              );
+            }
+            const reviews =
+              selectedMode === "critic" ? parseReviews(message.content) : null;
+            return (
+              <div key={index} className="flex flex-col gap-2">
+                {reviews ? (
+                  <ReviewList reviews={reviews} />
+                ) : (
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-black dark:text-zinc-50">
+                    {message.content}
+                  </p>
+                )}
+                {(selectedMode === "coauthor" || selectedMode === "editor") &&
+                  onReplaceSceneText && (
+                    <button
+                      onClick={() => onReplaceSceneText(message.content)}
+                      className="self-start rounded-full bg-black px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                    >
+                      Вставить в сцену
+                    </button>
+                  )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <textarea
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder={meta.placeholder}
+            rows={2}
+            disabled={status === "loading"}
+            className="w-full resize-none rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          />
+          <button
+            onClick={handleSend}
+            disabled={status === "loading" || !canSend}
+            className="self-start rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          >
+            {status === "loading" ? "…" : "Спросить"}
+          </button>
+          {status === "error" && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Assistant unavailable. Try again.
+            </p>
+          )}
+        </div>
+      </div>
     </aside>
   );
 }

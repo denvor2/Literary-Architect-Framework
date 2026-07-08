@@ -52,6 +52,10 @@ export type AIOperation =
         sceneId?: string;
         chapterId?: string;
         messages: ChatMessage[];
+        // Sprint-14-Step-01: optional persona for a named Reader instance
+        // (e.g. "молодой читатель") — forwarded to /api/reader, which
+        // folds it into the system prompt when present.
+        persona?: string;
       };
     }
   | {

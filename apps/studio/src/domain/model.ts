@@ -49,10 +49,16 @@ export type ChatMessage = {
   readonly content: string;
 };
 
+// Sprint-14-Step-01: `persona` is meaningful only for Reader's named
+// instances (e.g. "молодой читатель" vs "придирчивый читатель") — the
+// other three roles never set it. Kept on the shared shape rather than a
+// separate "Reader Instance" type, since a named Reader instance is
+// otherwise exactly a thread (name + message history).
 export type AssistantThread = {
   readonly id: string;
   readonly name: string;
   readonly messages: readonly ChatMessage[];
+  readonly persona?: string;
 };
 
 // One data shape for all four Product Roles (Sprint-13-Step-01) — Co-author/

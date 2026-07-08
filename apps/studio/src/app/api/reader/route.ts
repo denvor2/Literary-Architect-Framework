@@ -11,10 +11,15 @@ import { getAnthropicClient } from "@/lib/ai/anthropic";
 // calls. `text` is renamed `sceneText` to match the shared schema across all four Experts.
 // Critic/Reader are outside the per-Expert context-scope table (ADR-0008) — no `bookContext`
 // field exists here, not even optionally.
+//
+// Sprint-14-Step-01: optional `persona` for named Reader instances (e.g. "молодой читатель").
+// Additive — absent `persona` produces byte-identical behavior to before this step, same
+// principle as `bookContext`'s addition to Line Editor in Sprint-12-Step-02.
 export async function POST(request: Request) {
   const body = await request.json();
   const sceneText = body?.sceneText;
   const messages = body?.messages;
+  const persona = typeof body?.persona === "string" ? body.persona : undefined;
 
   if (!sceneText || typeof sceneText !== "string") {
     return NextResponse.json(
@@ -51,11 +56,15 @@ export async function POST(request: Request) {
     const client = getAnthropicClient();
     const contextMessage = { role: "user" as const, content: sceneText };
     const anthropicMessages = [contextMessage, ...messages];
+    const baseSystem =
+      "You are a reader reacting to the text the user gives you — not an editor and not a literary critic. Do not comment on grammar, punctuation, or wording. Do not produce a structured, categorized assessment. Instead, share your subjective impressions as an engaged reader: what caught your attention, what confused or surprised you, how the pacing felt, what you expect or hope happens next. Write your reaction as flowing prose, in your own voice, not as a list. The messages that follow may be a continuing conversation about your reaction, not just the initial text — if the author asks a follow-up question about what you already said, answer it directly, still as the same engaged reader, not as an editor or critic. Respond in Russian, regardless of the language of the text you are given, unless the user explicitly asks for another language.";
+    const system = persona
+      ? `You are reading and reacting as: ${persona}. Stay in this persona throughout.\n\n${baseSystem}`
+      : baseSystem;
     const message = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1024,
-      system:
-        "You are a reader reacting to the text the user gives you — not an editor and not a literary critic. Do not comment on grammar, punctuation, or wording. Do not produce a structured, categorized assessment. Instead, share your subjective impressions as an engaged reader: what caught your attention, what confused or surprised you, how the pacing felt, what you expect or hope happens next. Write your reaction as flowing prose, in your own voice, not as a list. The messages that follow may be a continuing conversation about your reaction, not just the initial text — if the author asks a follow-up question about what you already said, answer it directly, still as the same engaged reader, not as an editor or critic. Respond in Russian, regardless of the language of the text you are given, unless the user explicitly asks for another language.",
+      system,
       messages: anthropicMessages,
     });
     const block = message.content.find((item) => item.type === "text");

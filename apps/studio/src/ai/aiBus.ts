@@ -59,11 +59,13 @@ export async function execute(
     // still shaped for a single text result and are not reworked here.
     resultText = JSON.stringify(data.reviews);
   } else if (operation.type === "reader_reaction") {
-    const { sceneText, messages } = operation.payload;
+    const { sceneText, messages, persona } = operation.payload;
     const response = await fetch("/api/reader", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sceneText, messages }),
+      body: JSON.stringify(
+        persona ? { sceneText, messages, persona } : { sceneText, messages },
+      ),
     });
     const data = await response.json();
     if (!data.ok) {

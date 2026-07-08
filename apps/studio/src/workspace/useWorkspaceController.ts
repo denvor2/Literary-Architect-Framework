@@ -453,12 +453,18 @@ export function useWorkspaceController() {
   }
 
   // Sprint-13-Step-04: appends to the active dialog (last element of the
-  // role's thread array) — see createThread() below for how "active" is
-  // defined for Critic/Reader (multiple threads) vs Co-author/Editor
-  // (always threads[0], the array's only and therefore also last element).
+  // role's thread array) by default — see createThread() below for how
+  // "active" is defined for Critic/Reader (multiple threads) vs Co-author/
+  // Editor (always threads[0], the array's only and therefore also last
+  // element). Sprint-14-Step-01: generalized to target a specific thread
+  // by id (`threadId`) — needed once Reader can have several simultaneously
+  // visible/addressable instances (Step 02's UI), not just the last one.
+  // Omitting `threadId` preserves Co-author/Editor/Critic's Sprint 13
+  // behavior unchanged (targets the last thread).
   function appendMessage(
     mode: "coauthor" | "editor" | "critic" | "reader",
     message: ChatMessage,
+    threadId?: string,
   ) {
     setWorkspace((previous) => {
       const activeBook = previous.books.find(
@@ -466,9 +472,9 @@ export function useWorkspaceController() {
       );
       if (!activeBook) return previous;
       const threads = activeBook.assistantThreads[mode];
-      const lastIndex = threads.length - 1;
-      const updatedThreads = threads.map((thread, index) =>
-        index === lastIndex
+      const targetId = threadId ?? threads.at(-1)?.id;
+      const updatedThreads = threads.map((thread) =>
+        thread.id === targetId
           ? { ...thread, messages: [...thread.messages, message] }
           : thread,
       );
@@ -489,9 +495,15 @@ export function useWorkspaceController() {
     });
   }
 
-  // Adds a new empty dialog at the end of the role's thread array, which
-  // (by the "active = last element" rule above) immediately becomes active.
-  function createThread(mode: "coauthor" | "editor" | "critic" | "reader") {
+  // Adds a new dialog at the end of the role's thread array, which (by the
+  // "active = last element" rule above) immediately becomes active.
+  // Sprint-14-Step-01: accepts an optional name/persona (for Reader's named
+  // instances, Step 02's UI) instead of always auto-generating "Диалог N" —
+  // omitting `options` preserves the Sprint 13 behavior unchanged.
+  function createThread(
+    mode: "coauthor" | "editor" | "critic" | "reader",
+    options?: { name?: string; persona?: string },
+  ) {
     setWorkspace((previous) => {
       const activeBook = previous.books.find(
         (book) => book.id === previous.activeBookId,
@@ -501,8 +513,9 @@ export function useWorkspaceController() {
       const nextNumber = threads.length + 1;
       const newThread: AssistantThread = {
         id: String(nextNumber),
-        name: `Диалог ${nextNumber}`,
+        name: options?.name ?? `Диалог ${nextNumber}`,
         messages: [],
+        ...(options?.persona ? { persona: options.persona } : {}),
       };
       return {
         ...previous,
@@ -513,6 +526,73 @@ export function useWorkspaceController() {
                 assistantThreads: {
                   ...book.assistantThreads,
                   [mode]: [...threads, newThread],
+                },
+              }
+            : book,
+        ),
+      };
+    });
+  }
+
+  // Sprint-14-Step-01: rename an existing thread (e.g. a Reader instance
+  // after creation) — immutable, same find-and-map pattern as everywhere
+  // else in this file.
+  function renameThread(
+    mode: "coauthor" | "editor" | "critic" | "reader",
+    threadId: string,
+    name: string,
+  ) {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      const threads = activeBook.assistantThreads[mode];
+      const updatedThreads = threads.map((thread) =>
+        thread.id === threadId ? { ...thread, name } : thread,
+      );
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                assistantThreads: {
+                  ...book.assistantThreads,
+                  [mode]: updatedThreads,
+                },
+              }
+            : book,
+        ),
+      };
+    });
+  }
+
+  // Sprint-14-Step-01: delete a thread — refuses to delete the last
+  // remaining thread for a role (every role always has at least one
+  // thread, the same invariant normalizeBook() already maintains for
+  // pre-existing/migrated data).
+  function deleteThread(
+    mode: "coauthor" | "editor" | "critic" | "reader",
+    threadId: string,
+  ) {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      const threads = activeBook.assistantThreads[mode];
+      if (threads.length <= 1) return previous;
+      const updatedThreads = threads.filter((thread) => thread.id !== threadId);
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                assistantThreads: {
+                  ...book.assistantThreads,
+                  [mode]: updatedThreads,
                 },
               }
             : book,
@@ -563,6 +643,8 @@ export function useWorkspaceController() {
     selectAssistantMode,
     appendMessage,
     createThread,
+    renameThread,
+    deleteThread,
     activeThreads,
   };
 }

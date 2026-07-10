@@ -98,10 +98,10 @@ export function useWorkspaceController() {
         ...newBookData,
         chapters: [
           {
-            id: "1",
+            id: crypto.randomUUID(),
             title: "Chapter 1",
             subtitle: "",
-            scenes: [{ id: "1", title: "Scene 1", text: "" }],
+            scenes: [{ id: crypto.randomUUID(), title: "Scene 1", text: "" }],
           },
         ],
         // A new book starts with no characters — the writer adds them later.
@@ -115,10 +115,12 @@ export function useWorkspaceController() {
         // Sprint-13-Step-01: one empty dialog per role, same default as
         // normalizeBook() uses for pre-existing books missing this field.
         assistantThreads: {
-          coauthor: [{ id: "1", name: "Диалог 1", messages: [] }],
-          editor: [{ id: "1", name: "Диалог 1", messages: [] }],
-          critic: [{ id: "1", name: "Диалог 1", messages: [] }],
-          reader: [{ id: "1", name: "Диалог 1", messages: [] }],
+          coauthor: [
+            { id: crypto.randomUUID(), name: "Диалог 1", messages: [] },
+          ],
+          editor: [{ id: crypto.randomUUID(), name: "Диалог 1", messages: [] }],
+          critic: [{ id: crypto.randomUUID(), name: "Диалог 1", messages: [] }],
+          reader: [{ id: crypto.randomUUID(), name: "Диалог 1", messages: [] }],
         },
         ideas: [],
       };
@@ -164,10 +166,10 @@ export function useWorkspaceController() {
       if (!activeBook) return previous;
       const nextNumber = activeBook.chapters.length + 1;
       const newChapter: Chapter = {
-        id: String(nextNumber),
+        id: crypto.randomUUID(),
         title: `Chapter ${nextNumber}`,
         subtitle: "",
-        scenes: [{ id: "1", title: "Scene 1", text: "" }],
+        scenes: [{ id: crypto.randomUUID(), title: "Scene 1", text: "" }],
       };
       return {
         ...previous,
@@ -223,7 +225,7 @@ export function useWorkspaceController() {
       );
       if (!targetChapter) return previous;
       const nextNumber = targetChapter.scenes.length + 1;
-      const newSceneId = String(nextNumber);
+      const newSceneId = crypto.randomUUID();
       return {
         ...previous,
         books: previous.books.map((book) =>
@@ -335,9 +337,8 @@ export function useWorkspaceController() {
         (book) => book.id === previous.activeBookId,
       );
       if (!activeBook) return previous;
-      const nextNumber = activeBook.characters.length + 1;
       const newCharacter: Character = {
-        id: String(nextNumber),
+        id: crypto.randomUUID(),
         name: "",
         description: "",
         notes: "",
@@ -424,7 +425,7 @@ export function useWorkspaceController() {
       );
       if (!activeBook) return previous;
       const newIdea: Idea = {
-        id: String(Date.now()),
+        id: crypto.randomUUID(),
         text: "",
         createdAt: new Date().toISOString(),
       };
@@ -507,17 +508,17 @@ export function useWorkspaceController() {
           selectedKeys.has(`${ci}-${si}`),
         );
         newChapters.push({
-          id: String(activeBook.chapters.length + newChapters.length + 1),
+          id: crypto.randomUUID(),
           title: propChapter.title,
           subtitle: propChapter.subtitle ?? "",
           scenes:
             selectedScenes.length > 0
-              ? selectedScenes.map((s, i) => ({
-                  id: String(i + 1),
+              ? selectedScenes.map((s) => ({
+                  id: crypto.randomUUID(),
                   title: s.title,
                   text: "",
                 }))
-              : [{ id: "1", title: "Scene 1", text: "" }],
+              : [{ id: crypto.randomUUID(), title: "Scene 1", text: "" }],
         });
       });
 
@@ -632,7 +633,7 @@ export function useWorkspaceController() {
       const threads = activeBook.assistantThreads[mode];
       const nextNumber = threads.length + 1;
       const newThread: AssistantThread = {
-        id: String(nextNumber),
+        id: crypto.randomUUID(),
         name: options?.name ?? `Диалог ${nextNumber}`,
         messages: [],
         ...(options?.persona ? { persona: options.persona } : {}),

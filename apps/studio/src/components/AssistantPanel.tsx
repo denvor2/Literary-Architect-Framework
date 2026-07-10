@@ -360,7 +360,7 @@ function ReaderPanel({
           <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
             {(!selectedThread || selectedThread.messages.length === 0) && (
               <p className="text-xs text-zinc-400 dark:text-zinc-600">
-                See how a reader would react.
+                Посмотрите, как читатель отреагирует.
               </p>
             )}
             {selectedThread?.messages.map((message, index) => (

@@ -229,3 +229,30 @@ request.
   than relabeling this same one — the claim in that section that "all four visible modes...
   call this same Expert" is, as of Sprint 12, accurate only for Editor, Critic, and Reader.
   Ratified as of Sprint 12.
+
+## Revision (Sprint 15 Step 01): response language follows `Book.language`
+
+This section is an addition, not a rewrite. Before this revision, Line Editor's system prompt
+carried no language instruction at all (unlike Reader/Co-author, which already had one since
+Sprint 09/12) — this is a net-new addition, not a change to prior behavior.
+
+- **What changed:** when the model answers a follow-up question directly (i.e. the author asks
+  about the edit in the conversation, not when the model is returning the edited text itself),
+  it is now instructed to respond in `bookContext?.language`, falling back to `"Russian"` when
+  `bookContext`/`language` is absent — matching the project's "first version is Russian" default
+  (`docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md`, Section 6).
+  Source: `apps/studio/src/app/api/line-editor/route.ts` (Sprint-15-Step-01).
+- **The edited text itself is explicitly exempted** — the same sentence instructs the model to
+  never change the edited text's language regardless of the book's declared language or the
+  conversation's language. Translating the author's own prose would be a functional regression
+  (silently changing what "line editing" means), not localization.
+- **Live-verified, not just read from the diff:** an English-declared book's scene, edited with
+  no follow-up, stayed in English (not translated); the same scene with a follow-up question
+  answered in English, not Russian — confirming the model actually follows `bookContext.language`
+  and not a hardcoded default.
+- **Known, honestly recorded gap this revision does not address:** this ADR's Request/Response
+  Schema section above still describes the pre-Sprint-13 `{ text: string }` request shape.
+  Sprint-13-Step-02 renamed this to `{ sceneText: string, messages: ChatMessage[] }` — that
+  rename was never folded back into this ADR (the same gap already recorded in
+  [ADR-0006](ADR-0006-reader-expert-contract.md)'s own Sprint 14 revision). Not fixed here — out
+  of this revision's scope.

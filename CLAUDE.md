@@ -23,6 +23,37 @@ Architect and Programmer (Executor) are roles, not fixed AI models — see
 auto-loaded specifically by the Claude Code CLI, which is a fact about that tool's session
 bootstrap, not a statement that the Programmer role is permanently bound to Claude.
 
+## Subagents
+
+Three project subagents formalize the roles above so work survives a single session running out
+of budget (this has already happened once — Sprint 20-23 landed uncommitted-but-working when the
+executing session hit its limit; a follow-up session recovered it). Defined in `.claude/agents/`:
+
+| Situation | Subagent |
+|---|---|
+| A Step Card exists (in `pending/` or `active/`) and needs implementing | `step-executor` |
+| An ARP is ready in `active/` and needs a verdict before commit | `architect-reviewer` |
+| A roadmap line/idea has no Step Card yet | `sprint-planner` |
+
+Rules for using them:
+
+- **A subagent does not see this conversation.** Always pass the Step Card's id or file path
+  (and, for `architect-reviewer`, the ARP's path too) explicitly in the prompt — plus enough
+  background (which sprint, why now) that it doesn't have to guess. Do not assume "it'll figure
+  it out."
+- **Delegation does not relax the Stop Condition.** No subagent commits, pushes, or archives a
+  card to `done/` — that stays a session/human action taken only after an explicit `STATUS: OK`,
+  the same single point of accountability this project has used for every commit so far.
+- **Don't wrap trivial edits in a Step Card + subagent** — a one-file, one-line fix is faster and
+  clearer done directly.
+- **A subagent that hits a genuine product ambiguity** (not a technical implementation choice)
+  stops and reports it rather than guessing — the same "resolve technical ambiguity yourself,
+  escalate product decisions" split already used throughout this project's history.
+
+Two project skills support this workflow (`.claude/skills/`): `literary-studio-run` (how to
+start/drive `apps/studio`) and `literary-studio-live-verify` (this project's standing
+no-mocks verification technique, required by every Step Card's Validation section).
+
 ## Documentation Hierarchy
 
 Authoritative, in this order:

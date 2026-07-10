@@ -10,6 +10,21 @@ Read, in this order: this file, then
 [CURRENT_SPRINT.md](CURRENT_SPRINT.md), then the Accepted ADRs (`docs/adr/`). That's enough
 context to pick up the work. If any term here is unfamiliar, see [GLOSSARY.md](GLOSSARY.md).
 
+**Subagents & Skills (new as of this handover):** `.claude/agents/step-executor.md`,
+`architect-reviewer.md`, and `sprint-planner.md` formalize the Programmer/Architect/planning
+roles this project has played manually for 23+ sprints — see `CLAUDE.md`'s "Subagents" section
+for when to use which and the rules for delegating to them (short version: a subagent never
+sees your conversation, always pass it the Step Card id/path explicitly; a subagent never
+commits — that stays a session/human action after `STATUS: OK`). Two supporting skills,
+`literary-studio-run` and `literary-studio-live-verify`, capture how to start the app and this
+project's standing no-mocks verification technique. **Not yet live-tested end to end** — a
+smoke-test attempt in the session that created them found the harness only picks up
+`.claude/agents/*.md` at session start, not mid-session; the first real invocation should be
+this new session's first action. A real, useful Step Card is already staged for exactly that:
+`docs/task-bus/queue/pending/Refresh-ADR-0005-Critic-Schema.md` — invoke `step-executor` on it
+first, confirm the full cycle (ARP written, correctly refuses to commit) actually works, before
+trusting the subagents for anything else.
+
 ## Project
 
 **Literary Studio** — an AI-powered IDE for writers, not a chat-based writing tool. Writers
@@ -27,7 +42,15 @@ goal.
 
 **Process note:** this project is currently working without a separate Architect session — the
 Product Owner reviews Step Cards directly instead (see "Architecture Review before commit"
-below).
+below), though `architect-reviewer` (see above) can now do a first-pass review.
+
+**Session handoff note (2026-07-10):** the session that added the Subagents/Skills section
+above is ending here deliberately, per `docs/task-bus/BOOTSTRAP.md`'s "Session Refresh Trigger"
+(it had processed far more than the 5-Step-Card threshold that doc names) — not because
+anything broke. Separately, that same threshold is exactly why Sprint 20-23's code landed
+uncommitted-but-working in an earlier session that ran out of budget mid-flow; this session
+recovered and committed it (`1800638`/`7772dfd`) before doing anything else. Read this as a
+concrete argument for actually honoring the Session Refresh Trigger going forward, not a one-off.
 
 ## Architecture
 

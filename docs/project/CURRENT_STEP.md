@@ -9,22 +9,26 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-19-Step-04
+id: Sprint-23-Step-04
 status: done
 next: []
 ```
 
-## Sprint 19 — Critic Subcategories (closed)
+## Sprint 23 — PostgreSQL + Prisma (closed — pending Docker)
 
-All four steps implemented and validated:
+Steps 01, 02, 04 implemented and validated. Step 03 (`prisma migrate dev`) requires a running
+PostgreSQL instance (Docker not installed on this machine).
 
-- **Step 01** — ADR-0009 accepted: four thematic lenses (continuity/fact/developmental/style),
-  optional `subcategory` in request body, system prompt suffix mechanism, backward compatible.
-- **Step 02** — `/api/critic` accepts optional `subcategory`; `CRITIC_SUBCATEGORY_PROMPTS` map
-  provides per-lens prompt suffixes; base prompt extracted to constant.
-- **Step 03** — `critic_review` operation gaining optional `subcategory`; `aiBus.execute()`
-  forwards it to the route.
-- **Step 04** — Pill-button selector in AssistantPanel Critic mode (Все/Связность/
-  Достоверность/Развитие/Стиль); state is ephemeral, does not reset thread on switch.
+- **Step 01** — `prisma/schema.prisma`: 8 models (User, Book, Chapter, Scene, Character, Idea,
+  AssistantThread, ChatMessage) + 2 enums (AssistantRole, MessageRole). Cascade deletes,
+  `@@index` on foreign keys, `order` fields for ordering.
+- **Step 02** — `docker-compose.yml` updated with `postgres` service (postgres:16-alpine,
+  healthcheck, named volume `pgdata`); `studio` service depends on healthy postgres.
+- **Step 03** — Blocked: requires Docker. `prisma migrate dev` will run once Docker is installed.
+- **Step 04** — `src/lib/db.ts`: Prisma client singleton with `@prisma/adapter-pg` (Prisma 7.x
+  driver adapter pattern), global caching for dev hot-reload safety.
+
+Prisma client generated successfully. Packages installed: `prisma` (dev), `@prisma/client`,
+`@prisma/adapter-pg`, `pg`, `@types/pg` (dev), `dotenv` (dev).
 
 Validation: `tsc`, `eslint`, `build`, 12/12 Playwright E2E tests — all green.

@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 20 — Co-author structure proposal (see ROADMAP_18-27.md)** — **not yet scoped**
+**Sprint 23 — PostgreSQL + Prisma (see ROADMAP_18-27.md)** — **closed (pending Docker)**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,9 +10,9 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** Not yet started — Sprint 19 is closed.
+- **Status:** Closed — Sprint 23 completed (Step 03 `prisma migrate dev` pending Docker install).
 - **Phase:** Phase 1 (MVP)
-- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 20 row).
+- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 23 row).
 
 ## Sprint 15 — closed
 
@@ -75,6 +75,53 @@ Critic subcategories — four thematic lenses for focused literary feedback.
 - **Step 04** — Pill-button selector in AssistantPanel Critic mode (Все/Связность/
   Достоверность/Развитие/Стиль); ephemeral state, does not reset thread.
 
+## Sprint 20 — closed
+
+Co-author structure proposal — Co-author suggests book structure (chapters/scenes with
+titles and descriptions), user accepts via checkboxes.
+
+- **Step 01** — ADR-0010 accepted: `StructureProposal` schema, `mode: "structure"` in
+  `/api/coauthor`, `coauthor_propose_structure` operation type.
+- **Step 02** — `/api/coauthor` extended with `mode`; `STRUCTURE_SYSTEM_PROMPT`; response
+  `{ ok: true, proposal }` for structure mode.
+- **Step 03** — `coauthor_propose_structure` in `operations.ts` and `aiBus.ts`; AssistantPanel
+  UI: "Предложить структуру" button, tree with checkboxes, acceptance buttons.
+- **Step 04** — `acceptStructureProposal()` in workspace controller; wired through page.tsx.
+
+## Sprint 21 — closed
+
+Book Field AI Suggestions — AI helps with Book metadata fields (title, genre, premise,
+annotations) with suggestions and explanations.
+
+- **Step 01** — ADR-0011 accepted: `BookFieldName` union type, `book_field_suggestion`
+  operation, `/api/book-field` endpoint, `{ suggestion, explanation }` response.
+- **Step 02** — `/api/book-field` route with field-aware system prompts, JSON parsing.
+- **Step 03** — `book_field_suggestion` in `operations.ts` and `aiBus.ts`.
+- **Step 04** — AI buttons next to Book fields in requisites, suggestion card with
+  accept/reject, state management in page.tsx.
+
+## Sprint 22 — closed
+
+Docker + basic infrastructure — containerization for local development and deployment.
+
+- **Step 01** — `Dockerfile`: multi-stage build (node:20-alpine, builder + runner), standalone
+  output in `next.config.ts`, non-root user.
+- **Step 02** — `docker-compose.yml`: `studio` service with build context, port 3000,
+  env_file, restart policy.
+- **Step 03** — `.dockerignore`: excludes node_modules, .next, .git, docs, e2e, etc.
+- **Step 04** — Docker build requires Docker installed (not available on this machine);
+  validated: `tsc`, `eslint`, `build`, 12/12 E2E tests all green.
+
+## Sprint 23 — closed (pending Docker)
+
+PostgreSQL + Prisma — database schema matching domain model, Prisma client singleton.
+
+- **Step 01** — `prisma/schema.prisma`: 8 models (User, Book, Chapter, Scene, Character, Idea,
+  AssistantThread, ChatMessage) + 2 enums. Cascade deletes, indexes.
+- **Step 02** — `docker-compose.yml` updated with postgres service (healthcheck, named volume).
+- **Step 03** — `prisma migrate dev` blocked: requires Docker.
+- **Step 04** — `src/lib/db.ts`: Prisma client singleton with `@prisma/adapter-pg`.
+
 ## Out of Scope (held constant this sprint)
 
 - Everything already recorded as out of scope in prior sprints (Book Series, Trash/Archive,
@@ -96,4 +143,4 @@ Critic subcategories — four thematic lenses for focused literary feedback.
 
 ## Next Action
 
-Scope Sprint 20 (Co-author structure proposal) per `docs/project/ROADMAP_18-27.md`.
+Scope Sprint 24 (Миграция localStorage → Database) per `docs/project/ROADMAP_18-27.md`.

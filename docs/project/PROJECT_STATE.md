@@ -4,8 +4,8 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-10 (Sprint 16-17 closing + E2E tests)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 16-17 are all complete and
+**Last updated:** 2026-07-10 (Sprint 23 closing)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 23 are all complete and
 committed; no blocking issues. Playwright E2E smoke tests (12 tests, all green) are in place.
 This project is currently working without a separate Architect session — the Product Owner
 reviews directly instead (see [HANDOVER.md](HANDOVER.md)).
@@ -19,14 +19,36 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 18 — Ideas/Notes (see `docs/project/ROADMAP_18-27.md`). Not yet scoped. Sprint 16-17
-(unified book view + collapsible navigation tree) is closed — committed `62ed860`. Playwright
-E2E smoke tests added post-close — committed `2a28fa6`.
+Sprint 24 — Миграция localStorage → Database (see `docs/project/ROADMAP_18-27.md`). Not yet
+scoped. Sprint 23 (PostgreSQL + Prisma) is closed, `prisma migrate dev` pending Docker.
 
 **Sprint 16-17 — Unified Book View (closed).** Replaced the three-screen split (book overview /
 chapter overview / single-scene editor) with a single continuous, scrollable `UnifiedBookView`
 with collapse/expand at every level; sidebar tree clicks now scroll instead of switching screens;
 `focusedSceneKey` (textarea focus tracking) drives assistant panel context. Committed `62ed860`.
+
+**Sprint 18 — Ideas/Notes (closed).** Free-form notes per book with auto-timestamped creation.
+`Idea` type added to domain model, `IdeasPanel.tsx` component with inline editing, CRUD
+operations in workspace controller, integrated into `UnifiedBookView`.
+
+**Sprint 19 — Critic Subcategories (closed).** Four thematic lenses (continuity/fact/
+developmental/style) for focused literary feedback. ADR-0009 accepted; `/api/critic` extended
+with optional `subcategory`; `CRITIC_SUBCATEGORY_PROMPTS` map; pill-button selector in
+AssistantPanel Critic mode.
+
+**Sprint 20 — Co-author Structure Proposal (closed).** Co-author proposes book structure
+(chapters/scenes with titles and descriptions), user accepts via checkboxes. ADR-0010 accepted;
+`/api/coauthor` extended with `mode: "structure"`; `coauthor_propose_structure` operation;
+AssistantPanel UI with tree/checkboxes; `acceptStructureProposal()` in workspace controller.
+
+**Sprint 21 — Book Field AI Suggestions (closed).** AI helps with Book metadata fields (title,
+genre, premise, annotations) with suggestions and explanations. ADR-0011 accepted;
+`/api/book-field` endpoint; `book_field_suggestion` operation; AI buttons next to Book fields
+in requisites with accept/reject.
+
+**Sprint 22 — Docker + Infrastructure (closed).** Containerization for local development and
+deployment. `Dockerfile` (multi-stage build), `docker-compose.yml`, `.dockerignore`, standalone
+output enabled in `next.config.ts`.
 
 **Sprint 13 — Unified Chat Mechanism (closed).** Gave every Product Role a real, persisted
 message history: `assistantThreads` domain model + persisted assistant mode; all four Expert
@@ -157,6 +179,24 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
   split replaced by `UnifiedBookView`; collapse/expand at every level; sidebar tree scrolls to
   blocks instead of switching screens. Committed `62ed860`. Playwright E2E smoke tests (12
   tests) added post-close — committed `2a28fa6`.
+- **Sprint 18** — Ideas/Notes (closed). Free-form notes per book with auto-timestamped
+  creation. `Idea` type added to domain model, `IdeasPanel.tsx` with inline editing, CRUD in
+  workspace controller, integrated into `UnifiedBookView`.
+- **Sprint 19** — Critic Subcategories (closed). Four thematic lenses (continuity/fact/
+  developmental/style) for focused literary feedback. ADR-0009 accepted; `/api/critic` extended
+  with optional `subcategory`; pill-button selector in AssistantPanel Critic mode.
+- **Sprint 20** — Co-author Structure Proposal (closed). Co-author proposes book structure
+  (chapters/scenes with titles and descriptions), user accepts via checkboxes. ADR-0010
+  accepted; `/api/coauthor` extended with `mode: "structure"`; `coauthor_propose_structure`
+  operation; AssistantPanel UI with tree/checkboxes; `acceptStructureProposal()` in workspace
+  controller.
+- **Sprint 21** — Book Field AI Suggestions (closed). AI helps with Book metadata fields
+  (title, genre, premise, annotations) with suggestions and explanations. ADR-0011 accepted;
+  `/api/book-field` endpoint; `book_field_suggestion` operation; AI buttons next to Book fields
+  in requisites with accept/reject.
+- **Sprint 22** — Docker + Infrastructure (closed). Containerization for local development and
+  deployment. `Dockerfile` (multi-stage build, standalone output), `docker-compose.yml`,
+  `.dockerignore`.
 
 ## Current Architecture
 
@@ -173,24 +213,31 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
   [ADR-0002](../adr/ADR-0002-expert-contract-vision.md).
   [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) ratifies the Sprint 11 multi-book
   Workspace change — the first ADR outside this Expert Contract family.
+  [ADR-0009](../adr/ADR-0009-critic-subcategories.md) ratifies Critic thematic subcategories
+  (Sprint 19). [ADR-0010](../adr/ADR-0010-coauthor-structure-proposal.md) ratifies Co-author
+  structure proposal (Sprint 20). [ADR-0011](../adr/ADR-0011-book-field-operations.md)
+  ratifies Book field AI suggestions (Sprint 21).
 - The technology stack is fixed by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md) —
   any new framework, SDK, or runtime dependency should be checked against it before being added.
 - `apps/studio/` has a working Anthropic integration with four Experts: Line Editor
-  (`/api/line-editor`, Test Connection), Critic (`/api/critic`), Reader (`/api/reader`), and
-  Co-author (`/api/coauthor`), all live-validated with real Claude responses. Line Editor and
-  Co-author both optionally/always (respectively) receive the whole `Book` as context; Critic
-  and Reader remain scene/selection-scoped by design (see ADR-0008's per-Expert context-scope
-  table).
-- **AI Bus layering (Sprint 06, extended Sprint 08/09/12/13):**
+  (`/api/line-editor`, Test Connection), Critic (`/api/critic`, gained thematic subcategories
+  Sprint 19), Reader (`/api/reader`, gained optional `persona` field Sprint 14), and
+  Co-author (`/api/coauthor`, gained structure proposal mode Sprint 20), all live-validated
+  with real Claude responses. Additionally, `/api/book-field` (Sprint 21) provides AI
+  suggestions for Book metadata fields — a utility operation, not a literary Expert role.
+  Line Editor and Co-author both optionally/always (respectively) receive the whole `Book`
+  as context; Critic and Reader remain scene/selection-scoped by design (see ADR-0008's
+  per-Expert context-scope table).
+- **AI Bus layering (Sprint 06, extended Sprint 08/09/12/13/21):**
   `UI (page.tsx, orchestration only) → Workspace Controller (useWorkspaceController) →
   Workspace (domain/workspace.ts) → AI Bus (aiBus.execute, dispatches by operation.type) →
   Operation → Context Envelope → Response → Applied Response → /api/line-editor |
-  /api/critic | /api/reader | /api/coauthor`. `aiBus.execute()` performs real dispatch since
-  Sprint 08 Step 02 — previously `operation.type` was read only decoratively. Since Sprint 13,
-  `AIOperation`'s four variants share a uniform `sceneText`+`messages` shape (`text`/
-  `currentText` unified into `sceneText`; `messages: ChatMessage[]` required on every variant —
-  the server stays stateless, ADR-0004 unchanged, the client sends the whole conversation on
-  every call).
+  /api/critic | /api/reader | /api/coauthor | /api/book-field`. `aiBus.execute()` performs
+  real dispatch since Sprint 08 Step 02 — previously `operation.type` was read only
+  decoratively. Since Sprint 13, the four Expert operations share a uniform
+  `sceneText`+`messages` shape; Sprint 21 added `book_field_suggestion` with a different
+  payload shape (`fieldName`+`currentValue`+`bookContext`, no `messages` — utility operation,
+  not a conversational Expert).
 - **Domain Model (extended Sprint 11 — [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) —
   and Sprint 13):** `Workspace` holds `books: Book[]` + `activeBookId` + `selectedAssistantMode`
   (persisted across sessions since Sprint 13); `Book` is a self-contained container —
@@ -200,7 +247,7 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
   still only exposes the last/active one in the UI (unchanged, out of Sprint 14 scope); Reader
   (Sprint 14) surfaces all of them as named, comparable instances, each optionally carrying a
   `persona` that's folded into `/api/reader`'s system prompt when present. Domain types
-  (`Book`/`Chapter`/`Scene`/`Character`/`Workspace`/`AssistantThread`/`ChatMessage`) live in
+  (`Book`/`Chapter`/`Scene`/`Character`/`Workspace`/`AssistantThread`/`ChatMessage`/`Idea`) live in
   `apps/studio/src/domain/` as the single source of truth; `localStorage` access is isolated in
   `apps/studio/src/storage/workspaceStorage.ts`,
   which also holds `migrateIfNeeded()` (old-format migration) and `normalizeBook()` (centralized

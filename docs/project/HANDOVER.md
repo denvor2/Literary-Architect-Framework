@@ -20,11 +20,10 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 16-17 (unified book view with collapsible navigation tree) is closed — committed
-`62ed860`. The three-screen split (book overview / chapter overview / single-scene editor) has
-been replaced by a single continuous, scrollable `UnifiedBookView` with collapse/expand at every
-level, and sidebar tree clicks now scroll instead of switching screens. Sprints 06 through 17
-are all closed. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the next sprint goal.
+Sprint 23 (PostgreSQL + Prisma) is closed — Prisma schema with 8 models, docker-compose
+postgres service, Prisma client singleton. `prisma migrate dev` pending Docker install. Sprints
+06 through 23 are all closed. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the next sprint
+goal.
 
 **Process note:** this project is currently working without a separate Architect session — the
 Product Owner reviews Step Cards directly instead (see "Architecture Review before commit"
@@ -50,28 +49,34 @@ below).
 ## Current Status
 
 - `apps/studio/` is a working Literary Studio MVP: multi-book Workspace (`books: Book[]` +
-  `activeBookId`, Sprint 11), Book → Chapter → Scene structure, Characters, a unified scrollable
-  book editor with collapse/expand at every level (Sprint 16-17, replacing the old three-screen
-  book/chapter/scene split), Focus Mode, and `localStorage` persistence — layered on a
-  domain-driven architecture (Sprint 06) with four live AI Experts.
+  `activeBookId`, Sprint 11), Book → Chapter → Scene structure, Characters, Ideas/Notes
+  (Sprint 18), a unified scrollable book editor with collapse/expand at every level (Sprint
+  16-17, replacing the old three-screen book/chapter/scene split), Focus Mode, `localStorage`
+  persistence, Docker containerization (Sprint 22: `Dockerfile`, `docker-compose.yml`,
+  `.dockerignore`, standalone output) — layered on a domain-driven architecture (Sprint 06)
+  with four live AI Experts plus a Book field suggestion utility.
 - **AI Experts (all live-validated with real Claude responses):** Line Editor (`/api/line-editor`,
-  Sprint 04), Critic (`/api/critic`, Sprint 08), Reader (`/api/reader`, Sprint 09, gained an
-  optional `persona` field Sprint 14), Co-author (`/api/coauthor`, Sprint 12 — the first
-  genuinely generative Expert, receiving the whole `Book` as context). All four Product Roles
-  now map 1:1 to their own Expert. As of Sprint 13, all four routes accept a client-managed
-  `messages` history array — the server remains stateless (ADR-0004); nothing is persisted
-  between calls.
+  Sprint 04), Critic (`/api/critic`, Sprint 08, gained thematic subcategories Sprint 19),
+  Reader (`/api/reader`, Sprint 09, gained an optional `persona` field Sprint 14), Co-author
+  (`/api/coauthor`, Sprint 12 — the first genuinely generative Expert, receiving the whole `Book`
+  as context, gained structure proposal mode Sprint 20). Additionally, `/api/book-field`
+  (Sprint 21) provides AI suggestions for Book metadata fields (title, genre, premise,
+  annotations) — not a literary Expert role, but a utility operation. All four Product Roles
+  now map 1:1 to their own Expert. As of Sprint 13, all four Expert routes accept a
+  client-managed `messages` history array — the server remains stateless (ADR-0004); nothing
+  is persisted between calls.
 - **Architecture:**
   `UI (page.tsx, orchestration only) → Workspace Controller (useWorkspaceController) →
   Workspace (domain/workspace.ts) → AI Bus (aiBus.execute, dispatches by operation.type) →
   Operation → Context Envelope → Response → Applied Response → /api/line-editor | /api/critic |
   /api/reader | /api/coauthor`.
   - `apps/studio/src/domain/` — single source of truth for
-    `Book`/`Chapter`/`Scene`/`Character`/`Workspace`. `Book` also holds `assistantThreads`
+    `Book`/`Chapter`/`Scene`/`Character`/`Workspace`/`Idea`. `Book` also holds `assistantThreads`
     (Sprint 13) — one or more named dialogs per Product Role (Co-author/Editor: always one
     continuous thread; Critic: may hold several, but the UI still only shows the last/active
     one; Reader (Sprint 14): surfaces all of them as named, comparable instances, each
-    optionally carrying a `persona` — `AssistantThread`'s one new optional field).
+    optionally carrying a `persona` — `AssistantThread`'s one new optional field). `Book` also
+    holds `ideas: Idea[]` (Sprint 18) — free-form notes with auto-timestamped creation.
   - `apps/studio/src/ai/` — AI Bus v5 contracts (`operations.ts`, `context.ts`, `response.ts`,
     `applier.ts`, `aiBus.ts`). Since Sprint 13, `AIOperation` payloads use `sceneText` (not
     `text`/`currentText`) plus a required `messages` array, uniformly across all four variants.
@@ -124,6 +129,8 @@ below).
 | [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) | Multi-Book Workspace | Accepted |
 | [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) | Co-author Expert Contract | Accepted |
 | [ADR-0009](../adr/ADR-0009-critic-subcategories.md) | Critic Subcategories | Accepted |
+| [ADR-0010](../adr/ADR-0010-coauthor-structure-proposal.md) | Co-author Structure Proposal | Accepted |
+| [ADR-0011](../adr/ADR-0011-book-field-operations.md) | Book Field AI Suggestions | Accepted |
 
 ## Current Tech Stack
 
@@ -141,9 +148,10 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Sprint 20 (see CURRENT_SPRINT.md) — not yet scoped. Sprint 19 (Critic subcategories) is closed.
-Playwright E2E smoke tests are in place (`apps/studio/e2e/smoke.spec.ts`, 12 tests, all green). Run
-`npm run test:e2e` from `apps/studio/` to execute.
+Sprint 24 (see CURRENT_SPRINT.md) — Миграция localStorage → Database. Sprint 23 (PostgreSQL +
+Prisma) is closed, `prisma migrate dev` pending Docker install. Playwright E2E smoke tests are
+in place (`apps/studio/e2e/smoke.spec.ts`, 12 tests, all green). Run `npm run test:e2e` from
+`apps/studio/` to execute.
 
 ## Current Priorities
 

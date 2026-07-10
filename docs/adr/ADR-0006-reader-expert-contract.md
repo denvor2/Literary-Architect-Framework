@@ -18,30 +18,42 @@ not designed in the abstract.
 
 ### Request/Response Schema (the Expert boundary: `/api/reader`)
 
-- **Request:** `POST /api/reader` with JSON body `{ text: string }` — the same granularity as
-  Critic: an arbitrary fragment, not necessarily a whole Scene.
-  Source: `apps/studio/src/app/api/reader/route.ts:8-10`.
-- **Input validation:** identical pattern to Line Editor and Critic — missing/non-string
-  `text` → `{ ok: false, error: "No text provided." }`, HTTP 400.
-  Source: `route.ts:12-17`.
+> **Revised Sprint 13/15.** The original Sprint 09 schema (`{ text: string }`) was renamed to
+> `sceneText` and gained a required `messages` array in Sprint 13 (stateless conversation, per
+> the convention across all four Experts — ADR-0004 unchanged). Sprint 15 added `bookLanguage`.
+> Sprint 14 added optional `persona`. The shape below is current.
+
+- **Request:** `POST /api/reader` with JSON body:
+  ```json
+  {
+    "sceneText": "string (required)",
+    "messages": [{ "role": "user"|"assistant", "content": "string" } ...] (required)",
+    "persona": "string (optional — named Reader instance persona)",
+    "bookLanguage": "string (optional — defaults to 'Russian')"
+  }
+  ```
+  `sceneText` is the scene/selection text to react to. `messages` is the full conversation
+  history (client-managed, server is stateless — ADR-0004). `persona` prepends a persona
+  instruction to the system prompt when present. `bookLanguage` controls the response language.
+  Source: `apps/studio/src/app/api/reader/route.ts:18-29`.
+- **Input validation:** missing/non-string `sceneText` → `{ ok: false, error: "No sceneText
+  provided." }`, HTTP 400; non-array `messages` → `{ ok: false, error: "messages must be an
+  array." }`, HTTP 400; each message validated for `role` (`"user"` or `"assistant"`) and
+  string `content`. Source: `route.ts:31-60`.
 - **Success response:** `{ ok: true, result: string }` — **the same shape as Line Editor, not
-  Critic's `reviews[]` array.** This is a deliberate decision, not an oversight: a reader's
-  reaction is a whole piece of prose, not a list of discrete findings.
-  Source: `route.ts:30` (`return NextResponse.json({ ok: true, result });`).
+  Critic's `reviews[]` array.** A reader's reaction is a whole piece of prose, not a list of
+  discrete findings. Source: `route.ts:78`.
 - **Failure response:** `{ ok: false, error: string }`, HTTP 500, same
-  `error instanceof Error ? error.message : "Unknown error"` pattern as both existing Experts.
-  Source: `route.ts:31-37`. Unlike Critic, there is no JSON-parse failure mode here, because
-  the response is never parsed as structured data — the raw model text is the result.
-- **Model and prompt are fixed, not parameterized** — same principle as both existing
-  Experts: model `"claude-sonnet-5"`, `max_tokens: 1024`, one hardcoded system prompt.
-  Source: `route.ts:22-25`.
-- **First Expert with an explicit language instruction.** The system prompt explicitly
-  instructs the model to respond in Russian regardless of the input text's language ("Respond
-  in Russian, regardless of the language of the text you are given, unless the user explicitly
-  asks for another language" — `route.ts:25`). Line Editor and Critic's prompts currently carry
-  no such instruction; retroactively localizing them is out of scope here and is separately
-  planned for Sprint 14 (per `Sprint-09-Vision-Amendments.md`'s Поправка 1 and the Sprint-09-
-  Step-01 REVIEW).
+  `error instanceof Error ? error.message : "Unknown error"` pattern as all other Experts.
+  Source: `route.ts:79-86`.
+- **Model and prompt are fixed, not parameterized** — same principle as all other Experts:
+  model `"claude-sonnet-5"`, `max_tokens: 1024`, one system prompt (parameterized by
+  `bookLanguage` and optionally `persona`). Source: `route.ts:66-69`.
+- **Language instruction:** the system prompt instructs the model to respond in
+  `${bookLanguage}` (defaults to Russian) regardless of the input text's language, unless the
+  user explicitly asks for another language. Line Editor and Critic gained the same
+  `bookLanguage`/`bookContext.language` following in Sprint 15 Step 01 — Reader is no longer
+  the only Expert with a language instruction.
 
 ### Position in the AI Bus v5 Chain
 
@@ -81,12 +93,15 @@ not designed in the abstract.
   implemented here — explicitly future work, not attempted by this ADR or Sprint 09.
   **Resolved by the Sprint 14 revision below** — this bullet is historical (accurate as of
   Sprint 09), not current.
-- Line Editor and Critic's prompts are not localized to Russian — planned for Sprint 14, not
-  addressed here. **Still open** — moved to Sprint 15 per `docs/vision/SPRINT_ROADMAP.md`; the
-  Sprint 14 revision below addresses `persona`/multiple instances only, not this.
+- ~~Line Editor and Critic's prompts are not localized to Russian~~ — **Resolved Sprint 15
+  Step 01:** all four Experts now follow the book's language (`bookContext.language` or
+  `bookLanguage`), not hardcoded Russian.
 - As with Critic, `result`/`result.response.text` is not validated at runtime beyond being a
-  string — consistent with the same discovery-stage tolerance already accepted for both prior
+  string — consistent with the same discovery-stage tolerance already accepted for all prior
   Experts.
+- ~~ADR-0006's Request/Response Schema section still described the pre-Sprint-13 `{ text }`
+  shape~~ — **Resolved by this revision** (the schema section above now reflects
+  `sceneText`/`messages`/`persona`/`bookLanguage`).
 
 ## Consequences
 
@@ -105,8 +120,7 @@ not designed in the abstract.
 - The Co-author/Editor → Expert mapping.
 - ~~Whether/when multiple named Reader instances (per the vision document) will be built.~~
   Built, Sprint 14 — see the Revision section below.
-- Localization of Line Editor/Critic's prompts (moved to Sprint 15,
-  `docs/vision/SPRINT_ROADMAP.md`).
+- ~~Localization of Line Editor/Critic's prompts~~ — Resolved Sprint 15 Step 01.
 
 ## Revision (Sprint 14 Step 01/02): optional `persona`, multiple named instances
 
@@ -150,12 +164,16 @@ Revisit (amend or supersede) this ADR when any of the following occurs:
 
 - A fourth `AIOperation` variant is added — check whether the two-shape pattern recorded here
   (string vs. structured array) still describes the field, or a third shape emerges.
+  **Resolved:** Co-author added Sprint 12 as the fourth variant — its payload shape differs
+  (`bookContext` required, no `sceneId`/`chapterId`), but the response shape is still string-
+  based (Revision, not Review). The two-shape pattern (string response vs. Critic's array)
+  still holds.
 - Co-author or Editor gets a concrete Expert mapping distinct from Line Editor.
-- Line Editor's or Critic's prompts are localized to Russian (Sprint 15, per
-  `docs/vision/SPRINT_ROADMAP.md`) — at that point Reader would no longer be the only Expert
-  with an explicit language instruction.
+  **Partially resolved:** Co-author → Co-author Expert (`/api/coauthor`) ratified as ADR-0008.
+  Editor remains mapped to Line Editor — whether Editor should be a composite of several
+  ADR-0002 Experts is unspecified.
+- ~~Line Editor's or Critic's prompts are localized to Russian (Sprint 15)~~ — Resolved.
 - Critic gains its own thematic subcategories (Sprint 18) — check whether it should reuse the
   same named-instance mechanism this revision gave Reader, or needs a genuinely different shape.
-- This ADR's Request/Response Schema section is refreshed to reflect Sprint 13's
-  `sceneText`/`messages` rename (see the Known Gap immediately above) — until then, treat that
-  section as historical (accurate as of Sprint 09), not current.
+- ~~This ADR's Request/Response Schema section is refreshed to reflect Sprint 13's
+  `sceneText`/`messages` rename~~ — Resolved by this revision.

@@ -4,12 +4,11 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-08 (Sprint 14 closing)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 14 are all complete and
-committed; no blocking issues. Reader now supports multiple named, persona'd instances that can
-be compared side by side, resolving Sprint 13's own carried-forward finding. This project is
-currently working without a separate Architect session — the Product Owner reviews directly
-instead (see [HANDOVER.md](HANDOVER.md)).
+**Last updated:** 2026-07-10 (Sprint 16-17 closing + E2E tests)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 16-17 are all complete and
+committed; no blocking issues. Playwright E2E smoke tests (12 tests, all green) are in place.
+This project is currently working without a separate Architect session — the Product Owner
+reviews directly instead (see [HANDOVER.md](HANDOVER.md)).
 **Current Phase:** Phase 1 (MVP).
 
 ## Source of Truth
@@ -20,17 +19,14 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 15 — Systematic Localization (in progress, not yet scoped into Step Cards). See
-[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current goal and [CURRENT_STEP.md](CURRENT_STEP.md)
-for the single most recently completed Step Card.
+Sprint 18 — Ideas/Notes (see `docs/project/ROADMAP_18-27.md`). Not yet scoped. Sprint 16-17
+(unified book view + collapsible navigation tree) is closed — committed `62ed860`. Playwright
+E2E smoke tests added post-close — committed `2a28fa6`.
 
-**Sprint 14 — Reader Multiple Named Instances (closed).** Resolved a real gap Sprint 13 left
-open: Reader now supports several named, persona'd instances (not just a resettable single
-thread) — `AssistantThread` gained an optional `persona` field, `/api/reader` folds it into the
-system prompt, and `AssistantPanel.tsx`'s Reader mode got instance chips (create/rename/delete),
-single-view switching, and a side-by-side compare grid for 2+ selected instances.
-[ADR-0006](../adr/ADR-0006-reader-expert-contract.md) revised (not superseded) to record this,
-same principle as ADR-0004's Sprint 12 `bookContext` revision.
+**Sprint 16-17 — Unified Book View (closed).** Replaced the three-screen split (book overview /
+chapter overview / single-scene editor) with a single continuous, scrollable `UnifiedBookView`
+with collapse/expand at every level; sidebar tree clicks now scroll instead of switching screens;
+`focusedSceneKey` (textarea focus tracking) drives assistant panel context. Committed `62ed860`.
 
 **Sprint 13 — Unified Chat Mechanism (closed).** Gave every Product Role a real, persisted
 message history: `assistantThreads` domain model + persisted assistant mode; all four Expert
@@ -151,11 +147,16 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
   controller, and UI all gained real persisted per-role message history, replacing the one-shot
   request model used since Sprint 05. Committed `f68e676`, `5c2d3e9`, `db8b510`, `af18c4b`,
   `39ee241`.
-- **Sprint 14** — see "Current Sprint" above for the full summary. Reader gained multiple named,
-  persona'd instances (create/rename/delete, single-view switching, side-by-side compare) —
-  `AssistantThread`'s optional `persona` field, `/api/reader`'s system-prompt injection, and
-  `AssistantPanel.tsx`'s `ReaderPanel` sub-UI. Committed `e41793e`, `49f27ca`.
-  [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) revised (not superseded).
+- **Sprint 14** — Reader Multiple Named Instances (closed). See "Current Sprint" above.
+  Committed `e41793e`, `49f27ca`. [ADR-0006](../adr/ADR-0006-reader-expert-contract.md)
+  revised (not superseded).
+- **Sprint 15** — Systematic Localization (closed). Line Editor/Critic system prompts switched
+  to follow `bookContext.language` (not hardcoded Russian); English UI-copy audit and translation
+  pass across all components. Committed `fccaf41`, `8eeb724`, `c32b6ff`.
+- **Sprint 16-17** — Unified Book View + Collapsible Navigation Tree (closed). Three-screen
+  split replaced by `UnifiedBookView`; collapse/expand at every level; sidebar tree scrolls to
+  blocks instead of switching screens. Committed `62ed860`. Playwright E2E smoke tests (12
+  tests) added post-close — committed `2a28fa6`.
 
 ## Current Architecture
 
@@ -242,9 +243,10 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Current Priorities
 
-1. Sprint 15 (systematic localization: Line Editor's/Critic's system prompts, English UI-copy
-   audit) — well-scoped, ready for Step Cards.
-2. Backfill remaining Sprint 02 context (pricing, security) into `docs/vision/`.
+1. Sprint 18+ — next sprint(s) TBD, see `docs/project/ROADMAP_18-27.md` and
+   [CURRENT_SPRINT.md](CURRENT_SPRINT.md).
+2. Backfill remaining Sprint 02 context (pricing, security) — see
+   `docs/vision/pricing.md` and `docs/vision/security.md`, both still placeholders.
 
 ## Open Decisions
 
@@ -270,4 +272,4 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-Sprint 15 (systematic localization) — both Goal items are well-scoped, ready to implement.
+Sprint 18 (Ideas/Notes) — see `docs/project/ROADMAP_18-27.md`.

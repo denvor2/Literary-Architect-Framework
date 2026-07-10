@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 16-17 — Единый вид книги + дерево навигации + сворачиваемые уровни** — **in progress**
+**Sprint 18 — Ideas/Notes (see ROADMAP_18-27.md)** — **not yet scoped**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,11 +10,9 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** In progress — Steps 01-03 implemented, validated, not yet committed (Product Owner
-  review pending, per this project's Stop Condition convention).
+- **Status:** Not yet started — Sprint 16-17 is closed.
 - **Phase:** Phase 1 (MVP)
-- **Scope source:** `docs/vision/SPRINT_ROADMAP.md` (Sprint 16-17 row) +
-  `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md` Section 2.
+- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 18 row).
 
 ## Sprint 15 — closed
 
@@ -36,44 +34,23 @@ an audit-and-translate pass over the remaining English UI copy.
   language-following revision that had been implemented but never folded into the ADR. Committed
   `c32b6ff`.
 
-## Sprint 16-17 — Goal
+## Sprint 16-17 — closed
 
-**Единый вид книги + дерево навигации + сворачиваемые уровни** (see
-[BOOK_LEVEL_ASSISTANTS_VISION.md](../vision/BOOK_LEVEL_ASSISTANTS_VISION.md) Section 2): replace
-the three mutually exclusive editor screens (book overview / chapter overview / single-scene
-editor) with one continuous, scrollable view of the whole book — every chapter's scenes shown and
-editable inline — with collapse/expand at every level, and a navigation tree that scrolls to a
-block instead of switching screens. The domain hierarchy (`Book → Chapter → Scene`) is unchanged;
-only the display/navigation model changes. This is the largest architectural change on the
-roadmap and was explicitly "not designed" beforehand — a planning pass (not just a Step Card)
-preceded implementation, per this project's evolutionary-architecture principle.
+Unified book view with collapsible navigation tree — committed `62ed860`. The three-screen
+split (book overview / chapter overview / single-scene editor) was replaced by a single
+continuous, scrollable `UnifiedBookView` with collapse/expand at every level. Sidebar tree
+clicks now scroll instead of switching screens.
 
-- **Step 01** — book requisites block (title/genre/language/premise/tags/annotations) made
-  collapsible on the book-overview screen. Smallest, isolated slice; no other screen touched.
-- **Step 02** — the three-screen split removed. `EditorArea.tsx`'s `UnifiedBookView` renders every
-  chapter with its scenes' text inline and editable in one scroll. `Sidebar.tsx`'s tree clicks
-  became "scroll to" (`scrollIntoView` against `chapter-block-{id}`/`scene-block-{id}` element
-  ids) instead of switching screens. `selectedChapterId`/`selectedSceneId` (`Workspace`, still
-  persisted) no longer decide what `EditorArea` renders — they only restore scroll position and
-  drive the Sidebar highlight. AssistantPanel's "current scene" context is now the scene whose
-  `<textarea>` was last focused (`page.tsx`'s `focusedSceneKey` + `onSceneFocus` callback carrying
-  the DOM node up, replacing the single fixed `textareaRef` attachment), falling back to the
-  persisted selection right after load. `isFocusMode` now narrows the whole unified view, not one
-  scene — an explicit, Step-Card-recorded simplification of its old single-scene-only meaning.
-- **Step 03** — collapse/expand added at every remaining level: whole-book (hides all chapters),
-  per-chapter (hides its scenes), per-scene (hides just the `<textarea>` body, title stays), and a
-  per-chapter "collapse/expand all scenes of this chapter" bulk toggle. `Sidebar.tsx`'s tree gained
-  a matching expand/collapse arrow per chapter, sharing the same lifted, ephemeral state
-  (`page.tsx`) as `EditorArea.tsx` — not a separate copy.
+- **Step 01** — book requisites block made collapsible on the book-overview screen.
+- **Step 02** — three-screen split removed; `UnifiedBookView` renders every chapter with its
+  scenes' text inline; sidebar tree clicks became scroll-to; `focusedSceneKey` replaced fixed
+  `textareaRef` for assistant panel context.
+- **Step 03** — collapse/expand at every level: whole-book, per-chapter, per-scene, and
+  per-chapter bulk toggle.
 
-**Known, honestly recorded verification gap (all three steps):** no browser automation is
-available in this Windows environment (`chromium-cli`/Playwright both absent; not installed, to
-avoid adding a new dependency without Product Owner approval) — the `run` skill's browser-driven
-pattern assumes a Linux container this project doesn't have. Verification was `tsc --noEmit` /
-`eslint` / `prettier --check` / `npm run build` (clean at every step) plus thorough code review;
-for stateful screens (a book must exist in `localStorage`, which only a real browser session
-creates) even a `curl`-based HTML check isn't meaningful. Not actual click-through testing — flag
-this if end-to-end interactive QA is needed before this ships.
+**E2E testing added post-close:** Playwright smoke tests (`apps/studio/e2e/smoke.spec.ts`)
+cover app load, book/chapter/scene CRUD, text editing, sidebar tree, chapter/scene collapse,
+Focus Mode, and localStorage persistence — 12 tests, all green. Committed `2a28fa6`.
 
 ## Out of Scope (held constant this sprint)
 
@@ -88,20 +65,12 @@ this if end-to-end interactive QA is needed before this ships.
 
 ## Known Open Items (carried forward)
 
-- Steps 01-03 above are implemented and validated but **not committed** — Product Owner
-  confirmation pending (this project's Stop Condition convention).
 - Book Series remains a vision-only idea — not designed, not scheduled.
 - The AI Bus v5 architecture (Sprint 06) still has no ADR of its own — only described in
   `docs/reports/SPRINT_06_REPORT.md`.
-- [ADR-0006](../adr/ADR-0006-reader-expert-contract.md)'s Request/Response Schema section still
-  describes the pre-Sprint-13 request shape — known staleness, not blocking.
-- No browser automation tool is available in this environment (see this sprint's verification gap
-  above) — UI steps' live verification relies on build/lint/code review, not actual click-through
-  testing.
 - This project is currently working without a separate Architect session — the Product Owner
   reviews directly (see `docs/project/HANDOVER.md`).
 
 ## Next Action
 
-Product Owner review of Steps 01-03 (code + this summary); on confirmation, commit and close
-Sprint 16-17, then update `docs/vision/BOOK_LEVEL_ASSISTANTS_VISION.md` Section 2's status.
+Scope Sprint 18 per `docs/project/ROADMAP_18-27.md`.

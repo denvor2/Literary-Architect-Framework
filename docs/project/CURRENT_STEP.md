@@ -9,10 +9,24 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-23-Step-03
+id: Sprint-24-Step-02
 status: done
-next: []
+next: [Sprint-24-Step-03]
 ```
+
+## Sprint 24 — Миграция localStorage → Database (in progress)
+
+- **Step 01** — ADR-0012 accepted: temporary single-user stopgap (hard deadline Sprint 28/29),
+  dual-mode availability-per-call + last-write-wins + mandatory user-visible desync warning,
+  `/api/workspace` coarse endpoint, entity-id collision flagged as blocking (Step 02), browser-
+  side one-time migration mechanism.
+- **Step 02** — `crypto.randomUUID()` replaces locally-scoped `String(nextNumber)` ids in
+  `useWorkspaceController.ts`'s `createChapter`/`createScene`/`createCharacter`/`createIdea`/
+  `createThread`/`acceptStructureProposal`, plus `createBook()` itself (found during review —
+  not in the Step Card's original function list, but the most common path hitting the same
+  collision). Live-verified via pure-reducer Node script (no browser, to avoid disturbing the
+  Product Owner's active dev-server session).
+- **Next:** Step 03 (repository layer, Prisma-backed, per-entity internally).
 
 ## Sprint 23 — PostgreSQL + Prisma (closed)
 

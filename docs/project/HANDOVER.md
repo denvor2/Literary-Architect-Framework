@@ -123,6 +123,7 @@ below).
 | [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) | Reader Expert Contract | Accepted, revised Sprint 14 |
 | [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) | Multi-Book Workspace | Accepted |
 | [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) | Co-author Expert Contract | Accepted |
+| [ADR-0009](../adr/ADR-0009-critic-subcategories.md) | Critic Subcategories | Accepted |
 
 ## Current Tech Stack
 
@@ -140,7 +141,7 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Sprint 18 (see CURRENT_SPRINT.md) — not yet scoped. Sprint 16-17 (unified book view) is closed.
+Sprint 20 (see CURRENT_SPRINT.md) — not yet scoped. Sprint 19 (Critic subcategories) is closed.
 Playwright E2E smoke tests are in place (`apps/studio/e2e/smoke.spec.ts`, 12 tests, all green). Run
 `npm run test:e2e` from `apps/studio/` to execute.
 

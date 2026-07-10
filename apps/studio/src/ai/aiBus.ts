@@ -44,15 +44,17 @@ export async function execute(
     }
     resultText = data.result;
   } else if (operation.type === "critic_review") {
-    const { sceneText, messages, bookLanguage } = operation.payload;
+    const { sceneText, messages, bookLanguage, subcategory } =
+      operation.payload;
     const response = await fetch("/api/critic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(
-        bookLanguage
-          ? { sceneText, messages, bookLanguage }
-          : { sceneText, messages },
-      ),
+      body: JSON.stringify({
+        sceneText,
+        messages,
+        ...(bookLanguage ? { bookLanguage } : {}),
+        ...(subcategory ? { subcategory } : {}),
+      }),
     });
     const data = await response.json();
     if (!data.ok) {

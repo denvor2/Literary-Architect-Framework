@@ -48,6 +48,11 @@ export type AIOperation =
         // design (ADR-0008), this is the minimal addition that lets its
         // comments follow the book's language.
         bookLanguage?: string;
+        // Sprint-19-Step-03: optional thematic lens — when set, Critic's
+        // system prompt narrows to this subcategory (continuity, fact,
+        // developmental, style). When absent, the general prompt applies.
+        // See ADR-0009.
+        subcategory?: string;
       };
     }
   | {

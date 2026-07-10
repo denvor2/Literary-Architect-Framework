@@ -9,21 +9,22 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-18-Step-03
+id: Sprint-19-Step-04
 status: done
 next: []
 ```
 
-## Sprint 18 — Ideas/Notes (closed)
+## Sprint 19 — Critic Subcategories (closed)
 
-All three steps implemented and validated:
+All four steps implemented and validated:
 
-- **Step 01** — `Idea` type added to domain model (`model.ts`); `ideas: Idea[]` added to `Book`;
-  `normalizeBook()` defaults `ideas: []` for old books; `createBook` and `NewBookDialog` updated.
-- **Step 02** — `IdeasPanel.tsx` component: list of notes with inline text editing, auto-timestamped
-  creation, and delete with confirmation. CRUD operations (`createIdea`/`updateIdea`/`deleteIdea`)
-  added to workspace controller.
-- **Step 03** — `IdeasPanel` integrated into `UnifiedBookView` after the chapters section; props
-  wired through `EditorArea` → `page.tsx`.
+- **Step 01** — ADR-0009 accepted: four thematic lenses (continuity/fact/developmental/style),
+  optional `subcategory` in request body, system prompt suffix mechanism, backward compatible.
+- **Step 02** — `/api/critic` accepts optional `subcategory`; `CRITIC_SUBCATEGORY_PROMPTS` map
+  provides per-lens prompt suffixes; base prompt extracted to constant.
+- **Step 03** — `critic_review` operation gaining optional `subcategory`; `aiBus.execute()`
+  forwards it to the route.
+- **Step 04** — Pill-button selector in AssistantPanel Critic mode (Все/Связность/
+  Достоверность/Развитие/Стиль); state is ephemeral, does not reset thread on switch.
 
 Validation: `tsc`, `eslint`, `build`, 12/12 Playwright E2E tests — all green.

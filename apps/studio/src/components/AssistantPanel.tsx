@@ -28,6 +28,15 @@ const SEVERITY_BADGE: Record<string, string> = {
 };
 const DEFAULT_SEVERITY_BADGE = SEVERITY_BADGE.low;
 
+// Sprint-19-Step-04: thematic lenses for Critic — see ADR-0009.
+const CRITIC_SUBCATEGORIES = [
+  { key: undefined, label: "Все" },
+  { key: "continuity", label: "Связность" },
+  { key: "fact", label: "Достоверность" },
+  { key: "developmental", label: "Развитие" },
+  { key: "style", label: "Стиль" },
+] as const;
+
 // Sprint-13-Step-05: deliberately just display metadata (emoji/label/
 // description/accent/placeholder) — the previous MODE_INFO also carried a
 // "perception layer" (fake scene phase, consistency indicator, an explicit
@@ -484,6 +493,9 @@ export function AssistantPanel({
 }: AssistantPanelProps) {
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [criticSubcategory, setCriticSubcategory] = useState<
+    string | undefined
+  >(undefined);
 
   if (!book) {
     return (
@@ -555,6 +567,7 @@ export function AssistantPanel({
               sceneText: scopedText,
               messages: outgoingMessages,
               bookLanguage: book!.language,
+              subcategory: criticSubcategory,
             },
           },
           context: {},
@@ -633,6 +646,24 @@ export function AssistantPanel({
             </button>
           )}
         </div>
+
+        {selectedMode === "critic" && (
+          <div className="flex flex-wrap gap-1.5">
+            {CRITIC_SUBCATEGORIES.map((sub) => (
+              <button
+                key={sub.key ?? "all"}
+                onClick={() => setCriticSubcategory(sub.key)}
+                className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                  criticSubcategory === sub.key
+                    ? "border-red-400 bg-red-50 text-red-700 dark:border-red-600 dark:bg-red-950 dark:text-red-300"
+                    : "border-zinc-300 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                }`}
+              >
+                {sub.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {selectedMode === "reader" ? (
           <ReaderPanel

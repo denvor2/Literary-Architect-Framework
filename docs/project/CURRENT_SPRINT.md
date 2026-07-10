@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 19 — Critic subcategories (see ROADMAP_18-27.md)** — **not yet scoped**
+**Sprint 20 — Co-author structure proposal (see ROADMAP_18-27.md)** — **not yet scoped**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,9 +10,9 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** Not yet started — Sprint 18 is closed.
+- **Status:** Not yet started — Sprint 19 is closed.
 - **Phase:** Phase 1 (MVP)
-- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 19 row).
+- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 20 row).
 
 ## Sprint 15 — closed
 
@@ -63,6 +63,18 @@ with Sprint 18 steps.
   CRUD operations (`createIdea`/`updateIdea`/`deleteIdea`) in workspace controller.
 - **Step 03** — IdeasPanel integrated into `UnifiedBookView` after chapters section.
 
+## Sprint 19 — closed
+
+Critic subcategories — four thematic lenses for focused literary feedback.
+
+- **Step 01** — ADR-0009 accepted: continuity/fact/developmental/style lenses, optional
+  `subcategory` in request body, system prompt suffix, backward compatible.
+- **Step 02** — `/api/critic` accepts `subcategory`; `CRITIC_SUBCATEGORY_PROMPTS` map;
+  base prompt extracted to constant.
+- **Step 03** — `critic_review` operation gains `subcategory`; `aiBus.execute()` forwards.
+- **Step 04** — Pill-button selector in AssistantPanel Critic mode (Все/Связность/
+  Достоверность/Развитие/Стиль); ephemeral state, does not reset thread.
+
 ## Out of Scope (held constant this sprint)
 
 - Everything already recorded as out of scope in prior sprints (Book Series, Trash/Archive,
@@ -84,4 +96,4 @@ with Sprint 18 steps.
 
 ## Next Action
 
-Scope Sprint 19 (Critic subcategories) per `docs/project/ROADMAP_18-27.md`.
+Scope Sprint 20 (Co-author structure proposal) per `docs/project/ROADMAP_18-27.md`.

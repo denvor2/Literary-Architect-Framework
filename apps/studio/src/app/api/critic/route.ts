@@ -15,6 +15,20 @@ import { getAnthropicClient } from "@/lib/ai/anthropic";
 // stays scene/selection-scoped by design (ADR-0008's per-Expert
 // context-scope table) — this is the minimal addition that lets Critic's
 // comments follow the book's declared language without widening that scope.
+// Sprint-19-Step-02: optional `subcategory` — a thematic lens that narrows
+// Critic's focus via a system prompt suffix. See ADR-0009.
+
+const CRITIC_BASE_PROMPT = `You are a literary critic. Analyze the text the user gives you and identify concrete issues across these categories: Plot, Characters, Pacing, Style, Dialogue, General. For each issue found, produce one entry with exactly these fields: "category" (one of "Plot", "Characters", "Pacing", "Style", "Dialogue", "General"), "severity" (one of "low", "medium", "high"), and "comment" (a short explanation of the issue). If you find no issues, return an empty array. The messages that follow may include a continuing conversation about your review, not just the initial text — if the author asks a follow-up question about a previous review, still respond with an entry in this same schema (use category "General" and a severity that reflects how important your answer is) so your answer stays inside the array structure. Respond with ONLY a raw JSON array of such entries — no markdown code fences, no explanation, no text before or after the array.`;
+
+const CRITIC_SUBCATEGORY_PROMPTS: Record<string, string> = {
+  continuity:
+    "Focus your review specifically on continuity: plot holes, timeline contradictions, unresolved narrative threads, and logical inconsistencies between scenes or chapters. Only report issues in this domain — ignore style, dialogue quality, or character development unless they directly cause a continuity problem.",
+  fact: "Focus your review specifically on factual accuracy and worldbuilding consistency: check whether the text's internal logic holds, whether described actions are physically plausible, whether setting details are consistent, and whether any real-world facts mentioned are correct. Only report issues in this domain.",
+  developmental:
+    "Focus your review specifically on developmental aspects: character arc progression, emotional depth and authenticity, structural pacing (too fast/too slow), thematic coherence, and whether the story delivers on its premise. Only report issues in this domain.",
+  style: "Focus your review specifically on prose style: sentence structure variety, word choice precision, dialogue voice distinctiveness, rhythm and flow, show-vs-tell balance, and overuse of cliches or filler words. Only report issues in this domain.",
+};
+
 export async function POST(request: Request) {
   const body = await request.json();
   const sceneText = body?.sceneText;
@@ -23,6 +37,8 @@ export async function POST(request: Request) {
     typeof body?.bookLanguage === "string" && body.bookLanguage
       ? body.bookLanguage
       : "Russian";
+  const subcategory =
+    typeof body?.subcategory === "string" ? body.subcategory : undefined;
 
   if (!sceneText || typeof sceneText !== "string") {
     return NextResponse.json(
@@ -55,6 +71,13 @@ export async function POST(request: Request) {
     }
   }
 
+  const subcategorySuffix =
+    subcategory && CRITIC_SUBCATEGORY_PROMPTS[subcategory]
+      ? `\n\n${CRITIC_SUBCATEGORY_PROMPTS[subcategory]}`
+      : "";
+
+  const languageInstruction = ` Write the "comment" field of each entry in ${bookLanguage}, regardless of the language of the text you are given, unless the user explicitly asks for another language. The "category" and "severity" values themselves must stay exactly as specified above (the English enum values) — never translate them.`;
+
   try {
     const client = getAnthropicClient();
     const contextMessage = { role: "user" as const, content: sceneText };
@@ -62,7 +85,7 @@ export async function POST(request: Request) {
     const message = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1024,
-      system: `You are a literary critic. Analyze the text the user gives you and identify concrete issues across these categories: Plot, Characters, Pacing, Style, Dialogue, General. For each issue found, produce one entry with exactly these fields: "category" (one of "Plot", "Characters", "Pacing", "Style", "Dialogue", "General"), "severity" (one of "low", "medium", "high"), and "comment" (a short explanation of the issue). If you find no issues, return an empty array. The messages that follow may include a continuing conversation about your review, not just the initial text — if the author asks a follow-up question about a previous review, still respond with an entry in this same schema (use category "General" and a severity that reflects how important your answer is) so your answer stays inside the array structure. Respond with ONLY a raw JSON array of such entries — no markdown code fences, no explanation, no text before or after the array. Write the "comment" field of each entry in ${bookLanguage}, regardless of the language of the text you are given, unless the user explicitly asks for another language. The "category" and "severity" values themselves must stay exactly as specified above (the English enum values) — never translate them.`,
+      system: `${CRITIC_BASE_PROMPT}${subcategorySuffix}${languageInstruction}`,
       messages: anthropicMessages,
     });
     const block = message.content.find((item) => item.type === "text");

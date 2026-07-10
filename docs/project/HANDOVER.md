@@ -20,11 +20,11 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 15 (systematic localization) is in progress, not yet scoped into Step Cards. Sprint 14
-(Reader multiple named instances) closed — Reader now supports several named, persona'd
-instances instead of a single resettable thread, resolving a real gap Sprint 13 left open; see
-[CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the current Sprint 15 goal (its git history holds
-Sprint 14's full closing summary). Sprints 06 through 14 are all closed.
+Sprint 16-17 (unified book view with collapsible navigation tree) is closed — committed
+`62ed860`. The three-screen split (book overview / chapter overview / single-scene editor) has
+been replaced by a single continuous, scrollable `UnifiedBookView` with collapse/expand at every
+level, and sidebar tree clicks now scroll instead of switching screens. Sprints 06 through 17
+are all closed. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the next sprint goal.
 
 **Process note:** this project is currently working without a separate Architect session — the
 Product Owner reviews Step Cards directly instead (see "Architecture Review before commit"
@@ -105,7 +105,7 @@ below).
   scaffolding from Sprint 01.
 - Documentation (this file included) was substantially expanded in Sprint 03 via an
   Architecture Review process, updated at Sprint 06 closeout, and refreshed several times since
-  as drift was found (most recently at Sprint 13's close).
+  as drift was found (most recently at Sprint 16-17 close).
 
 ## Accepted ADRs
 
@@ -136,13 +136,11 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Sprint 16-17 (unified book view, see CURRENT_SPRINT.md) — Steps 01-03 implemented and validated,
-awaiting Product Owner review/confirmation before commit (this project's Stop Condition
-convention). Sprint 15 (localization) is closed.
+Sprint 18 (see CURRENT_SPRINT.md) — not yet scoped. Sprint 16-17 (unified book view) is closed.
 
 ## Current Priorities
 
-1. Sprint 16-17 — unified book view (Steps 01-03 done, pending Product Owner review/commit).
+1. Sprint 18+ — next sprint(s) TBD, see CURRENT_SPRINT.md.
 2. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both still placeholders.

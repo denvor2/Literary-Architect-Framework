@@ -476,6 +476,18 @@ type AssistantPanelProps = {
   onRenameThread: (mode: AssistantMode, threadId: string, name: string) => void;
   onDeleteThread: (mode: AssistantMode, threadId: string) => void;
   onReplaceSceneText?: (text: string) => void;
+  // Sprint-20-Step-03: accepts a structure proposal from Co-author, adding
+  // selected chapters/scenes to the book. See ADR-0010.
+  onAcceptStructureProposal?: (
+    proposal: {
+      chapters: Array<{
+        title: string;
+        subtitle?: string;
+        scenes: Array<{ title: string; description: string }>;
+      }>;
+    },
+    selectedKeys: Set<string>,
+  ) => void;
 };
 
 export function AssistantPanel({
@@ -490,12 +502,26 @@ export function AssistantPanel({
   onRenameThread,
   onDeleteThread,
   onReplaceSceneText,
+  onAcceptStructureProposal,
 }: AssistantPanelProps) {
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [criticSubcategory, setCriticSubcategory] = useState<
     string | undefined
   >(undefined);
+  // Sprint-20-Step-03: structure proposal state — ephemeral, not persisted.
+  const [structureProposal, setStructureProposal] = useState<{
+    chapters: Array<{
+      title: string;
+      subtitle?: string;
+      scenes: Array<{ title: string; description: string }>;
+    }>;
+  } | null>(null);
+  const [selectedProposalKeys, setSelectedProposalKeys] =
+    useState<Set<string>>(new Set());
+  const [proposalStatus, setProposalStatus] = useState<
+    "idle" | "loading" | "error"
+  >("idle");
 
   if (!book) {
     return (
@@ -600,6 +626,101 @@ export function AssistantPanel({
     }
   }
 
+  // Sprint-20-Step-03: request a structure proposal from Co-author.
+  async function handleProposeStructure() {
+    if (!book) return;
+    setProposalStatus("loading");
+    try {
+      const result = await aiBus.execute({
+        operation: {
+          type: "coauthor_propose_structure",
+          payload: {
+            bookContext: book,
+            messages: [],
+          },
+        },
+        context: {},
+      });
+      const parsed = JSON.parse(result.response.text);
+      setStructureProposal(parsed);
+      // Default all keys to selected.
+      const allKeys = new Set<string>();
+      parsed.chapters.forEach(
+        (
+          ch: { scenes: Array<unknown> },
+          ci: number,
+        ) => {
+          allKeys.add(String(ci));
+          ch.scenes.forEach((_: unknown, si: number) => {
+            allKeys.add(`${ci}-${si}`);
+          });
+        },
+      );
+      setSelectedProposalKeys(allKeys);
+      setProposalStatus("idle");
+    } catch {
+      setProposalStatus("error");
+    }
+  }
+
+  function toggleProposalKey(key: string) {
+    setSelectedProposalKeys((previous) => {
+      const next = new Set(previous);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }
+
+  function toggleChapterKeys(chapterIndex: number, sceneCount: number) {
+    setSelectedProposalKeys((previous) => {
+      const next = new Set(previous);
+      const chapterKey = String(chapterIndex);
+      const allScenesSelected = Array.from({ length: sceneCount }, (_, si) =>
+        next.has(`${chapterIndex}-${si}`),
+      ).every(Boolean);
+      if (allScenesSelected) {
+        next.delete(chapterKey);
+        for (let si = 0; si < sceneCount; si++) {
+          next.delete(`${chapterIndex}-${si}`);
+        }
+      } else {
+        next.add(chapterKey);
+        for (let si = 0; si < sceneCount; si++) {
+          next.add(`${chapterIndex}-${si}`);
+        }
+      }
+      return next;
+    });
+  }
+
+  function handleAcceptProposal(all: boolean) {
+    if (!structureProposal || !onAcceptStructureProposal) return;
+    const keys = all
+      ? (() => {
+          const allKeys = new Set<string>();
+          structureProposal.chapters.forEach(
+            (
+              ch: { scenes: Array<unknown> },
+              ci: number,
+            ) => {
+              allKeys.add(String(ci));
+              ch.scenes.forEach((_: unknown, si: number) => {
+                allKeys.add(`${ci}-${si}`);
+              });
+            },
+          );
+          return allKeys;
+        })()
+      : selectedProposalKeys;
+    onAcceptStructureProposal(structureProposal, keys);
+    setStructureProposal(null);
+    setSelectedProposalKeys(new Set());
+  }
+
   return (
     <aside className="flex max-h-96 w-full shrink-0 flex-col gap-3 overflow-y-auto border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:h-full lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
       <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -637,14 +758,27 @@ export function AssistantPanel({
           <p className={`text-xs font-medium ${meta.accent}`}>
             {meta.emoji} {meta.label}
           </p>
-          {selectedMode === "critic" && (
-            <button
-              onClick={() => onCreateThread("critic")}
-              className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-            >
-              Начать заново
-            </button>
-          )}
+          <div className="flex gap-1.5">
+            {selectedMode === "coauthor" && (
+              <button
+                onClick={handleProposeStructure}
+                disabled={proposalStatus === "loading"}
+                className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+              >
+                {proposalStatus === "loading"
+                  ? "…"
+                  : "Предложить структуру"}
+              </button>
+            )}
+            {selectedMode === "critic" && (
+              <button
+                onClick={() => onCreateThread("critic")}
+                className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+              >
+                Начать заново
+              </button>
+            )}
+          </div>
         </div>
 
         {selectedMode === "critic" && (
@@ -662,6 +796,90 @@ export function AssistantPanel({
                 {sub.label}
               </button>
             ))}
+          </div>
+        )}
+
+        {selectedMode === "coauthor" && proposalStatus === "error" && (
+          <p className="text-sm text-red-600 dark:text-red-400">
+            Не удалось получить предложение. Попробуйте ещё раз.
+          </p>
+        )}
+
+        {selectedMode === "coauthor" && structureProposal && (
+          <div className="flex flex-col gap-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Предложенная структура
+            </p>
+            <div className="flex flex-col gap-2">
+              {structureProposal.chapters.map((ch, ci) => {
+                const chapterKey = String(ci);
+                const isChapterChecked =
+                  selectedProposalKeys.has(chapterKey);
+                return (
+                  <div key={ci} className="flex flex-col gap-1">
+                    <label className="flex items-center gap-2 text-sm font-medium text-black dark:text-zinc-50">
+                      <input
+                        type="checkbox"
+                        checked={isChapterChecked}
+                        onChange={() =>
+                          toggleChapterKeys(ci, ch.scenes.length)
+                        }
+                        className="h-3.5 w-3.5 rounded border-zinc-300"
+                      />
+                      {ch.title}
+                      {ch.subtitle && (
+                        <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                          — {ch.subtitle}
+                        </span>
+                      )}
+                    </label>
+                    <div className="flex flex-col gap-0.5 pl-5">
+                      {ch.scenes.map((scene, si) => {
+                        const sceneKey = `${ci}-${si}`;
+                        return (
+                          <label
+                            key={si}
+                            className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-400"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedProposalKeys.has(
+                                sceneKey,
+                              )}
+                              onChange={() =>
+                                toggleProposalKey(sceneKey)
+                              }
+                              className="mt-0.5 h-3 w-3 rounded border-zinc-300"
+                            />
+                            <span>
+                              <span className="font-medium">
+                                {scene.title}
+                              </span>{" "}
+                              — {scene.description}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleAcceptProposal(false)}
+                disabled={selectedProposalKeys.size === 0}
+                className="rounded-full bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              >
+                Добавить выбранное
+              </button>
+              <button
+                onClick={() => handleAcceptProposal(true)}
+                className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+              >
+                Добавить всё
+              </button>
+            </div>
           </div>
         )}
 

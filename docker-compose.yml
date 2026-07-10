@@ -1,0 +1,37 @@
+# Sprint-22 + Sprint-23: docker-compose for Literary Studio with PostgreSQL.
+# Run from repository root: docker-compose up
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: literary
+      POSTGRES_PASSWORD: literary
+      POSTGRES_DB: literary_studio
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U literary -d literary_studio"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  studio:
+    build:
+      context: ./apps/studio
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./apps/studio/.env.local
+    environment:
+      DATABASE_URL: "postgresql://literary:literary@postgres:5432/literary_studio?schema=public"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:

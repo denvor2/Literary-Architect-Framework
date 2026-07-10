@@ -25,6 +25,16 @@
 
 import type { Book, ChatMessage } from "@/domain/model";
 
+// Sprint-21-Step-01: supported Book field names for AI suggestions (ADR-0011).
+// `tags` excluded (array field, needs different UX); `language` excluded
+// (technical setting, not creative).
+export type BookFieldName =
+  | "title"
+  | "genre"
+  | "premise"
+  | "shortAnnotation"
+  | "fullAnnotation";
+
 export type AIOperation =
   | {
       type: "improve_text";
@@ -77,5 +87,20 @@ export type AIOperation =
         sceneText: string;
         bookContext: Book;
         messages: ChatMessage[];
+      };
+    }
+  | {
+      type: "coauthor_propose_structure";
+      payload: {
+        bookContext: Book;
+        messages: ChatMessage[];
+      };
+    }
+  | {
+      type: "book_field_suggestion";
+      payload: {
+        fieldName: BookFieldName;
+        currentValue: string;
+        bookContext: Book;
       };
     };

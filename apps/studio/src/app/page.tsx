@@ -9,6 +9,8 @@ import { AssistantPanel } from "@/components/AssistantPanel";
 import { DeveloperTools } from "@/components/DeveloperTools";
 import { NewBookDialog } from "@/components/NewBookDialog";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
+import { execute as aiBusExecute } from "@/ai/aiBus";
+import type { BookFieldName } from "@/ai/operations";
 
 export default function Home() {
   const {
@@ -41,6 +43,7 @@ export default function Home() {
     createIdea,
     updateIdea,
     deleteIdea,
+    acceptStructureProposal,
     selectBook,
     deselectAll,
     selectAssistantMode,
@@ -103,6 +106,16 @@ export default function Home() {
     new Set(),
   );
 
+  // Sprint-21-Step-04: AI field suggestion state (ADR-0011) — ephemeral, not
+  // persisted. Only one suggestion active at a time.
+  const [fieldSuggestion, setFieldSuggestion] = useState<{
+    fieldName: BookFieldName;
+    suggestion: string;
+    explanation: string;
+  } | null>(null);
+  const [isFieldSuggestionLoading, setIsFieldSuggestionLoading] =
+    useState(false);
+
   function toggleChapterCollapsed(chapterId: string) {
     setCollapsedChapterIds((previous) => {
       const next = new Set(previous);
@@ -159,6 +172,46 @@ export default function Home() {
       return value;
     }
     return value.slice(selectionStart, selectionEnd);
+  }
+
+  // Sprint-21-Step-04: request AI suggestion for a Book field (ADR-0011).
+  async function handleRequestFieldSuggestion(fieldName: BookFieldName) {
+    if (!activeBook) return;
+    setIsFieldSuggestionLoading(true);
+    setFieldSuggestion(null);
+    try {
+      const currentValue = activeBook[fieldName] ?? "";
+      const result = await aiBusExecute({
+        operation: {
+          type: "book_field_suggestion",
+          payload: {
+            fieldName,
+            currentValue: Array.isArray(currentValue)
+              ? currentValue.join(", ")
+              : String(currentValue),
+            bookContext: activeBook,
+          },
+        },
+        context: {},
+      });
+      const parsed = JSON.parse(result.response.text);
+      setFieldSuggestion({
+        fieldName,
+        suggestion: parsed.suggestion,
+        explanation: parsed.explanation,
+      });
+    } catch {
+      setFieldSuggestion(null);
+    } finally {
+      setIsFieldSuggestionLoading(false);
+    }
+  }
+
+  function handleAcceptFieldSuggestion() {
+    if (!fieldSuggestion || !activeBook) return;
+    const { fieldName, suggestion } = fieldSuggestion;
+    updateBook(activeBook.id, { [fieldName]: suggestion });
+    setFieldSuggestion(null);
   }
 
   // Clicking the already-active book returns to its overview (Sprint 10
@@ -227,6 +280,11 @@ export default function Home() {
             onCreateIdea={createIdea}
             onUpdateIdea={updateIdea}
             onDeleteIdea={deleteIdea}
+            onRequestFieldSuggestion={handleRequestFieldSuggestion}
+            fieldSuggestion={fieldSuggestion}
+            onAcceptFieldSuggestion={handleAcceptFieldSuggestion}
+            onDismissFieldSuggestion={() => setFieldSuggestion(null)}
+            isFieldSuggestionLoading={isFieldSuggestionLoading}
           />
         )}
         {!isFocusMode && (
@@ -247,6 +305,7 @@ export default function Home() {
                     updateSceneText(activeChapter.id, activeScene.id, text)
                 : undefined
             }
+            onAcceptStructureProposal={acceptStructureProposal}
           />
         )}
       </div>

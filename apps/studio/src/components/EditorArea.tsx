@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Book, Chapter, Idea } from "@/domain/model";
+import type { BookFieldName } from "@/ai/operations";
 import { GENRES, LANGUAGES } from "@/components/NewBookDialog";
 import { IdeasPanel } from "@/components/IdeasPanel";
 
@@ -80,6 +81,16 @@ type EditorAreaProps = {
   onCreateIdea?: () => void;
   onUpdateIdea?: (ideaId: string, text: string) => void;
   onDeleteIdea?: (ideaId: string) => void;
+  // Sprint-21-Step-04: AI field suggestions (ADR-0011).
+  onRequestFieldSuggestion?: (fieldName: BookFieldName) => void;
+  fieldSuggestion?: {
+    fieldName: BookFieldName;
+    suggestion: string;
+    explanation: string;
+  } | null;
+  onAcceptFieldSuggestion?: () => void;
+  onDismissFieldSuggestion?: () => void;
+  isFieldSuggestionLoading?: boolean;
 };
 
 export function EditorArea({
@@ -104,6 +115,11 @@ export function EditorArea({
   onCreateIdea,
   onUpdateIdea,
   onDeleteIdea,
+  onRequestFieldSuggestion,
+  fieldSuggestion,
+  onAcceptFieldSuggestion,
+  onDismissFieldSuggestion,
+  isFieldSuggestionLoading,
 }: EditorAreaProps) {
   if (!book) {
     return (
@@ -138,6 +154,11 @@ export function EditorArea({
       onCreateIdea={onCreateIdea}
       onUpdateIdea={onUpdateIdea}
       onDeleteIdea={onDeleteIdea}
+      onRequestFieldSuggestion={onRequestFieldSuggestion}
+      fieldSuggestion={fieldSuggestion}
+      onAcceptFieldSuggestion={onAcceptFieldSuggestion}
+      onDismissFieldSuggestion={onDismissFieldSuggestion}
+      isFieldSuggestionLoading={isFieldSuggestionLoading}
     />
   );
 }
@@ -170,8 +191,41 @@ function UnifiedBookView({
   onCreateIdea,
   onUpdateIdea,
   onDeleteIdea,
+  onRequestFieldSuggestion,
+  fieldSuggestion,
+  onAcceptFieldSuggestion,
+  onDismissFieldSuggestion,
+  isFieldSuggestionLoading,
 }: UnifiedBookViewProps) {
   const [isDetailsCollapsed, setIsDetailsCollapsed] = useState(false);
+
+  function renderFieldSuggestion(fieldName: BookFieldName) {
+    if (fieldSuggestion?.fieldName !== fieldName) return null;
+    return (
+      <div className="flex flex-col gap-1.5 rounded-md border border-blue-200 bg-blue-50 p-2.5 dark:border-blue-800 dark:bg-blue-950">
+        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+          {fieldSuggestion.suggestion}
+        </p>
+        <p className="text-xs text-blue-600 dark:text-blue-400">
+          {fieldSuggestion.explanation}
+        </p>
+        <div className="flex gap-1.5">
+          <button
+            onClick={onAcceptFieldSuggestion}
+            className="rounded-full bg-blue-600 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700"
+          >
+            Принять
+          </button>
+          <button
+            onClick={onDismissFieldSuggestion}
+            className="rounded-full border border-blue-300 px-2.5 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-100 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900"
+          >
+            Отклонить
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="flex flex-1 flex-col overflow-y-auto p-8">
@@ -201,14 +255,30 @@ function UnifiedBookView({
         </div>
         {!isDetailsCollapsed && (
           <div className="flex max-w-2xl flex-col gap-2">
-            <input
-              value={book.title}
-              onChange={(event) =>
-                onUpdateBook?.(book.id, { title: event.target.value })
-              }
-              placeholder="Название книги..."
-              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                value={book.title}
+                onChange={(event) =>
+                  onUpdateBook?.(book.id, { title: event.target.value })
+                }
+                placeholder="Название книги..."
+                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+              />
+              {onRequestFieldSuggestion && (
+                <button
+                  onClick={() => onRequestFieldSuggestion("title")}
+                  disabled={isFieldSuggestionLoading}
+                  title="AI-предложение"
+                  className="shrink-0 rounded-md border border-zinc-300 px-2 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                >
+                  {isFieldSuggestionLoading &&
+                  fieldSuggestion?.fieldName === "title"
+                    ? "…"
+                    : "AI"}
+                </button>
+              )}
+            </div>
+            {renderFieldSuggestion("title")}
             <div className="flex gap-2">
               <select
                 value={book.genre}
@@ -237,15 +307,31 @@ function UnifiedBookView({
                 ))}
               </select>
             </div>
-            <textarea
-              value={book.premise}
-              onChange={(event) =>
-                onUpdateBook?.(book.id, { premise: event.target.value })
-              }
-              placeholder="О чём эта книга?"
-              rows={4}
-              className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-            />
+            <div className="flex items-start gap-2">
+              <textarea
+                value={book.premise}
+                onChange={(event) =>
+                  onUpdateBook?.(book.id, { premise: event.target.value })
+                }
+                placeholder="О чём эта книга?"
+                rows={4}
+                className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+              />
+              {onRequestFieldSuggestion && (
+                <button
+                  onClick={() => onRequestFieldSuggestion("premise")}
+                  disabled={isFieldSuggestionLoading}
+                  title="AI-предложение"
+                  className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                >
+                  {isFieldSuggestionLoading &&
+                  fieldSuggestion?.fieldName === "premise"
+                    ? "…"
+                    : "AI"}
+                </button>
+              )}
+            </div>
+            {renderFieldSuggestion("premise")}
             <input
               value={book.tags.join(", ")}
               onChange={(event) =>
@@ -259,26 +345,58 @@ function UnifiedBookView({
               placeholder="Теги (через запятую)..."
               className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
             />
-            <textarea
-              value={book.shortAnnotation}
-              onChange={(event) =>
-                onUpdateBook?.(book.id, {
-                  shortAnnotation: event.target.value,
-                })
-              }
-              placeholder="Краткая аннотация..."
-              rows={2}
-              className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-            />
-            <textarea
-              value={book.fullAnnotation}
-              onChange={(event) =>
-                onUpdateBook?.(book.id, { fullAnnotation: event.target.value })
-              }
-              placeholder="Полная аннотация..."
-              rows={6}
-              className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-            />
+            <div className="flex items-start gap-2">
+              <textarea
+                value={book.shortAnnotation}
+                onChange={(event) =>
+                  onUpdateBook?.(book.id, {
+                    shortAnnotation: event.target.value,
+                  })
+                }
+                placeholder="Краткая аннотация..."
+                rows={2}
+                className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+              />
+              {onRequestFieldSuggestion && (
+                <button
+                  onClick={() => onRequestFieldSuggestion("shortAnnotation")}
+                  disabled={isFieldSuggestionLoading}
+                  title="AI-предложение"
+                  className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                >
+                  {isFieldSuggestionLoading &&
+                  fieldSuggestion?.fieldName === "shortAnnotation"
+                    ? "…"
+                    : "AI"}
+                </button>
+              )}
+            </div>
+            {renderFieldSuggestion("shortAnnotation")}
+            <div className="flex items-start gap-2">
+              <textarea
+                value={book.fullAnnotation}
+                onChange={(event) =>
+                  onUpdateBook?.(book.id, { fullAnnotation: event.target.value })
+                }
+                placeholder="Полная аннотация..."
+                rows={6}
+                className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+              />
+              {onRequestFieldSuggestion && (
+                <button
+                  onClick={() => onRequestFieldSuggestion("fullAnnotation")}
+                  disabled={isFieldSuggestionLoading}
+                  title="AI-предложение"
+                  className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                >
+                  {isFieldSuggestionLoading &&
+                  fieldSuggestion?.fieldName === "fullAnnotation"
+                    ? "…"
+                    : "AI"}
+                </button>
+              )}
+            </div>
+            {renderFieldSuggestion("fullAnnotation")}
           </div>
         )}
 

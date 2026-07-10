@@ -1,0 +1,119 @@
+// Sprint-23-Step-01: Prisma schema for Literary Studio domain model.
+// Maps 1:1 to domain/model.ts types. Workspace UI state (activeBookId,
+// selectedChapterId, etc.) is NOT persisted here — it's ephemeral.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  books     Book[]
+}
+
+model Book {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  title           String
+  genre           String
+  language        String
+  premise         String   @default("")
+  shortAnnotation String   @default("")
+  fullAnnotation  String   @default("")
+  tags            String[] @default([])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  chapters          Chapter[]
+  characters        Character[]
+  ideas             Idea[]
+  assistantThreads  AssistantThread[]
+}
+
+model Chapter {
+  id       String  @id @default(cuid())
+  bookId   String
+  book     Book    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  title    String
+  subtitle String  @default("")
+  order    Int     @default(0)
+  scenes   Scene[]
+
+  @@index([bookId])
+}
+
+model Scene {
+  id        String  @id @default(cuid())
+  chapterId String
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  title     String
+  text      String  @default("")
+  order     Int     @default(0)
+
+  @@index([chapterId])
+}
+
+model Character {
+  id          String @id @default(cuid())
+  bookId      String
+  book        Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  name        String
+  description String @default("")
+  notes       String @default("")
+  photoUrl    String @default("")
+
+  @@index([bookId])
+}
+
+model Idea {
+  id        String   @id @default(cuid())
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([bookId])
+}
+
+model AssistantThread {
+  id       String        @id @default(cuid())
+  bookId   String
+  book     Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  role     AssistantRole
+  name     String
+  persona  String?
+  messages ChatMessage[]
+
+  @@index([bookId])
+  @@index([bookId, role])
+}
+
+enum AssistantRole {
+  coauthor
+  editor
+  critic
+  reader
+}
+
+model ChatMessage {
+  id         String           @id @default(cuid())
+  threadId   String
+  thread     AssistantThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role       MessageRole
+  content    String
+  createdAt  DateTime         @default(now())
+
+  @@index([threadId])
+}
+
+enum MessageRole {
+  user
+  assistant
+}

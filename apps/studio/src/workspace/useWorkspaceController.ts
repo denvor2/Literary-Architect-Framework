@@ -481,6 +481,59 @@ export function useWorkspaceController() {
     });
   }
 
+  // Sprint-20-Step-04: accepts a StructureProposal from Co-author, creating
+  // real Chapter/Scene domain objects. `selectedKeys` is a Set of strings
+  // like "0" (chapter) or "0-1" (scene 1 of chapter 0). See ADR-0010.
+  function acceptStructureProposal(
+    proposal: {
+      chapters: Array<{
+        title: string;
+        subtitle?: string;
+        scenes: Array<{ title: string; description: string }>;
+      }>;
+    },
+    selectedKeys: Set<string>,
+  ) {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+
+      const newChapters: Chapter[] = [];
+      proposal.chapters.forEach((propChapter, ci) => {
+        if (!selectedKeys.has(String(ci))) return;
+        const selectedScenes = propChapter.scenes.filter((_, si) =>
+          selectedKeys.has(`${ci}-${si}`),
+        );
+        newChapters.push({
+          id: String(activeBook.chapters.length + newChapters.length + 1),
+          title: propChapter.title,
+          subtitle: propChapter.subtitle ?? "",
+          scenes:
+            selectedScenes.length > 0
+              ? selectedScenes.map((s, i) => ({
+                  id: String(i + 1),
+                  title: s.title,
+                  text: "",
+                }))
+              : [{ id: "1", title: "Scene 1", text: "" }],
+        });
+      });
+
+      if (newChapters.length === 0) return previous;
+
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? { ...book, chapters: [...book.chapters, ...newChapters] }
+            : book,
+        ),
+      };
+    });
+  }
+
   // Sprint-11-Step-01: replaces the previous zero-argument `selectBook()`
   // (Sprint 10 Step 04 — "deselect chapter/scene/character, return to the
   // current book's overview"). That was a naming collision, not the same
@@ -709,6 +762,7 @@ export function useWorkspaceController() {
     createIdea,
     updateIdea,
     deleteIdea,
+    acceptStructureProposal,
     selectBook,
     deselectAll,
     selectAssistantMode,

@@ -11,10 +11,17 @@ import { getAnthropicClient } from "@/lib/ai/anthropic";
 // history is sent by the client on every call, in `messages`, and nothing is kept between
 // calls. `currentText` is renamed `sceneText` to match the shared schema across all four
 // Experts. Response shape is unchanged.
+// Sprint-20-Step-02: optional `mode` parameter — "draft" (default, existing behavior) or
+// "structure" (returns a JSON StructureProposal instead of prose). See ADR-0010.
+
+const STRUCTURE_SYSTEM_PROMPT = `You are a literary co-author helping plan a book's structure. Given the book's full context (metadata, existing chapters/scenes, characters), propose a chapter-and-scene structure as a raw JSON object with this exact shape:\n\n{ "chapters": [ { "title": "...", "subtitle": "...", "scenes": [ { "title": "...", "description": "1-2 sentence summary of what happens" } ] } ] }\n\nRules:\n- Propose a complete structure that fits the book's premise, genre, and existing content.\n- If chapters already exist, build on them — propose new chapters/scenes that continue the story.\n- Each scene description should be concise (1-2 sentences).\n- Respond with ONLY the raw JSON object — no markdown code fences, no explanation, no text before or after.\n- The structure must be valid JSON.`;
+
 export async function POST(request: Request) {
   const body = await request.json();
   const bookContext = body?.bookContext;
   const messages = body?.messages;
+  const mode =
+    typeof body?.mode === "string" ? body.mode : "draft";
 
   if (typeof bookContext !== "object" || bookContext === null) {
     return NextResponse.json(
@@ -48,10 +55,6 @@ export async function POST(request: Request) {
   }
 
   const sceneText = body?.sceneText ?? "";
-  // Sprint-15-Step-01: the drafted/continued text must be written in the
-  // book's own declared language, not a hardcoded one — for Co-author
-  // specifically, "respond" means the actual manuscript prose, so this
-  // matters even more directly than for the Review-producing Experts.
   const bookLanguage =
     typeof bookContext.language === "string" && bookContext.language
       ? bookContext.language
@@ -59,6 +62,41 @@ export async function POST(request: Request) {
 
   try {
     const client = getAnthropicClient();
+
+    if (mode === "structure") {
+      const contextMessage = {
+        role: "user" as const,
+        content: `Book context (title, genre, language, premise, annotations, tags, all chapters/scenes, all characters):\n${JSON.stringify(bookContext, null, 2)}`,
+      };
+      const anthropicMessages = [contextMessage, ...messages];
+      const message = await client.messages.create({
+        model: "claude-sonnet-5",
+        max_tokens: 2048,
+        system: `${STRUCTURE_SYSTEM_PROMPT} Write the response in ${bookLanguage} for all title/description fields, unless the user explicitly asks for another language.`,
+        messages: anthropicMessages,
+      });
+      const block = message.content.find((item) => item.type === "text");
+      const raw = block && block.type === "text" ? block.text : "";
+
+      let proposal;
+      try {
+        const cleaned = raw
+          .trim()
+          .replace(/^```(?:json)?/i, "")
+          .replace(/```$/, "")
+          .trim();
+        proposal = JSON.parse(cleaned);
+      } catch {
+        return NextResponse.json(
+          { ok: false, error: "Co-author response was not valid JSON." },
+          { status: 500 },
+        );
+      }
+
+      return NextResponse.json({ ok: true, proposal });
+    }
+
+    // Default: draft mode (existing behavior)
     const contextMessage = {
       role: "user" as const,
       content: `Book context (title, genre, language, premise, annotations, tags, all chapters/scenes, all characters):\n${JSON.stringify(bookContext, null, 2)}\n\nCurrent scene text — continue it if non-empty; if empty, write a new scene draft fitting the book context:\n${sceneText}`,

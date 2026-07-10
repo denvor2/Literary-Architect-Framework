@@ -1,0 +1,15 @@
+# Sprint-22-Step-03: .dockerignore for Literary Studio.
+node_modules
+.next
+.git
+.gitignore
+docs
+README.md
+*.md
+.env.local
+.env.example
+playwright-report
+test-results
+e2e
+.vscode
+.claude

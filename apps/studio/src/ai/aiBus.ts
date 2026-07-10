@@ -97,6 +97,35 @@ export async function execute(
     // Same as reader_reaction — /api/coauthor's response is already a plain
     // string, no stringify/TODO needed.
     resultText = data.result;
+  } else if (operation.type === "coauthor_propose_structure") {
+    const { bookContext, messages } = operation.payload;
+    const response = await fetch("/api/coauthor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bookContext, messages, mode: "structure" }),
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      throw new Error(data.error);
+    }
+    // Structure proposals return structured JSON, not text — serialize for
+    // the shared AIResponse.text transport, same pattern as critic_review.
+    resultText = JSON.stringify(data.proposal);
+  } else if (operation.type === "book_field_suggestion") {
+    const { fieldName, currentValue, bookContext } = operation.payload;
+    const response = await fetch("/api/book-field", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fieldName, currentValue, bookContext }),
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      throw new Error(data.error);
+    }
+    resultText = JSON.stringify({
+      suggestion: data.suggestion,
+      explanation: data.explanation,
+    });
   } else {
     const exhaustiveCheck: never = operation;
     throw new Error(

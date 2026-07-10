@@ -50,9 +50,10 @@ below).
 ## Current Status
 
 - `apps/studio/` is a working Literary Studio MVP: multi-book Workspace (`books: Book[]` +
-  `activeBookId`, Sprint 11), Book → Chapter → Scene structure, Characters, a real scene text
-  editor, Focus Mode, and `localStorage` persistence — layered on a domain-driven architecture
-  (Sprint 06) with four live AI Experts.
+  `activeBookId`, Sprint 11), Book → Chapter → Scene structure, Characters, a unified scrollable
+  book editor with collapse/expand at every level (Sprint 16-17, replacing the old three-screen
+  book/chapter/scene split), Focus Mode, and `localStorage` persistence — layered on a
+  domain-driven architecture (Sprint 06) with four live AI Experts.
 - **AI Experts (all live-validated with real Claude responses):** Line Editor (`/api/line-editor`,
   Sprint 04), Critic (`/api/critic`, Sprint 08), Reader (`/api/reader`, Sprint 09, gained an
   optional `persona` field Sprint 14), Co-author (`/api/coauthor`, Sprint 12 — the first
@@ -86,6 +87,18 @@ below).
     contains any AI-calling code. Reader's mode (Sprint 14) has its own sub-UI (`ReaderPanel`)
     — named instance chips (create/rename/delete), single-view switching, and a side-by-side
     compare grid for 2+ selected instances; Co-author/Editor/Critic are unaffected.
+  - `apps/studio/src/components/EditorArea.tsx` — as of Sprint 16-17, a single continuous,
+    scrollable `UnifiedBookView` (book requisites, then every chapter with its scenes' text
+    inline and editable) replaces the old three mutually exclusive screens (book overview /
+    chapter overview / single-scene editor). `Sidebar.tsx`'s tree clicks scroll to the
+    corresponding block (`chapter-block-{id}`/`scene-block-{id}` element ids) instead of
+    switching screens; `selectedChapterId`/`selectedSceneId` (still persisted in `Workspace`)
+    now only restore scroll position and drive the tree highlight, not "which screen to render".
+    `page.tsx`'s `focusedSceneKey` (the scene whose `<textarea>` was last focused) is what
+    `AssistantPanel` treats as the current scene, falling back to the persisted selection right
+    after load. Collapse/expand state (whole-book, per-chapter, per-scene, and a per-chapter
+    "collapse all its scenes" bulk toggle) is ephemeral, lifted to `page.tsx`, shared between
+    `EditorArea.tsx` and `Sidebar.tsx`'s matching tree indicators — not part of `Workspace`.
 - `apps/studio/src/components/LineEditorPanel.tsx` no longer bypasses the AI Bus — routed through
   `aiBus.execute()` since Sprint 07 Step 02. The previously tracked "known gap" here is closed.
 - `framework/`, `prompts/`, `templates/`, `examples/`, `tests/`, `assets/` are still empty
@@ -123,14 +136,13 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Sprint 15 (systematic localization, see CURRENT_SPRINT.md) — two well-scoped Goal items (Line
-Editor's/Critic's system prompts gain a Russian instruction; an English UI-copy audit), neither
-needs a planning pass like Sprint 14's Reader multi-instance UX did. Not yet split into Step
-Cards.
+Sprint 16-17 (unified book view, see CURRENT_SPRINT.md) — Steps 01-03 implemented and validated,
+awaiting Product Owner review/confirmation before commit (this project's Stop Condition
+convention). Sprint 15 (localization) is closed.
 
 ## Current Priorities
 
-1. Sprint 15 — localization (Step Card-ready, no design ambiguity).
+1. Sprint 16-17 — unified book view (Steps 01-03 done, pending Product Owner review/commit).
 2. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both still placeholders.

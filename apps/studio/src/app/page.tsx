@@ -52,11 +52,99 @@ export default function Home() {
   // Sprint-13-Step-05: lifted from EditorArea so AssistantPanel (a sibling,
   // not a descendant) can read the current text selection for Critic/Reader
   // scoping — same technique as before (Sprint-08-Step-03), one level up.
+  //
+  // Sprint-16-17-Step-02: the unified view renders one `<textarea>` per
+  // scene, so this ref is no longer attached via JSX `ref=` to a single
+  // fixed node — `handleSceneFocus` below reassigns `.current` to whichever
+  // scene's `<textarea>` the author most recently focused.
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Which scene the author last clicked into — replaces the old exclusive
+  // `selectedChapterId`/`selectedSceneId`-driven "current scene" concept for
+  // AssistantPanel's purposes, now that every scene is visible/editable at
+  // once. Falls back to the persisted selection (`selectedChapter`/
+  // `selectedScene`) until the author focuses a scene in this session, so
+  // AssistantPanel still has sensible context right after loading.
+  const [focusedSceneKey, setFocusedSceneKey] = useState<{
+    chapterId: string;
+    sceneId: string;
+  } | null>(null);
+
+  function handleSceneFocus(
+    chapterId: string,
+    sceneId: string,
+    element: HTMLTextAreaElement,
+  ) {
+    textareaRef.current = element;
+    setFocusedSceneKey({ chapterId, sceneId });
+  }
+
+  const activeChapter = focusedSceneKey
+    ? chapters.find((chapter) => chapter.id === focusedSceneKey.chapterId)
+    : selectedChapter;
+  const activeScene = focusedSceneKey
+    ? activeChapter?.scenes.find(
+        (scene) => scene.id === focusedSceneKey.sceneId,
+      )
+    : selectedScene;
+
+  // Sprint-16-17-Step-03: сворачиваемость на всех уровнях единого вида.
+  // Эфемерное UI-состояние (как isFocusMode) — не часть Workspace, не
+  // персистится. Общее между EditorArea (сам блок) и Sidebar (индикатор в
+  // дереве), поэтому поднято сюда, а не в EditorArea/Sidebar по отдельности.
+  const [isChaptersCollapsed, setIsChaptersCollapsed] = useState(false);
+  const [collapsedChapterIds, setCollapsedChapterIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [collapsedSceneIds, setCollapsedSceneIds] = useState<Set<string>>(
+    new Set(),
+  );
+
+  function toggleChapterCollapsed(chapterId: string) {
+    setCollapsedChapterIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(chapterId)) {
+        next.delete(chapterId);
+      } else {
+        next.add(chapterId);
+      }
+      return next;
+    });
+  }
+
+  function toggleSceneCollapsed(sceneId: string) {
+    setCollapsedSceneIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(sceneId)) {
+        next.delete(sceneId);
+      } else {
+        next.add(sceneId);
+      }
+      return next;
+    });
+  }
+
+  function toggleAllScenesInChapter(chapterId: string) {
+    const chapter = chapters.find((candidate) => candidate.id === chapterId);
+    if (!chapter) return;
+    const allCurrentlyCollapsed = chapter.scenes.every((scene) =>
+      collapsedSceneIds.has(scene.id),
+    );
+    setCollapsedSceneIds((previous) => {
+      const next = new Set(previous);
+      for (const scene of chapter.scenes) {
+        if (allCurrentlyCollapsed) {
+          next.delete(scene.id);
+        } else {
+          next.add(scene.id);
+        }
+      }
+      return next;
+    });
+  }
 
   function getSelectedText(): string {
     const el = textareaRef.current;
-    const sceneText = selectedScene?.text ?? "";
+    const sceneText = activeScene?.text ?? "";
     if (!el) return sceneText;
     const { selectionStart, selectionEnd, value } = el;
     if (
@@ -100,6 +188,8 @@ export default function Home() {
             onNewBook={() => setIsDialogOpen(true)}
             onCreateChapter={createChapter}
             onCreateScene={createScene}
+            collapsedChapterIds={collapsedChapterIds}
+            onToggleChapterCollapsed={toggleChapterCollapsed}
           />
         )}
         {selectedCharacterId ? (
@@ -112,8 +202,6 @@ export default function Home() {
           <EditorArea
             book={activeBook}
             chapters={chapters}
-            selectedChapterId={selectedChapterId}
-            selectedSceneId={selectedSceneId}
             onNewScene={createScene}
             onChangeSceneText={updateSceneText}
             onUpdateChapter={updateChapter}
@@ -121,13 +209,22 @@ export default function Home() {
             onUpdateBook={updateBook}
             isFocusMode={isFocusMode}
             onToggleFocusMode={() => setIsFocusMode((value) => !value)}
-            textareaRef={textareaRef}
+            onSceneFocus={handleSceneFocus}
+            isChaptersCollapsed={isChaptersCollapsed}
+            onToggleChaptersCollapsed={() =>
+              setIsChaptersCollapsed((value) => !value)
+            }
+            collapsedChapterIds={collapsedChapterIds}
+            onToggleChapterCollapsed={toggleChapterCollapsed}
+            collapsedSceneIds={collapsedSceneIds}
+            onToggleSceneCollapsed={toggleSceneCollapsed}
+            onToggleAllScenesInChapter={toggleAllScenesInChapter}
           />
         )}
         {!isFocusMode && (
           <AssistantPanel
             book={activeBook}
-            sceneText={selectedScene?.text ?? ""}
+            sceneText={activeScene?.text ?? ""}
             getSelectedText={getSelectedText}
             selectedMode={workspace.selectedAssistantMode}
             onSelectMode={selectAssistantMode}
@@ -137,9 +234,9 @@ export default function Home() {
             onRenameThread={renameThread}
             onDeleteThread={deleteThread}
             onReplaceSceneText={
-              selectedChapter && selectedScene
+              activeChapter && activeScene
                 ? (text) =>
-                    updateSceneText(selectedChapter.id, selectedScene.id, text)
+                    updateSceneText(activeChapter.id, activeScene.id, text)
                 : undefined
             }
           />

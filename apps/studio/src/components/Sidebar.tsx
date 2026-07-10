@@ -16,7 +16,24 @@ type SidebarProps = {
   onNewBook?: () => void;
   onCreateChapter?: () => void;
   onCreateScene?: (chapterId: string) => void;
+  // Sprint-16-17-Step-03: same collapse state as EditorArea.tsx's chapter
+  // blocks (lifted to page.tsx) — the tree's expand/collapse indicator stays
+  // in sync with the unified view instead of tracking its own copy.
+  collapsedChapterIds?: ReadonlySet<string>;
+  onToggleChapterCollapsed?: (chapterId: string) => void;
 };
+
+// Sprint-16-17-Step-02: the unified view (EditorArea.tsx) shows every
+// chapter/scene at once, so a tree click no longer switches screens — it
+// scrolls the corresponding block into view. Selection is still recorded via
+// `onSelectChapter`/`onSelectScene` (restores scroll position on reload,
+// drives the highlight below), it just isn't the thing that decides what
+// EditorArea renders anymore.
+function scrollBlockIntoView(elementId: string) {
+  document
+    .getElementById(elementId)
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 export function Sidebar({
   books = [],
@@ -34,6 +51,8 @@ export function Sidebar({
   onNewBook,
   onCreateChapter,
   onCreateScene,
+  collapsedChapterIds,
+  onToggleChapterCollapsed,
 }: SidebarProps) {
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
@@ -90,47 +109,68 @@ export function Sidebar({
           </p>
         ) : (
           <ul className="flex flex-col gap-1">
-            {chapters.map((chapter) => (
-              <li key={chapter.id}>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => onSelectChapter?.(chapter.id)}
-                    className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                      selectedChapterId === chapter.id && !selectedSceneId
-                        ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                        : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                    }`}
-                  >
-                    {chapter.title}
-                  </button>
-                  <button
-                    onClick={() => onCreateScene?.(chapter.id)}
-                    className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                  >
-                    + Новая сцена
-                  </button>
-                </div>
-                {chapter.scenes.length > 0 && (
-                  <ul className="ml-3 mt-1 flex flex-col gap-1 border-l border-zinc-200 pl-2 dark:border-zinc-800">
-                    {chapter.scenes.map((scene) => (
-                      <li key={scene.id}>
-                        <button
-                          onClick={() => onSelectScene?.(chapter.id, scene.id)}
-                          className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                            selectedChapterId === chapter.id &&
-                            selectedSceneId === scene.id
-                              ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                              : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
-                          }`}
-                        >
-                          {scene.title}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
+            {chapters.map((chapter) => {
+              const isChapterCollapsed =
+                collapsedChapterIds?.has(chapter.id) ?? false;
+              return (
+                <li key={chapter.id}>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => onToggleChapterCollapsed?.(chapter.id)}
+                      aria-label={
+                        isChapterCollapsed
+                          ? "Развернуть главу"
+                          : "Свернуть главу"
+                      }
+                      className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    >
+                      {isChapterCollapsed ? "▸" : "▾"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        onSelectChapter?.(chapter.id);
+                        scrollBlockIntoView(`chapter-block-${chapter.id}`);
+                      }}
+                      className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                        selectedChapterId === chapter.id && !selectedSceneId
+                          ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                          : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                      }`}
+                    >
+                      {chapter.title}
+                    </button>
+                    <button
+                      onClick={() => onCreateScene?.(chapter.id)}
+                      className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    >
+                      + Новая сцена
+                    </button>
+                  </div>
+                  {!isChapterCollapsed && chapter.scenes.length > 0 && (
+                    <ul className="ml-3 mt-1 flex flex-col gap-1 border-l border-zinc-200 pl-2 dark:border-zinc-800">
+                      {chapter.scenes.map((scene) => (
+                        <li key={scene.id}>
+                          <button
+                            onClick={() => {
+                              onSelectScene?.(chapter.id, scene.id);
+                              scrollBlockIntoView(`scene-block-${scene.id}`);
+                            }}
+                            className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                              selectedChapterId === chapter.id &&
+                              selectedSceneId === scene.id
+                                ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                                : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
+                            }`}
+                          >
+                            {scene.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

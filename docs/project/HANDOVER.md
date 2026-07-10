@@ -36,7 +36,8 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 ## Current Sprint
 
 Sprint 23 (PostgreSQL + Prisma) is closed — Prisma schema with 8 models, docker-compose
-postgres service, Prisma client singleton. `prisma migrate dev` pending Docker install. Sprints
+postgres service, Prisma client singleton. `prisma migrate dev` applied and live-verified
+2026-07-10 (Docker confirmed installed). Sprints
 06 through 23 are all closed. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the next sprint
 goal.
 
@@ -172,7 +173,8 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 ## Immediate Next Task
 
 Sprint 24 (see CURRENT_SPRINT.md) — Миграция localStorage → Database. Sprint 23 (PostgreSQL +
-Prisma) is closed, `prisma migrate dev` pending Docker install. Playwright E2E smoke tests are
+Prisma) is closed — `prisma migrate dev` applied and live-verified 2026-07-10. Playwright E2E
+smoke tests are
 in place (`apps/studio/e2e/smoke.spec.ts`, 12 tests, all green). Run `npm run test:e2e` from
 `apps/studio/` to execute.
 

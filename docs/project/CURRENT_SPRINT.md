@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 23 — PostgreSQL + Prisma (see ROADMAP_18-27.md)** — **closed (pending Docker)**
+**Sprint 23 — PostgreSQL + Prisma (see ROADMAP_18-27.md)** — **closed**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,7 +10,8 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** Closed — Sprint 23 completed (Step 03 `prisma migrate dev` pending Docker install).
+- **Status:** Closed — Sprint 23 completed, including Step 03 (`prisma migrate dev`, unblocked
+  2026-07-10 once Docker was confirmed installed).
 - **Phase:** Phase 1 (MVP)
 - **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 23 row).
 
@@ -112,14 +113,16 @@ Docker + basic infrastructure — containerization for local development and dep
 - **Step 04** — Docker build requires Docker installed (not available on this machine);
   validated: `tsc`, `eslint`, `build`, 12/12 E2E tests all green.
 
-## Sprint 23 — closed (pending Docker)
+## Sprint 23 — closed
 
 PostgreSQL + Prisma — database schema matching domain model, Prisma client singleton.
 
 - **Step 01** — `prisma/schema.prisma`: 8 models (User, Book, Chapter, Scene, Character, Idea,
   AssistantThread, ChatMessage) + 2 enums. Cascade deletes, indexes.
 - **Step 02** — `docker-compose.yml` updated with postgres service (healthcheck, named volume).
-- **Step 03** — `prisma migrate dev` blocked: requires Docker.
+- **Step 03** — `prisma migrate dev --name init` applied against a running `postgres:16-alpine`
+  container; verified live via `psql \dt` (all 8 domain tables + `_prisma_migrations` present).
+  Unblocked 2026-07-10 (Docker confirmed installed).
 - **Step 04** — `src/lib/db.ts`: Prisma client singleton with `@prisma/adapter-pg`.
 
 ## Out of Scope (held constant this sprint)

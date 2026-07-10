@@ -20,7 +20,8 @@ here, it's not decided.
 ## Current Sprint
 
 Sprint 24 — Миграция localStorage → Database (see `docs/project/ROADMAP_18-27.md`). Not yet
-scoped. Sprint 23 (PostgreSQL + Prisma) is closed, `prisma migrate dev` pending Docker.
+scoped. Sprint 23 (PostgreSQL + Prisma) is closed — `prisma migrate dev` applied and
+live-verified 2026-07-10.
 
 **Sprint 16-17 — Unified Book View (closed).** Replaced the three-screen split (book overview /
 chapter overview / single-scene editor) with a single continuous, scrollable `UnifiedBookView`

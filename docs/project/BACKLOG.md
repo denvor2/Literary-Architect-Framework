@@ -11,6 +11,11 @@ invented features.
 - Plugin architecture for third-party or domain-specific Experts (Phase 3).
 - AI orchestration layer coordinating multiple Experts (Phase 2).
 
+## Editor / Workspace UI
+
+- Resizable width for the right-hand column (`AssistantPanel.tsx`) — raised by Product Owner
+  2026-07-11 while testing. Not scheduled to a sprint yet.
+
 ## Writing
 
 - Generalizing beyond fiction to non-fiction books, articles, and technical documentation (see

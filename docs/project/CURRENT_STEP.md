@@ -9,9 +9,9 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-24-Step-02
+id: Sprint-24-Step-03
 status: done
-next: [Sprint-24-Step-03]
+next: [Sprint-24-Step-04]
 ```
 
 ## Sprint 24 — Миграция localStorage → Database (in progress)
@@ -26,7 +26,14 @@ next: [Sprint-24-Step-03]
   not in the Step Card's original function list, but the most common path hitting the same
   collision). Live-verified via pure-reducer Node script (no browser, to avoid disturbing the
   Product Owner's active dev-server session).
-- **Next:** Step 03 (repository layer, Prisma-backed, per-entity internally).
+- **Step 03** — `apps/studio/src/repositories/{userRepository,bookRepository,index}.ts`:
+  server-only repository layer over the Prisma singleton — `getOrCreateDefaultUser()`,
+  `loadBooksForUser(userId)`, `saveBooksForUser(userId, books)` (upsert+delete per entity in one
+  `prisma.$transaction`). Handles persona null<->undefined mapping and AssistantThreads
+  role-grouping. Live-verified against the real Postgres container: round-trip of a populated
+  book, a second book with no id collisions, an edit+resave — confirmed via direct `psql`
+  queries, not just the repository's own read path.
+- **Next:** Step 04 (`/api/workspace` HTTP wrapper over this repository layer).
 
 ## Sprint 23 — PostgreSQL + Prisma (closed)
 

@@ -37,6 +37,10 @@ export default function Home() {
     updateCharacter,
     deleteCharacter,
     selectCharacter,
+    ideas,
+    createIdea,
+    updateIdea,
+    deleteIdea,
     selectBook,
     deselectAll,
     selectAssistantMode,
@@ -202,6 +206,7 @@ export default function Home() {
           <EditorArea
             book={activeBook}
             chapters={chapters}
+            ideas={ideas}
             onNewScene={createScene}
             onChangeSceneText={updateSceneText}
             onUpdateChapter={updateChapter}
@@ -219,6 +224,9 @@ export default function Home() {
             collapsedSceneIds={collapsedSceneIds}
             onToggleSceneCollapsed={toggleSceneCollapsed}
             onToggleAllScenesInChapter={toggleAllScenesInChapter}
+            onCreateIdea={createIdea}
+            onUpdateIdea={updateIdea}
+            onDeleteIdea={deleteIdea}
           />
         )}
         {!isFocusMode && (

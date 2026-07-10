@@ -7,6 +7,7 @@ import type {
   Chapter,
   ChatMessage,
   Character,
+  Idea,
 } from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
 import { loadWorkspace, saveWorkspace } from "@/storage/workspaceStorage";
@@ -87,6 +88,7 @@ export function useWorkspaceController() {
       | "shortAnnotation"
       | "fullAnnotation"
       | "assistantThreads"
+      | "ideas"
     >,
   ) {
     setWorkspace((previous) => {
@@ -118,6 +120,7 @@ export function useWorkspaceController() {
           critic: [{ id: "1", name: "Диалог 1", messages: [] }],
           reader: [{ id: "1", name: "Диалог 1", messages: [] }],
         },
+        ideas: [],
       };
       return {
         ...previous,
@@ -414,6 +417,70 @@ export function useWorkspaceController() {
     }));
   }
 
+  function createIdea() {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      const newIdea: Idea = {
+        id: String(Date.now()),
+        text: "",
+        createdAt: new Date().toISOString(),
+      };
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? { ...book, ideas: [...book.ideas, newIdea] }
+            : book,
+        ),
+      };
+    });
+  }
+
+  function updateIdea(ideaId: string, text: string) {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                ideas: book.ideas.map((idea) =>
+                  idea.id === ideaId ? { ...idea, text } : idea,
+                ),
+              }
+            : book,
+        ),
+      };
+    });
+  }
+
+  function deleteIdea(ideaId: string) {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                ideas: book.ideas.filter((idea) => idea.id !== ideaId),
+              }
+            : book,
+        ),
+      };
+    });
+  }
+
   // Sprint-11-Step-01: replaces the previous zero-argument `selectBook()`
   // (Sprint 10 Step 04 — "deselect chapter/scene/character, return to the
   // current book's overview"). That was a naming collision, not the same
@@ -625,6 +692,7 @@ export function useWorkspaceController() {
     characters,
     selectedCharacterId,
     selectedCharacter,
+    ideas: activeBook?.ideas ?? [],
     createBook,
     updateBook,
     createChapter,
@@ -638,6 +706,9 @@ export function useWorkspaceController() {
     updateCharacter,
     deleteCharacter,
     selectCharacter,
+    createIdea,
+    updateIdea,
+    deleteIdea,
     selectBook,
     deselectAll,
     selectAssistantMode,

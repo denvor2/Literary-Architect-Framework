@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 18 — Ideas/Notes (see ROADMAP_18-27.md)** — **not yet scoped**
+**Sprint 19 — Critic subcategories (see ROADMAP_18-27.md)** — **not yet scoped**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,9 +10,9 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** Not yet started — Sprint 16-17 is closed.
+- **Status:** Not yet started — Sprint 18 is closed.
 - **Phase:** Phase 1 (MVP)
-- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 18 row).
+- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 19 row).
 
 ## Sprint 15 — closed
 
@@ -52,6 +52,17 @@ clicks now scroll instead of switching screens.
 cover app load, book/chapter/scene CRUD, text editing, sidebar tree, chapter/scene collapse,
 Focus Mode, and localStorage persistence — 12 tests, all green. Committed `2a28fa6`.
 
+## Sprint 18 — closed
+
+Ideas/Notes — free-form notes per book with auto-timestamped creation. Committed together
+with Sprint 18 steps.
+
+- **Step 01** — `Idea` type (`id`/`text`/`createdAt`) added to domain model; `ideas: Idea[]`
+  added to `Book`; `normalizeBook()` defaults `ideas: []` for old books.
+- **Step 02** — `IdeasPanel.tsx` component with inline text editing and delete confirmation;
+  CRUD operations (`createIdea`/`updateIdea`/`deleteIdea`) in workspace controller.
+- **Step 03** — IdeasPanel integrated into `UnifiedBookView` after chapters section.
+
 ## Out of Scope (held constant this sprint)
 
 - Everything already recorded as out of scope in prior sprints (Book Series, Trash/Archive,
@@ -73,4 +84,4 @@ Focus Mode, and localStorage persistence — 12 tests, all green. Committed `2a2
 
 ## Next Action
 
-Scope Sprint 18 per `docs/project/ROADMAP_18-27.md`.
+Scope Sprint 19 (Critic subcategories) per `docs/project/ROADMAP_18-27.md`.

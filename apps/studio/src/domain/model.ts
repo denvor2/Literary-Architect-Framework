@@ -22,6 +22,12 @@ export type Chapter = {
   readonly scenes: readonly Scene[];
 };
 
+export type Idea = {
+  readonly id: string;
+  readonly text: string;
+  readonly createdAt: string;
+};
+
 export type Book = {
   readonly id: string;
   readonly title: string;
@@ -34,6 +40,7 @@ export type Book = {
   readonly chapters: readonly Chapter[];
   readonly characters: readonly Character[];
   readonly assistantThreads: AssistantThreads;
+  readonly ideas: readonly Idea[];
 };
 
 export type Character = {

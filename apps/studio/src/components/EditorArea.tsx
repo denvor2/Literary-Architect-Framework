@@ -1,6 +1,7 @@
 import { useState } from "react";
-import type { Book, Chapter } from "@/domain/model";
+import type { Book, Chapter, Idea } from "@/domain/model";
 import { GENRES, LANGUAGES } from "@/components/NewBookDialog";
+import { IdeasPanel } from "@/components/IdeasPanel";
 
 // Sprint-13-Step-05: pure scene/chapter/book editing again — the AI
 // interaction that used to live here (SceneImprove, MODE_INFO, and the
@@ -25,6 +26,7 @@ import { GENRES, LANGUAGES } from "@/components/NewBookDialog";
 type EditorAreaProps = {
   book?: Book | null;
   chapters?: readonly Chapter[];
+  ideas?: readonly Idea[];
   onNewScene?: (chapterId: string) => void;
   onChangeSceneText?: (
     chapterId: string,
@@ -75,11 +77,15 @@ type EditorAreaProps = {
   collapsedSceneIds?: ReadonlySet<string>;
   onToggleSceneCollapsed?: (sceneId: string) => void;
   onToggleAllScenesInChapter?: (chapterId: string) => void;
+  onCreateIdea?: () => void;
+  onUpdateIdea?: (ideaId: string, text: string) => void;
+  onDeleteIdea?: (ideaId: string) => void;
 };
 
 export function EditorArea({
   book,
   chapters = [],
+  ideas = [],
   onNewScene,
   onChangeSceneText,
   onUpdateChapter,
@@ -95,6 +101,9 @@ export function EditorArea({
   collapsedSceneIds,
   onToggleSceneCollapsed,
   onToggleAllScenesInChapter,
+  onCreateIdea,
+  onUpdateIdea,
+  onDeleteIdea,
 }: EditorAreaProps) {
   if (!book) {
     return (
@@ -110,6 +119,7 @@ export function EditorArea({
     <UnifiedBookView
       book={book}
       chapters={chapters}
+      ideas={ideas}
       onNewScene={onNewScene}
       onChangeSceneText={onChangeSceneText}
       onUpdateChapter={onUpdateChapter}
@@ -125,6 +135,9 @@ export function EditorArea({
       collapsedSceneIds={collapsedSceneIds}
       onToggleSceneCollapsed={onToggleSceneCollapsed}
       onToggleAllScenesInChapter={onToggleAllScenesInChapter}
+      onCreateIdea={onCreateIdea}
+      onUpdateIdea={onUpdateIdea}
+      onDeleteIdea={onDeleteIdea}
     />
   );
 }
@@ -132,11 +145,13 @@ export function EditorArea({
 type UnifiedBookViewProps = Omit<EditorAreaProps, "book" | "chapters"> & {
   book: Book;
   chapters: readonly Chapter[];
+  ideas: readonly Idea[];
 };
 
 function UnifiedBookView({
   book,
   chapters,
+  ideas,
   onNewScene,
   onChangeSceneText,
   onUpdateChapter,
@@ -152,6 +167,9 @@ function UnifiedBookView({
   collapsedSceneIds,
   onToggleSceneCollapsed,
   onToggleAllScenesInChapter,
+  onCreateIdea,
+  onUpdateIdea,
+  onDeleteIdea,
 }: UnifiedBookViewProps) {
   const [isDetailsCollapsed, setIsDetailsCollapsed] = useState(false);
 
@@ -454,6 +472,13 @@ function UnifiedBookView({
             })
           )}
         </div>
+
+        <IdeasPanel
+          ideas={ideas}
+          onCreate={onCreateIdea}
+          onUpdate={onUpdateIdea}
+          onDelete={onDeleteIdea}
+        />
       </div>
     </main>
   );

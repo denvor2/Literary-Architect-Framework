@@ -9,9 +9,9 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-24-Step-03
+id: Sprint-24-Step-04
 status: done
-next: [Sprint-24-Step-04]
+next: [Sprint-24-Step-05]
 ```
 
 ## Sprint 24 — Миграция localStorage → Database (in progress)
@@ -33,7 +33,12 @@ next: [Sprint-24-Step-04]
   role-grouping. Live-verified against the real Postgres container: round-trip of a populated
   book, a second book with no id collisions, an edit+resave — confirmed via direct `psql`
   queries, not just the repository's own read path.
-- **Next:** Step 04 (`/api/workspace` HTTP wrapper over this repository layer).
+- **Step 04** — `apps/studio/src/app/api/workspace/route.ts`: thin GET/PUT wrapper over the
+  repository layer (ADR-0012 Decision 3, coarse whole-tree contract). Live-verified with curl
+  against a scratch-port (3417) production server, Product Owner's dev server on 3000 left
+  untouched.
+- **Next:** Step 05 (dual-mode `workspaceStorage.ts` — Postgres primary, `localStorage`
+  fallback with desync warning).
 
 ## Sprint 23 — PostgreSQL + Prisma (closed)
 

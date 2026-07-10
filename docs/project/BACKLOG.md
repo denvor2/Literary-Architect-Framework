@@ -15,6 +15,12 @@ invented features.
 
 - Resizable width for the right-hand column (`AssistantPanel.tsx`) — raised by Product Owner
   2026-07-11 while testing. Not scheduled to a sprint yet.
+- New-book default language should follow the selected UI locale, not be hardcoded to
+  "Russian" (`NewBookDialog.tsx`) — raised by Product Owner 2026-07-11. Blocked on the app
+  actually having a locale-selection mechanism, which does not exist yet (Sprint 15 covered
+  only static UI-copy translation, not dynamic locale switching). Natural home is the
+  product-wide localization sprint referenced in `docs/project/CURRENT_SPRINT.md`'s Out of
+  Scope section (Sprint 30-40) — revisit there, not before.
 
 ## Writing
 

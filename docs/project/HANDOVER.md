@@ -106,6 +106,10 @@ below).
 - Documentation (this file included) was substantially expanded in Sprint 03 via an
   Architecture Review process, updated at Sprint 06 closeout, and refreshed several times since
   as drift was found (most recently at Sprint 16-17 close).
+- **E2E testing:** Playwright smoke tests (`apps/studio/e2e/smoke.spec.ts`) cover app load,
+  book/chapter/scene CRUD, text editing, sidebar tree navigation, chapter and scene
+  collapse/expand, Focus Mode toggle, and localStorage persistence. Run `npm run test:e2e` from
+  `apps/studio/`; `test:e2e:ui` for headed mode, `test:e2e:debug` for step-through.
 
 ## Accepted ADRs
 
@@ -137,6 +141,8 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 ## Immediate Next Task
 
 Sprint 18 (see CURRENT_SPRINT.md) — not yet scoped. Sprint 16-17 (unified book view) is closed.
+Playwright E2E smoke tests are in place (`apps/studio/e2e/smoke.spec.ts`, 12 tests, all green). Run
+`npm run test:e2e` from `apps/studio/` to execute.
 
 ## Current Priorities
 

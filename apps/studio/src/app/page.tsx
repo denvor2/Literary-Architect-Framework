@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Group, Panel, Separator } from "react-resizable-panels";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { EditorArea } from "@/components/EditorArea";
@@ -12,6 +13,36 @@ import { NewBookDialog } from "@/components/NewBookDialog";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 import { execute as aiBusExecute } from "@/ai/aiBus";
 import type { BookFieldName } from "@/ai/operations";
+
+// Sprint-25-Step-02: `react-resizable-panels`'s `Group` renders its own
+// row/column flex layout via the `orientation` prop (JS-driven, not a CSS
+// media query) — it doesn't automatically follow Tailwind's `lg:` breakpoint
+// the way the rest of this file's plain utility classes do. This hook
+// mirrors that same breakpoint (1024px, Tailwind's default `lg`) so the
+// pre-existing mobile stacked layout (Sidebar/main content/AssistantPanel in
+// one column, below `lg`) is preserved unchanged, and the resizable split
+// only kicks in at the width where the two panels actually sit side by side.
+// `useIsomorphicLayoutEffect` avoids the classic "matchMedia" flash: on the
+// server (and on first client render, before hydration) `isDesktop` starts
+// `false` — matching the server-rendered stacked markup exactly, so there is
+// no hydration mismatch — then flips synchronously, before paint, on an
+// actual desktop viewport.
+const DESKTOP_BREAKPOINT_QUERY = "(min-width: 1024px)";
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+function useIsDesktopLayout(): boolean {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useIsomorphicLayoutEffect(() => {
+    const mediaQuery = window.matchMedia(DESKTOP_BREAKPOINT_QUERY);
+    setIsDesktop(mediaQuery.matches);
+    const handleChange = (event: MediaQueryListEvent) =>
+      setIsDesktop(event.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+  return isDesktop;
+}
 
 export default function Home() {
   const {
@@ -58,6 +89,10 @@ export default function Home() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // Ephemeral UI state only — not part of Workspace, not persisted.
   const [isFocusMode, setIsFocusMode] = useState(false);
+  // Sprint-25-Step-02: drives whether the main-content/AssistantPanel split
+  // renders as a mouse-draggable divider (desktop, `lg:` and up) or the
+  // pre-existing stacked mobile layout. See `useIsDesktopLayout` above.
+  const isDesktopLayout = useIsDesktopLayout();
   // Sprint-13-Step-05: lifted from EditorArea so AssistantPanel (a sibling,
   // not a descendant) can read the current text selection for Critic/Reader
   // scoping — same technique as before (Sprint-08-Step-03), one level up.
@@ -250,67 +285,123 @@ export default function Home() {
             onCreateScene={createScene}
             collapsedChapterIds={collapsedChapterIds}
             onToggleChapterCollapsed={toggleChapterCollapsed}
-          />
-        )}
-        {selectedCharacterId ? (
-          <CharacterPanel
-            character={selectedCharacter}
-            onUpdate={(fields) => updateCharacter(selectedCharacterId, fields)}
-            onDelete={() => deleteCharacter(selectedCharacterId)}
-          />
-        ) : (
-          <EditorArea
-            book={activeBook}
-            chapters={chapters}
             ideas={ideas}
-            onNewScene={createScene}
-            onChangeSceneText={updateSceneText}
-            onUpdateChapter={updateChapter}
-            onUpdateSceneTitle={updateSceneTitle}
-            onUpdateBook={updateBook}
-            isFocusMode={isFocusMode}
-            onToggleFocusMode={() => setIsFocusMode((value) => !value)}
-            onSceneFocus={handleSceneFocus}
-            isChaptersCollapsed={isChaptersCollapsed}
-            onToggleChaptersCollapsed={() =>
-              setIsChaptersCollapsed((value) => !value)
-            }
-            collapsedChapterIds={collapsedChapterIds}
-            onToggleChapterCollapsed={toggleChapterCollapsed}
-            collapsedSceneIds={collapsedSceneIds}
-            onToggleSceneCollapsed={toggleSceneCollapsed}
-            onToggleAllScenesInChapter={toggleAllScenesInChapter}
             onCreateIdea={createIdea}
             onUpdateIdea={updateIdea}
             onDeleteIdea={deleteIdea}
-            onRequestFieldSuggestion={handleRequestFieldSuggestion}
-            fieldSuggestion={fieldSuggestion}
-            onAcceptFieldSuggestion={handleAcceptFieldSuggestion}
-            onDismissFieldSuggestion={() => setFieldSuggestion(null)}
-            isFieldSuggestionLoading={isFieldSuggestionLoading}
           />
         )}
-        {!isFocusMode && (
-          <AssistantPanel
-            book={activeBook}
-            sceneText={activeScene?.text ?? ""}
-            getSelectedText={getSelectedText}
-            selectedMode={workspace.selectedAssistantMode}
-            onSelectMode={selectAssistantMode}
-            activeThreads={activeThreads}
-            onAppendMessage={appendMessage}
-            onCreateThread={createThread}
-            onRenameThread={renameThread}
-            onDeleteThread={deleteThread}
-            onReplaceSceneText={
-              activeChapter && activeScene
-                ? (text) =>
-                    updateSceneText(activeChapter.id, activeScene.id, text)
-                : undefined
-            }
-            onAcceptStructureProposal={acceptStructureProposal}
-          />
-        )}
+        {(() => {
+          const mainContent = selectedCharacterId ? (
+            <CharacterPanel
+              character={selectedCharacter}
+              onUpdate={(fields) =>
+                updateCharacter(selectedCharacterId, fields)
+              }
+              onDelete={() => deleteCharacter(selectedCharacterId)}
+            />
+          ) : (
+            <EditorArea
+              book={activeBook}
+              chapters={chapters}
+              onNewScene={createScene}
+              onChangeSceneText={updateSceneText}
+              onUpdateChapter={updateChapter}
+              onUpdateSceneTitle={updateSceneTitle}
+              onUpdateBook={updateBook}
+              isFocusMode={isFocusMode}
+              onToggleFocusMode={() => setIsFocusMode((value) => !value)}
+              onSceneFocus={handleSceneFocus}
+              isChaptersCollapsed={isChaptersCollapsed}
+              onToggleChaptersCollapsed={() =>
+                setIsChaptersCollapsed((value) => !value)
+              }
+              collapsedChapterIds={collapsedChapterIds}
+              onToggleChapterCollapsed={toggleChapterCollapsed}
+              collapsedSceneIds={collapsedSceneIds}
+              onToggleSceneCollapsed={toggleSceneCollapsed}
+              onToggleAllScenesInChapter={toggleAllScenesInChapter}
+              onRequestFieldSuggestion={handleRequestFieldSuggestion}
+              fieldSuggestion={fieldSuggestion}
+              onAcceptFieldSuggestion={handleAcceptFieldSuggestion}
+              onDismissFieldSuggestion={() => setFieldSuggestion(null)}
+              isFieldSuggestionLoading={isFieldSuggestionLoading}
+            />
+          );
+
+          if (isFocusMode) {
+            // AssistantPanel doesn't render in Focus Mode (unchanged
+            // behavior) — nothing to divide, render main content alone.
+            return mainContent;
+          }
+
+          const assistantPanel = (
+            <AssistantPanel
+              book={activeBook}
+              sceneText={activeScene?.text ?? ""}
+              getSelectedText={getSelectedText}
+              selectedMode={workspace.selectedAssistantMode}
+              onSelectMode={selectAssistantMode}
+              activeThreads={activeThreads}
+              onAppendMessage={appendMessage}
+              onCreateThread={createThread}
+              onRenameThread={renameThread}
+              onDeleteThread={deleteThread}
+              onReplaceSceneText={
+                activeChapter && activeScene
+                  ? (text) =>
+                      updateSceneText(activeChapter.id, activeScene.id, text)
+                  : undefined
+              }
+              onAcceptStructureProposal={acceptStructureProposal}
+            />
+          );
+
+          if (!isDesktopLayout) {
+            // Below the `lg` breakpoint, keep the pre-existing stacked
+            // layout (no resizable divider — same as before this step).
+            return (
+              <>
+                {mainContent}
+                {assistantPanel}
+              </>
+            );
+          }
+
+          // Sprint-25-Step-02: mouse-draggable 50/50 divider between the
+          // main content area and AssistantPanel, `lg:` and up only. Chosen
+          // mechanism: `react-resizable-panels` (see this step's ARP for
+          // why). Position is not persisted — resets to 50/50 on reload, per
+          // the Step Card's explicit "don't bother if non-trivial" note.
+          return (
+            <Group
+              id="editor-assistant-group"
+              orientation="horizontal"
+              className="flex-1"
+            >
+              <Panel
+                id="main-content-panel"
+                defaultSize="50"
+                minSize="20"
+                aria-label="Основная область редактирования"
+              >
+                {mainContent}
+              </Panel>
+              <Separator
+                id="editor-assistant-divider"
+                className="w-1.5 shrink-0 cursor-col-resize bg-zinc-200 transition-colors hover:bg-zinc-300 active:bg-zinc-400 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:active:bg-zinc-600"
+              />
+              <Panel
+                id="assistant-panel"
+                defaultSize="50"
+                minSize="20"
+                aria-label="Панель помощников"
+              >
+                {assistantPanel}
+              </Panel>
+            </Group>
+          );
+        })()}
       </div>
       {!isFocusMode && <DeveloperTools />}
 

@@ -1,10 +1,15 @@
 # ADR-0011: Book Field AI Suggestions
 
-- **Status:** Accepted
+- **Status:** Accepted, revised Sprint 25
 - **Date:** 2026-07-10
 - **Deciders:** Product Owner, Programmer (Executor)
 - **Relates to:** [ADR-0003](ADR-0003-technology-stack-strategy.md) (Technology Stack),
   [ADR-0008](ADR-0008-coauthor-expert-contract.md) (Co-author Expert Contract)
+
+**2026-07-11 annotation:** Sprint 25 Step 04 extended `book_field_suggestion` with an optional,
+Title-only `requestType` (typed quick-request buttons) — see "Amendment (Sprint 25): typed
+quick-request buttons for Title" below. The Decision text above is unchanged and remains
+accurate whenever `requestType` is absent.
 
 ## Context
 
@@ -125,3 +130,41 @@ Revisit when:
 - Writers need tag suggestions.
 - Writers want iterative refinement (multiple rounds of suggestions for one field).
 - The suggestion quality is inconsistent across fields (consider per-field prompt tuning).
+
+## Amendment (Sprint 25): typed quick-request buttons for Title
+
+This section is an addition, not a rewrite — the Decision text above remains the accurate
+description of `book_field_suggestion` for every field whenever `requestType` is absent, and
+for genre/premise/shortAnnotation/fullAnnotation regardless (they do not send `requestType`).
+
+- **What changed:** the Product Owner wanted, for the Title field specifically, several typed
+  quick-request buttons instead of one generic "AI" button — named examples: "подобрать
+  аналоги" (comparables), "мозговой штурм" (brainstorm), "проверить на уникальность"
+  (uniqueness). `book_field_suggestion`'s payload gains an optional
+  `requestType?: BookFieldRequestType` (`"comparables" | "brainstorm" | "uniqueness"`), forwarded
+  unchanged through `aiBus.ts` to `/api/book-field`, which picks a typed prompt variant
+  (`TITLE_REQUEST_PROMPTS`) instead of the field's single generic prompt when it is present and
+  the field is `title`. Source: `apps/studio/src/ai/operations.ts`, `apps/studio/src/ai/aiBus.ts`,
+  `apps/studio/src/app/api/book-field/route.ts`.
+- **Backward compatible by construction:** `requestType` is optional; its absence (every field
+  other than Title, and any future caller that doesn't pass it) reproduces exactly the
+  pre-Sprint-25 request/response and prompt selection. No existing caller changes.
+- **Response shape is deliberately unchanged:** `{ suggestion, explanation }` stays the contract
+  for all three request types, including "проверить на уникальность" — that request's
+  `suggestion` field carries an analytical verdict string (e.g. "Похоже на существующие книги:
+  ..." or "Выглядит достаточно уникальным"), not a title candidate. Introducing a variable
+  response shape per request type was explicitly rejected as unnecessary complexity for this
+  step.
+- **UI consequence, not a contract change:** because "проверить на уникальность" produces a
+  verdict rather than a value for the field, its suggestion card in `EditorArea.tsx` omits the
+  "Принять" (Accept) button — only "Понятно" (dismiss). "Подобрать аналоги" and "мозговой штурм"
+  keep the existing Принять/Отклонить card, and Принять still writes `suggestion` into
+  `Book.title` via the same `updateBook()` path as before.
+- **Scope of this amendment:** Title only. Genre/premise/shortAnnotation/fullAnnotation keep
+  their single generic "AI" button, unchanged — extending typed quick-requests to those fields is
+  explicitly left for a later step, not implied by this one.
+- **Live-verified** (Sprint-25-Step-04): real `npm run dev` + real Claude responses confirmed the
+  three request types produce substantively different content for the same book (not just that
+  the request was accepted), that the uniqueness card genuinely has no Accept button, and that
+  the existing generic-button fields (genre/premise/annotations) regressed none of their prior
+  behavior.

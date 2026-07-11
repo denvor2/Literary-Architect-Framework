@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/ai/anthropic";
-import type { BookFieldName } from "@/ai/operations";
+import type { BookFieldName, BookFieldRequestType } from "@/ai/operations";
 
 // Sprint-21-Step-02: AI suggestion for Book metadata fields (ADR-0011).
 // New endpoint — not an extension of an existing Expert, because this is a
 // utility operation (suggest a metadata value), not a literary role.
+//
+// Sprint-25-Step-04 (ADR-0011 Amendment): optional `requestType` picks a
+// typed prompt variant instead of the field's single generic prompt — so
+// far only wired for `title` (three quick-request buttons in EditorArea.tsx:
+// "подобрать аналоги" / "мозговой штурм" / "проверить на уникальность").
+// Response shape stays exactly { suggestion, explanation } for every
+// request type, including the analytical "uniqueness" one — the UI decides
+// there whether to show "Принять" or not, not the response shape.
 
 const SUPPORTED_FIELDS: readonly BookFieldName[] = [
   "title",
@@ -35,13 +43,35 @@ const FIELD_PROMPTS: Record<BookFieldName, string> = {
     "Suggest a full annotation (4-6 sentences) that covers the premise, the main character's arc, the central conflict, and the stakes — written to entice a reader without spoilers.",
 };
 
+// Sprint-25-Step-04: typed prompt variants for `title`'s three quick-request
+// buttons (ADR-0011 Amendment). Only `title` has variants so far — other
+// fields ignore `requestType` if it's ever sent for them (see below) and
+// keep using FIELD_PROMPTS.
+const SUPPORTED_TITLE_REQUEST_TYPES: readonly BookFieldRequestType[] = [
+  "comparables",
+  "brainstorm",
+  "uniqueness",
+];
+
+const TITLE_REQUEST_PROMPTS: Record<BookFieldRequestType, string> = {
+  comparables:
+    "The writer wants comparable titles for inspiration — real or plausible existing book titles that share genre, tone, or premise with this book. Respond with the comparable titles as the suggestion (a short list of 3-5 titles, separated by commas or semicolons) and explain briefly why they're comparable.",
+  brainstorm:
+    "The writer wants a brand-new brainstormed title idea — different from the current title and not a plain literal restatement of the premise. Be surprising, creative, and memorable. Respond with exactly ONE new candidate title as the suggestion, plus a brief explanation of the creative reasoning behind it.",
+  uniqueness:
+    "The writer wants an honest analytical verdict on how unique the current title is compared to existing, well-known books in the same or adjacent genres — this is NOT a request for a new title. Respond with a short verdict as the suggestion (e.g. 'Похоже на существующие книги: ...' or 'Выглядит достаточно уникальным') and put the supporting reasoning in the explanation. Do not invent fake comparable books — if unsure, say so honestly instead of guessing.",
+};
+
 export async function POST(request: Request) {
   const body = await request.json();
   const fieldName = body?.fieldName;
   const currentValue = body?.currentValue;
   const bookContext = body?.bookContext;
 
-  if (typeof fieldName !== "string" || !SUPPORTED_FIELDS.includes(fieldName as BookFieldName)) {
+  if (
+    typeof fieldName !== "string" ||
+    !SUPPORTED_FIELDS.includes(fieldName as BookFieldName)
+  ) {
     return NextResponse.json(
       {
         ok: false,
@@ -65,12 +95,47 @@ export async function POST(request: Request) {
     );
   }
 
+  // Sprint-25-Step-04: optional — validated when present, ignored (falls
+  // back to the field's generic prompt) when absent, exactly preserving
+  // pre-Sprint-25 behavior (ADR-0011 Amendment).
+  const requestType = body?.requestType;
+  if (
+    requestType !== undefined &&
+    (typeof requestType !== "string" ||
+      !SUPPORTED_TITLE_REQUEST_TYPES.includes(
+        requestType as BookFieldRequestType,
+      ))
+  ) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: `requestType must be one of: ${SUPPORTED_TITLE_REQUEST_TYPES.join(", ")}.`,
+      },
+      { status: 400 },
+    );
+  }
+
   const bookLanguage =
     typeof bookContext.language === "string" && bookContext.language
       ? bookContext.language
       : "Russian";
 
   const safeFieldName = fieldName as BookFieldName;
+
+  // Sprint-25-Step-04: only `title` has typed prompt variants so far — a
+  // `requestType` sent for any other field is validated above but otherwise
+  // ignored here, falling back to that field's existing generic prompt.
+  const isTitleTypedRequest =
+    safeFieldName === "title" && typeof requestType === "string";
+  const effectivePrompt = isTitleTypedRequest
+    ? TITLE_REQUEST_PROMPTS[requestType as BookFieldRequestType]
+    : FIELD_PROMPTS[safeFieldName];
+  // The "improve/repeat current value" framing only makes sense for the
+  // default (generic) prompt — comparables/brainstorm/uniqueness are not
+  // "improve the current title" requests.
+  const contextRules = isTitleTypedRequest
+    ? "- The suggestion must fit the book's existing context (premise, genre, characters, structure)."
+    : "- The suggestion must fit the book's existing context (premise, genre, characters, structure).\n- If the current value is non-empty, improve it — don't just repeat it.\n- If the current value is empty, create a fitting value from scratch.";
 
   try {
     const client = getAnthropicClient();
@@ -82,7 +147,7 @@ export async function POST(request: Request) {
     const message = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 512,
-      system: `You are a literary assistant helping a writer with their book's metadata. ${FIELD_PROMPTS[safeFieldName]}\n\nRespond with ONLY a raw JSON object with this exact shape:\n{ "suggestion": "...", "explanation": "1-2 sentence justification" }\n\nRules:\n- The suggestion must fit the book's existing context (premise, genre, characters, structure).\n- If the current value is non-empty, improve it — don't just repeat it.\n- If the current value is empty, create a fitting value from scratch.\n- The suggestion must be in ${bookLanguage}.\n- Respond with ONLY the raw JSON object — no markdown code fences, no explanation, no text before or after.\n- The JSON must be valid.`,
+      system: `You are a literary assistant helping a writer with their book's metadata. ${effectivePrompt}\n\nRespond with ONLY a raw JSON object with this exact shape:\n{ "suggestion": "...", "explanation": "1-2 sentence justification" }\n\nRules:\n${contextRules}\n- The suggestion must be in ${bookLanguage}.\n- Respond with ONLY the raw JSON object — no markdown code fences, no explanation, no text before or after.\n- The JSON must be valid.`,
       messages: [contextMessage],
     });
 
@@ -104,9 +169,16 @@ export async function POST(request: Request) {
       );
     }
 
-    if (typeof parsed.suggestion !== "string" || typeof parsed.explanation !== "string") {
+    if (
+      typeof parsed.suggestion !== "string" ||
+      typeof parsed.explanation !== "string"
+    ) {
       return NextResponse.json(
-        { ok: false, error: "AI response missing 'suggestion' or 'explanation' string fields." },
+        {
+          ok: false,
+          error:
+            "AI response missing 'suggestion' or 'explanation' string fields.",
+        },
         { status: 500 },
       );
     }

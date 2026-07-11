@@ -724,9 +724,16 @@ export function AssistantPanel({
   return (
     <aside className="flex max-h-96 w-full shrink-0 flex-col gap-3 overflow-y-auto border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:h-full lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
       <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-        Assistants
+        Помощники
       </h2>
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+      {/* Sprint-25-Step-02: square icon buttons + hover tooltip, replacing
+          the previous 2-column card grid with a description in every card —
+          Product Owner decision (see this step's Step Card, "Часть 2"). The
+          emoji glyph stays as the button's content on purpose — swapping it
+          for a real icon set is Sprint-25-Step-05's job, not this step's
+          (see Step Card's "Координация с содержимым иконки"). Native `title`
+          supplies the hover tooltip — no new dependency for that alone. */}
+      <div className="flex gap-2">
         {ASSISTANT_MODES.map((mode) => {
           const info = MODE_META[mode];
           const isActive = mode === selectedMode;
@@ -734,24 +741,24 @@ export function AssistantPanel({
             <button
               key={mode}
               onClick={() => onSelectMode(mode)}
-              className={`rounded-lg border p-3 text-left transition-colors ${
+              title={info.label}
+              aria-label={info.label}
+              aria-pressed={isActive}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-lg transition-colors ${
                 isActive
                   ? `${info.activeBorder} bg-white dark:bg-black`
                   : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
               }`}
             >
-              <p
-                className={`text-sm font-medium ${isActive ? info.accent : "text-black dark:text-zinc-50"}`}
-              >
-                {info.emoji} {info.label}
-              </p>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                {info.description}
-              </p>
+              {info.emoji}
             </button>
           );
         })}
       </div>
+      {/* Description now shown only for the currently active mode, moved
+          out from inside every card (Product Owner's stated goal: reclaim
+          vertical space in the ~320px-wide panel). */}
+      <p className={`text-xs ${meta.accent}`}>{meta.description}</p>
 
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto border-t border-zinc-200 pt-3 dark:border-zinc-800">
         <div className="flex items-center justify-between">

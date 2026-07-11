@@ -1,8 +1,8 @@
 import { useState } from "react";
-import type { Book, Chapter, Idea } from "@/domain/model";
-import type { BookFieldName } from "@/ai/operations";
+import type { Book, Chapter } from "@/domain/model";
+import type { BookFieldName, BookFieldRequestType } from "@/ai/operations";
+import { execute as aiBusExecute } from "@/ai/aiBus";
 import { GENRES, LANGUAGES } from "@/components/NewBookDialog";
-import { IdeasPanel } from "@/components/IdeasPanel";
 
 // Sprint-13-Step-05: pure scene/chapter/book editing again — the AI
 // interaction that used to live here (SceneImprove, MODE_INFO, and the
@@ -23,11 +23,34 @@ import { IdeasPanel } from "@/components/IdeasPanel";
 // on every scene `<textarea>`'s `onFocus` via the `onSceneFocus` callback
 // below, so it always points at whichever scene the author last clicked
 // into.
+//
+// Sprint-25-Step-04 (ADR-0011 Amendment): Title gained three typed
+// quick-request buttons ("подобрать аналоги" / "мозговой штурм" / "проверить
+// на уникальность") instead of the single generic "AI" button genre/premise/
+// annotations still use. This is deliberately local component state calling
+// `aiBus.execute()` directly (the same module page.tsx imports it from) —
+// not routed through the `onRequestFieldSuggestion`/`fieldSuggestion` props
+// below, which stay exactly as they were for the other fields. Threading a
+// `requestType` through those lifted-to-page.tsx props would have required
+// touching page.tsx, which is outside this Step Card's Allowed paths and is
+// under concurrent edit by a parallel Step Card — this local-state approach
+// avoids both without changing any other field's behavior.
+
+// Sprint-25-Step-04: Title's three quick-request buttons (ADR-0011
+// Amendment) — same pill-button visual pattern as CRITIC_SUBCATEGORIES in
+// AssistantPanel.tsx, for consistency.
+const TITLE_QUICK_REQUESTS: readonly {
+  key: BookFieldRequestType;
+  label: string;
+}[] = [
+  { key: "comparables", label: "Подобрать аналоги" },
+  { key: "brainstorm", label: "Мозговой штурм" },
+  { key: "uniqueness", label: "Проверить на уникальность" },
+];
 
 type EditorAreaProps = {
   book?: Book | null;
   chapters?: readonly Chapter[];
-  ideas?: readonly Idea[];
   onNewScene?: (chapterId: string) => void;
   onChangeSceneText?: (
     chapterId: string,
@@ -78,9 +101,6 @@ type EditorAreaProps = {
   collapsedSceneIds?: ReadonlySet<string>;
   onToggleSceneCollapsed?: (sceneId: string) => void;
   onToggleAllScenesInChapter?: (chapterId: string) => void;
-  onCreateIdea?: () => void;
-  onUpdateIdea?: (ideaId: string, text: string) => void;
-  onDeleteIdea?: (ideaId: string) => void;
   // Sprint-21-Step-04: AI field suggestions (ADR-0011).
   onRequestFieldSuggestion?: (fieldName: BookFieldName) => void;
   fieldSuggestion?: {
@@ -96,7 +116,6 @@ type EditorAreaProps = {
 export function EditorArea({
   book,
   chapters = [],
-  ideas = [],
   onNewScene,
   onChangeSceneText,
   onUpdateChapter,
@@ -112,9 +131,6 @@ export function EditorArea({
   collapsedSceneIds,
   onToggleSceneCollapsed,
   onToggleAllScenesInChapter,
-  onCreateIdea,
-  onUpdateIdea,
-  onDeleteIdea,
   onRequestFieldSuggestion,
   fieldSuggestion,
   onAcceptFieldSuggestion,
@@ -135,7 +151,6 @@ export function EditorArea({
     <UnifiedBookView
       book={book}
       chapters={chapters}
-      ideas={ideas}
       onNewScene={onNewScene}
       onChangeSceneText={onChangeSceneText}
       onUpdateChapter={onUpdateChapter}
@@ -151,9 +166,6 @@ export function EditorArea({
       collapsedSceneIds={collapsedSceneIds}
       onToggleSceneCollapsed={onToggleSceneCollapsed}
       onToggleAllScenesInChapter={onToggleAllScenesInChapter}
-      onCreateIdea={onCreateIdea}
-      onUpdateIdea={onUpdateIdea}
-      onDeleteIdea={onDeleteIdea}
       onRequestFieldSuggestion={onRequestFieldSuggestion}
       fieldSuggestion={fieldSuggestion}
       onAcceptFieldSuggestion={onAcceptFieldSuggestion}
@@ -166,13 +178,11 @@ export function EditorArea({
 type UnifiedBookViewProps = Omit<EditorAreaProps, "book" | "chapters"> & {
   book: Book;
   chapters: readonly Chapter[];
-  ideas: readonly Idea[];
 };
 
 function UnifiedBookView({
   book,
   chapters,
-  ideas,
   onNewScene,
   onChangeSceneText,
   onUpdateChapter,
@@ -188,9 +198,6 @@ function UnifiedBookView({
   collapsedSceneIds,
   onToggleSceneCollapsed,
   onToggleAllScenesInChapter,
-  onCreateIdea,
-  onUpdateIdea,
-  onDeleteIdea,
   onRequestFieldSuggestion,
   fieldSuggestion,
   onAcceptFieldSuggestion,
@@ -198,6 +205,89 @@ function UnifiedBookView({
   isFieldSuggestionLoading,
 }: UnifiedBookViewProps) {
   const [isDetailsCollapsed, setIsDetailsCollapsed] = useState(false);
+
+  // Sprint-25-Step-04: Title-only quick-request state (ADR-0011 Amendment) —
+  // see the file-header comment above for why this is local state rather
+  // than routed through the `onRequestFieldSuggestion`/`fieldSuggestion`
+  // props (those stay untouched for genre/premise/annotations).
+  const [titleSuggestion, setTitleSuggestion] = useState<{
+    requestType: BookFieldRequestType;
+    suggestion: string;
+    explanation: string;
+  } | null>(null);
+  const [titleLoadingType, setTitleLoadingType] =
+    useState<BookFieldRequestType | null>(null);
+
+  async function handleTitleQuickRequest(requestType: BookFieldRequestType) {
+    setTitleLoadingType(requestType);
+    setTitleSuggestion(null);
+    try {
+      const result = await aiBusExecute({
+        operation: {
+          type: "book_field_suggestion",
+          payload: {
+            fieldName: "title",
+            currentValue: book.title ?? "",
+            bookContext: book,
+            requestType,
+          },
+        },
+        context: {},
+      });
+      const parsed = JSON.parse(result.response.text) as {
+        suggestion: string;
+        explanation: string;
+      };
+      setTitleSuggestion({
+        requestType,
+        suggestion: parsed.suggestion,
+        explanation: parsed.explanation,
+      });
+    } catch {
+      setTitleSuggestion(null);
+    } finally {
+      setTitleLoadingType(null);
+    }
+  }
+
+  function handleAcceptTitleSuggestion() {
+    if (!titleSuggestion) return;
+    onUpdateBook?.(book.id, { title: titleSuggestion.suggestion });
+    setTitleSuggestion(null);
+  }
+
+  // "проверить на уникальность" is an analytical verdict, not a value to put
+  // in the field — no "Принять" for it (resolved fork, see Step Card).
+  function renderTitleSuggestion() {
+    if (!titleSuggestion) return null;
+    const isAnalytical = titleSuggestion.requestType === "uniqueness";
+    return (
+      <div className="flex flex-col gap-1.5 rounded-md border border-blue-200 bg-blue-50 p-2.5 dark:border-blue-800 dark:bg-blue-950">
+        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+          {titleSuggestion.suggestion}
+        </p>
+        <p className="text-xs text-blue-600 dark:text-blue-400">
+          {titleSuggestion.explanation}
+        </p>
+        <div className="flex gap-1.5">
+          {!isAnalytical && (
+            <button
+              onClick={handleAcceptTitleSuggestion}
+              className="rounded-full bg-blue-600 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700"
+            >
+              Принять
+            </button>
+          )}
+          <button
+            onClick={() => setTitleSuggestion(null)}
+            className="rounded-full border border-blue-300 px-2.5 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-100 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900"
+          >
+            {isAnalytical ? "Понятно" : "Отклонить"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   function renderFieldSuggestion(fieldName: BookFieldName) {
     if (fieldSuggestion?.fieldName !== fieldName) return null;
@@ -264,21 +354,22 @@ function UnifiedBookView({
                 placeholder="Название книги..."
                 className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
               />
-              {onRequestFieldSuggestion && (
-                <button
-                  onClick={() => onRequestFieldSuggestion("title")}
-                  disabled={isFieldSuggestionLoading}
-                  title="AI-предложение"
-                  className="shrink-0 rounded-md border border-zinc-300 px-2 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                >
-                  {isFieldSuggestionLoading &&
-                  fieldSuggestion?.fieldName === "title"
-                    ? "…"
-                    : "AI"}
-                </button>
-              )}
             </div>
-            {renderFieldSuggestion("title")}
+            <div className="flex flex-wrap gap-1.5">
+              {TITLE_QUICK_REQUESTS.map((quickRequest) => (
+                <button
+                  key={quickRequest.key}
+                  onClick={() => handleTitleQuickRequest(quickRequest.key)}
+                  disabled={titleLoadingType !== null}
+                  className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                >
+                  {titleLoadingType === quickRequest.key
+                    ? "…"
+                    : quickRequest.label}
+                </button>
+              ))}
+            </div>
+            {renderTitleSuggestion()}
             <div className="flex gap-2">
               <select
                 value={book.genre}
@@ -376,7 +467,9 @@ function UnifiedBookView({
               <textarea
                 value={book.fullAnnotation}
                 onChange={(event) =>
-                  onUpdateBook?.(book.id, { fullAnnotation: event.target.value })
+                  onUpdateBook?.(book.id, {
+                    fullAnnotation: event.target.value,
+                  })
                 }
                 placeholder="Полная аннотация..."
                 rows={6}
@@ -590,13 +683,6 @@ function UnifiedBookView({
             })
           )}
         </div>
-
-        <IdeasPanel
-          ideas={ideas}
-          onCreate={onCreateIdea}
-          onUpdate={onUpdateIdea}
-          onDelete={onDeleteIdea}
-        />
       </div>
     </main>
   );

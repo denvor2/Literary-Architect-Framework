@@ -29,11 +29,14 @@ import type { Book, ChatMessage } from "@/domain/model";
 // `tags` excluded (array field, needs different UX); `language` excluded
 // (technical setting, not creative).
 export type BookFieldName =
-  | "title"
-  | "genre"
-  | "premise"
-  | "shortAnnotation"
-  | "fullAnnotation";
+  "title" | "genre" | "premise" | "shortAnnotation" | "fullAnnotation";
+
+// Sprint-25-Step-04: typed quick-request variants for `book_field_suggestion`
+// (ADR-0011 Amendment). So far only wired end-to-end for `title`
+// (EditorArea.tsx renders three quick-request buttons instead of one generic
+// "AI" button) — other fields keep the single generic prompt (requestType
+// absent, exactly today's behavior).
+export type BookFieldRequestType = "comparables" | "brainstorm" | "uniqueness";
 
 export type AIOperation =
   | {
@@ -102,5 +105,9 @@ export type AIOperation =
         fieldName: BookFieldName;
         currentValue: string;
         bookContext: Book;
+        // Sprint-25-Step-04: optional — selects a typed prompt variant
+        // instead of the field's single generic prompt. Absent preserves
+        // exactly the pre-Sprint-25 behavior (ADR-0011 Amendment).
+        requestType?: BookFieldRequestType;
       };
     };

@@ -112,11 +112,19 @@ export async function execute(
     // the shared AIResponse.text transport, same pattern as critic_review.
     resultText = JSON.stringify(data.proposal);
   } else if (operation.type === "book_field_suggestion") {
-    const { fieldName, currentValue, bookContext } = operation.payload;
+    const { fieldName, currentValue, bookContext, requestType } =
+      operation.payload;
     const response = await fetch("/api/book-field", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fieldName, currentValue, bookContext }),
+      body: JSON.stringify({
+        fieldName,
+        currentValue,
+        bookContext,
+        // Sprint-25-Step-04: forwarded only when present — keeps the
+        // request shape identical to before for callers that don't pass it.
+        ...(requestType ? { requestType } : {}),
+      }),
     });
     const data = await response.json();
     if (!data.ok) {

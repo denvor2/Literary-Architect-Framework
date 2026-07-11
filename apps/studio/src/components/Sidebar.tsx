@@ -1,4 +1,5 @@
-import type { Book, Chapter, Character } from "@/domain/model";
+import type { Book, Chapter, Character, Idea } from "@/domain/model";
+import { IdeasPanel } from "@/components/IdeasPanel";
 
 type SidebarProps = {
   books?: readonly Book[];
@@ -21,6 +22,13 @@ type SidebarProps = {
   // in sync with the unified view instead of tracking its own copy.
   collapsedChapterIds?: ReadonlySet<string>;
   onToggleChapterCollapsed?: (chapterId: string) => void;
+  // Sprint-25-Step-01: Ideas/Notes relocated here from EditorArea.tsx's
+  // UnifiedBookView (Sprint 18 Step 03) — pure rendering move, IdeasPanel
+  // itself is unchanged.
+  ideas?: readonly Idea[];
+  onCreateIdea?: () => void;
+  onUpdateIdea?: (ideaId: string, text: string) => void;
+  onDeleteIdea?: (ideaId: string) => void;
 };
 
 // Sprint-16-17-Step-02: the unified view (EditorArea.tsx) shows every
@@ -53,6 +61,10 @@ export function Sidebar({
   onCreateScene,
   collapsedChapterIds,
   onToggleChapterCollapsed,
+  ideas = [],
+  onCreateIdea,
+  onUpdateIdea,
+  onDeleteIdea,
 }: SidebarProps) {
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
@@ -208,6 +220,14 @@ export function Sidebar({
             ))}
           </ul>
         )}
+      </div>
+      <div>
+        <IdeasPanel
+          ideas={ideas}
+          onCreate={onCreateIdea}
+          onUpdate={onUpdateIdea}
+          onDelete={onDeleteIdea}
+        />
       </div>
     </aside>
   );

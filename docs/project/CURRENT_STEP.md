@@ -9,12 +9,12 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-25-Step-01/02/03/04/06
+id: Sprint-25-Step-01/02/03/04/05/06
 status: done
-next: [Sprint-25-Step-05]
+next: [Sprint-26]
 ```
 
-## Sprint 25 — UI/UX: структура интерфейса и настройка помощников (в процессе — 5 из 6 Step Card закрыты)
+## Sprint 25 — UI/UX: структура интерфейса и настройка помощников (завершён — все 6 Step Card закрыты)
 
 Три независимых Step Card (01/02/04) закрыты одним коммитом реализации (`44c2d9a`) + отдельным
 коммитом архивации в `done/` (`eb939d0`). Четвёртая, `Sprint-25-Step-03` (gear-настройки
@@ -85,6 +85,16 @@ Step-06 добавил новый UI-элемент в `Header.tsx` (форму 
   Тестировалось против изолированной БД `literary_studio_step25_03_test`, не против реальной
   `literary_studio` Product Owner (см. инцидент диагностики Step-01 выше) — подтверждено, что
   таблицы `AssistantSettings` в реальной БД нет и количество строк `Book` не изменилось.
+- **Step 05** — дизайн-проход через `ui-specialist`: замена emoji на иконки lucide-react,
+  визуальное единообразие. Новая зависимость: `lucide-react@^1.24.0` (0 транзитивных); выбор
+  обоснован в ARP (стандартная пара для Tailwind, tree-shakeable, минимум зависимостей).
+  Заменены: MODE_META (🟡→Pen/🟢→Wand2/🔴→Eye/🔵→BookOpen для режимов помощников), GearButton
+  (⚙→Settings), ReaderPanel (⇄→ArrowLeftRight/✎→Pencil/✕→Trash2). Структура picker'а из
+  Step-02 (квадратные кнопки + hover tooltip) сохранена, изменилось только содержимое иконок.
+  Dark-mode пары добавлены (zinc-700/dark:zinc-300 для всех). Живая проверка подтвердила: emoji
+  исчезли, иконки отрендерились, контрастность в обоих режимах. Реализация — коммит `3d2f39c`,
+  архивация в `done/` — этот же коммит (ARP в active/ перенесена в done/).
+
 - **Step 06** — глобальный клиентский поиск в шапке. Новый `apps/studio/src/domain/search.ts` —
   чистая функция `searchWorkspace()` без React/DOM/побочных эффектов (принимает `query`, весь
   `books` рабочего пространства и уже отфильтрованные вызывающей стороной по активной книге
@@ -122,9 +132,9 @@ Step-06 добавил новый UI-элемент в `Header.tsx` (форму 
     был привязан к реальной активной книге (не читал `activeBook.title`). По прямому решению
     Product Owner — удалён, а не довязан к реальным данным. Коммит `f4b07c4`.
 
-- **Next.** `Sprint-25-Step-05` (дизайн-проход через `ui-specialist`, иконки вместо эмодзи —
-  разблокирован, все остальные Step Card спринта уже в `done/`) — единственная оставшаяся
-  карточка `docs/task-bus/queue/pending/`, спринт остаётся открытым до её закрытия.
+- **Sprint 25 завершён.** Все 6 Step Card закрыты и заархивированы в `docs/task-bus/queue/done/`.
+  Спринт добавил новые UI-компоненты (IdeasPanel в Sidebar, resizable drawer, Assistant settings),
+  глобальный поиск в Header, и визуальное единообразие (lucide-react иконки вместо emoji).
 
 **Session Refresh Trigger (`docs/task-bus/BOOTSTRAP.md`):** эта сессия сознательно передаёт
 работу свежей сессии сейчас — обработано 4 Step Card (01/02/03/04), скоро станет 5 с началом

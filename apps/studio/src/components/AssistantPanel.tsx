@@ -300,6 +300,23 @@ function AssistantSettingsDialog({
             />
           </label>
 
+          {typicalRequestsText.trim() && (
+            <div className="flex flex-wrap gap-1.5">
+              {typicalRequestsText
+                .split("\n")
+                .map((line) => line.trim())
+                .filter((line) => line.length > 0)
+                .map((request, index) => (
+                  <div
+                    key={index}
+                    className="rounded-full border border-zinc-300 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                  >
+                    {request}
+                  </div>
+                ))}
+            </div>
+          )}
+
           {status === "error" && (
             <p className="text-sm text-red-600 dark:text-red-400">
               Не удалось сохранить настройки. Попробуйте ещё раз.

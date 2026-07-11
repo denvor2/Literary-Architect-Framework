@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { Book, Chapter, Character, Idea } from "@/domain/model";
+import {
+  SEARCH_MIN_QUERY_LENGTH,
+  searchWorkspace,
+  type ChapterOrSceneSearchMatch,
+} from "@/domain/search";
 
 // Sprint-25-Step-01: chrome-only app menu bar — Product Owner explicitly
 // confirmed (twice) this is a placeholder for a future full menu (see
@@ -15,7 +21,86 @@ const MENUS: ReadonlyArray<{ key: MenuKey; label: string }> = [
   { key: "view", label: "Вид" },
 ];
 
-export function Header() {
+// Sprint-25-Step-06: global search over the workspace's books plus the
+// active book's chapters/scenes/characters/ideas (see domain/search.ts for
+// the actual matching logic — this component only owns query/checkbox/open
+// state and renders the results).
+type HeaderProps = {
+  books?: readonly Book[];
+  activeBookId?: string | null;
+  chapters?: readonly Chapter[];
+  characters?: readonly Character[];
+  ideas?: readonly Idea[];
+  onSelectBook?: (bookId: string) => void;
+  onSelectCharacter?: (characterId: string) => void;
+  onSelectSearchMatch?: (chapterId: string, sceneId?: string) => void;
+  onSelectIdeaMatch?: (ideaId: string) => void;
+};
+
+function SearchResultsSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="border-b border-zinc-100 py-1 last:border-b-0 dark:border-zinc-900">
+      <div className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-600">
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function SearchResultButton({
+  label,
+  snippet,
+  isActive,
+  onClick,
+}: {
+  label: string;
+  snippet?: string;
+  isActive?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex w-full flex-col items-start gap-0.5 px-3 py-1.5 text-left text-sm transition-colors ${
+        isActive
+          ? "bg-zinc-100 text-black dark:bg-zinc-900 dark:text-white"
+          : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
+      }`}
+    >
+      <span>{label || "Без названия"}</span>
+      {snippet && (
+        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+          {snippet}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function chapterOrSceneKey(match: ChapterOrSceneSearchMatch): string {
+  return match.sceneId
+    ? `scene-${match.sceneId}`
+    : `chapter-${match.chapterId}`;
+}
+
+export function Header({
+  books = [],
+  activeBookId,
+  chapters = [],
+  characters = [],
+  ideas = [],
+  onSelectBook,
+  onSelectCharacter,
+  onSelectSearchMatch,
+  onSelectIdeaMatch,
+}: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +113,75 @@ export function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Search — ephemeral local state (query/open/checkbox), not part of
+  // Workspace, not persisted. See domain/search.ts for the pure matching
+  // logic this only calls into.
+  const [query, setQuery] = useState("");
+  const [mainTextOnly, setMainTextOnly] = useState(false);
+  const [isResultsOpen, setIsResultsOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const trimmedLength = query.trim().length;
+  const hasEnoughQuery = trimmedLength >= SEARCH_MIN_QUERY_LENGTH;
+
+  const results = useMemo(
+    () =>
+      searchWorkspace({
+        query,
+        books,
+        chapters,
+        characters,
+        ideas,
+        mainTextOnly,
+      }),
+    [query, books, chapters, characters, ideas, mainTextOnly],
+  );
+
+  const hasAnyResults =
+    results.books.length > 0 ||
+    results.chaptersAndScenes.length > 0 ||
+    results.characters.length > 0 ||
+    results.ideas.length > 0;
+
+  const showDropdown = isResultsOpen && hasEnoughQuery;
+
+  // Click outside the search form closes the results dropdown — same
+  // mousedown-listener pattern as the Файл/Правка/Вид menu bar above, kept
+  // as a separate effect/ref (searchRef) rather than folded into
+  // handleClickOutside, since the two dropdowns are unrelated UI.
+  useEffect(() => {
+    function handleClickOutsideSearch(event: MouseEvent) {
+      if (!searchRef.current?.contains(event.target as Node)) {
+        setIsResultsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutsideSearch);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutsideSearch);
+  }, []);
+
+  // Escape closes the results dropdown; Ctrl/Cmd+K focuses the search
+  // field — a trivial, optional shortcut per the Step Card's Rules ("включить,
+  // только если реализация тривиальна").
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        setIsResultsOpen(true);
+      } else if (event.key === "Escape") {
+        setIsResultsOpen(false);
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  function closeResults() {
+    setIsResultsOpen(false);
+  }
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-4 border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-black">
@@ -63,6 +217,106 @@ export function Header() {
           </div>
         ))}
       </nav>
+
+      <div ref={searchRef} className="relative flex items-center gap-3">
+        <div className="relative">
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setIsResultsOpen(true);
+            }}
+            onFocus={() => {
+              if (hasEnoughQuery) setIsResultsOpen(true);
+            }}
+            placeholder="Поиск по книге... (Ctrl+K)"
+            className="w-64 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black outline-none placeholder:text-zinc-400 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600"
+          />
+          {showDropdown && (
+            <div className="absolute left-0 top-full z-20 mt-1 max-h-96 w-80 overflow-y-auto rounded-md border border-zinc-200 bg-white py-1 shadow-md dark:border-zinc-800 dark:bg-zinc-950">
+              {!hasAnyResults && (
+                <p className="px-3 py-2 text-sm text-zinc-400 dark:text-zinc-600">
+                  Ничего не найдено
+                </p>
+              )}
+              {results.books.length > 0 && (
+                <SearchResultsSection title="Книги">
+                  {results.books.map((match) => (
+                    <SearchResultButton
+                      key={match.bookId}
+                      label={match.title}
+                      isActive={match.bookId === activeBookId}
+                      onClick={() => {
+                        onSelectBook?.(match.bookId);
+                        closeResults();
+                      }}
+                    />
+                  ))}
+                </SearchResultsSection>
+              )}
+              {results.chaptersAndScenes.length > 0 && (
+                <SearchResultsSection title="Главы и сцены">
+                  {results.chaptersAndScenes.map((match) => (
+                    <SearchResultButton
+                      key={chapterOrSceneKey(match)}
+                      label={match.label}
+                      snippet={match.snippet}
+                      onClick={() => {
+                        onSelectSearchMatch?.(match.chapterId, match.sceneId);
+                        closeResults();
+                      }}
+                    />
+                  ))}
+                </SearchResultsSection>
+              )}
+              {results.characters.length > 0 && (
+                <SearchResultsSection title="Персонажи">
+                  {results.characters.map((match) => (
+                    <SearchResultButton
+                      key={match.characterId}
+                      label={match.label}
+                      snippet={match.snippet}
+                      onClick={() => {
+                        onSelectCharacter?.(match.characterId);
+                        closeResults();
+                      }}
+                    />
+                  ))}
+                </SearchResultsSection>
+              )}
+              {results.ideas.length > 0 && (
+                <SearchResultsSection title="Идеи и заметки">
+                  {results.ideas.map((match) => (
+                    <SearchResultButton
+                      key={match.ideaId}
+                      label={match.snippet}
+                      onClick={() => {
+                        onSelectIdeaMatch?.(match.ideaId);
+                        closeResults();
+                      }}
+                    />
+                  ))}
+                </SearchResultsSection>
+              )}
+            </div>
+          )}
+        </div>
+        <label
+          htmlFor="search-main-text-only"
+          className="flex select-none items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400"
+        >
+          <input
+            id="search-main-text-only"
+            type="checkbox"
+            checked={mainTextOnly}
+            onChange={(event) => setMainTextOnly(event.target.checked)}
+            className="h-3.5 w-3.5"
+          />
+          Искать только в основном тексте
+        </label>
+      </div>
 
       <div className="ml-auto flex items-center gap-3">
         <button

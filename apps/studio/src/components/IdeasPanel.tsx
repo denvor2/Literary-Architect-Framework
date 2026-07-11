@@ -47,6 +47,7 @@ export function IdeasPanel({
           {ideas.map((idea) => (
             <div
               key={idea.id}
+              id={`idea-block-${idea.id}`}
               className="flex flex-col gap-2 rounded-md border border-zinc-200 p-3 dark:border-zinc-800"
             >
               <div className="flex items-center justify-between">

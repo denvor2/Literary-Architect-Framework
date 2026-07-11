@@ -261,9 +261,64 @@ export default function Home() {
     }
   }
 
+  // Sprint-25-Step-06: same scroll mechanism as Sidebar.tsx's
+  // scrollBlockIntoView (that file is a Forbidden path for this Step Card
+  // — this is a deliberate, tiny duplicate, not a shared import).
+  function scrollElementIntoView(elementId: string) {
+    document
+      .getElementById(elementId)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // Handles a Header search result click for a Chapter or Scene match.
+  // Must undo whichever collapse state would otherwise hide the target
+  // block before scrolling to it (Step Card developed points 11-12): the
+  // whole-book "collapse all chapters" toggle, the target chapter's own
+  // collapse, and (so the matched text is actually visible, not just the
+  // scene's title bar) the target scene's own collapse.
+  function handleSelectSearchMatch(chapterId: string, sceneId?: string) {
+    if (isChaptersCollapsed) setIsChaptersCollapsed(false);
+    if (collapsedChapterIds.has(chapterId)) toggleChapterCollapsed(chapterId);
+    if (sceneId && collapsedSceneIds.has(sceneId)) {
+      toggleSceneCollapsed(sceneId);
+    }
+    if (sceneId) {
+      selectScene(chapterId, sceneId);
+    } else {
+      selectChapter(chapterId);
+    }
+    const targetId = sceneId
+      ? `scene-block-${sceneId}`
+      : `chapter-block-${chapterId}`;
+    requestAnimationFrame(() => {
+      scrollElementIntoView(targetId);
+    });
+  }
+
+  // Handles a Header search result click for an Idea/note match. Ideas
+  // only render inside Sidebar.tsx, which Focus Mode hides entirely — the
+  // target DOM node doesn't exist until Focus Mode is turned off first
+  // (Step Card developed point 9).
+  function handleSelectIdeaMatch(ideaId: string) {
+    if (isFocusMode) setIsFocusMode(false);
+    requestAnimationFrame(() => {
+      scrollElementIntoView(`idea-block-${ideaId}`);
+    });
+  }
+
   return (
     <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
-      <Header />
+      <Header
+        books={books}
+        activeBookId={activeBookId}
+        chapters={chapters}
+        characters={characters}
+        ideas={ideas}
+        onSelectBook={handleSelectBook}
+        onSelectCharacter={selectCharacter}
+        onSelectSearchMatch={handleSelectSearchMatch}
+        onSelectIdeaMatch={handleSelectIdeaMatch}
+      />
       <SyncWarningBanner warning={syncWarning} />
       <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
         {!isFocusMode && (

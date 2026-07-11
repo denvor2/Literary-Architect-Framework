@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Search } from "lucide-react";
 import type { Book, Chapter, Character, Idea } from "@/domain/model";
 import {
   SEARCH_MIN_QUERY_LENGTH,
@@ -218,7 +219,7 @@ export function Header({
         ))}
       </nav>
 
-      <div ref={searchRef} className="relative flex items-center gap-3">
+      <div ref={searchRef} className="relative flex flex-col gap-1">
         <div className="relative">
           <input
             ref={searchInputRef}
@@ -232,8 +233,19 @@ export function Header({
               if (hasEnoughQuery) setIsResultsOpen(true);
             }}
             placeholder="Поиск по книге... (Ctrl+K)"
-            className="w-64 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black outline-none placeholder:text-zinc-400 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600"
+            className="w-64 rounded-md border border-zinc-300 bg-white px-3 py-1.5 pr-9 text-sm text-black outline-none placeholder:text-zinc-400 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600"
           />
+          <button
+            type="button"
+            onClick={() => {
+              // Search icon click handler — currently visual affordance
+              // If auto-search on input change is disabled in future, this can trigger search
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300"
+            title="Поиск"
+          >
+            <Search size={16} />
+          </button>
           {showDropdown && (
             <div className="absolute left-0 top-full z-20 mt-1 max-h-96 w-80 overflow-y-auto rounded-md border border-zinc-200 bg-white py-1 shadow-md dark:border-zinc-800 dark:bg-zinc-950">
               {!hasAnyResults && (

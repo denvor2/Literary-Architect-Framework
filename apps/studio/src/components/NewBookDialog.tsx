@@ -2,18 +2,8 @@
 
 import { useState } from "react";
 import type { Book } from "@/domain/model";
-
-export const GENRES = [
-  "Fiction",
-  "Fantasy",
-  "Science Fiction",
-  "Mystery",
-  "Thriller",
-  "Romance",
-  "Historical Fiction",
-  "Non-Fiction",
-  "Other",
-];
+import { GENRES } from "@/lib/genres";
+import { GenreAutocomplete } from "./GenreAutocomplete";
 
 export const LANGUAGES = [
   "Russian",
@@ -78,17 +68,11 @@ export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Жанр
             </span>
-            <select
+            <GenreAutocomplete
               value={genre}
-              onChange={(event) => setGenre(event.target.value)}
-              className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-            >
-              {GENRES.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+              onChange={setGenre}
+              placeholder="Выберите или введите жанр..."
+            />
           </label>
 
           <label className="flex flex-col gap-1">

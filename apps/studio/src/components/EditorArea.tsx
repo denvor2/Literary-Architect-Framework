@@ -2,7 +2,8 @@ import { useState } from "react";
 import type { Book, Chapter } from "@/domain/model";
 import type { BookFieldName, BookFieldRequestType } from "@/ai/operations";
 import { execute as aiBusExecute } from "@/ai/aiBus";
-import { GENRES, LANGUAGES } from "@/components/NewBookDialog";
+import { LANGUAGES } from "@/components/NewBookDialog";
+import { GenreAutocomplete } from "@/components/GenreAutocomplete";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 // Sprint-13-Step-05: pure scene/chapter/book editing again — the AI
@@ -379,19 +380,13 @@ function UnifiedBookView({
               </div>
               {renderTitleSuggestion()}
               <div className="flex gap-2">
-                <select
+                <GenreAutocomplete
                   value={book.genre}
-                  onChange={(event) =>
-                    onUpdateBook?.(book.id, { genre: event.target.value })
+                  onChange={(newGenre) =>
+                    onUpdateBook?.(book.id, { genre: newGenre })
                   }
-                  className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
-                >
-                  {GENRES.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Выберите или введите жанр..."
+                />
                 <select
                   value={book.language}
                   onChange={(event) =>

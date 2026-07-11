@@ -342,7 +342,7 @@ function UnifiedBookView({
                   ? "Развернуть реквизиты"
                   : "Свернуть реквизиты"
               }
-              className="rounded-md border border-zinc-300 p-1 text-zinc-500 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="shrink-0 rounded-md border border-zinc-300 p-1 text-zinc-500 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
               {isDetailsCollapsed ? (
                 <ChevronDown size={16} />

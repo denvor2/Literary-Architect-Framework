@@ -184,12 +184,18 @@ Book (заголовок, жанр, аннотация, synopsis).
 
 ### Definition of Done
 
-- [ ] Repository layer создан для всех сущностей
-- [ ] Workspace controller работает через repository
-- [ ] localStorage остаётся как fallback
-- [ ] Migration script переносит данные
-- [ ] Приложение работает с PostgreSQL
-- [ ] `tsc`, `eslint`, `prettier`, `build` — чисто
+- [x] Repository layer создан для всех сущностей (Step 03)
+- [x] Workspace controller работает через repository (Step 04/06)
+- [x] localStorage остаётся как fallback (Step 05/07)
+- [x] Migration script переносит данные — реализовано как одноразовый перенос в браузере
+      (ADR-0012 Decision 6), не отдельный CLI-скрипт (нереализуемо технически, localStorage
+      существует только в браузере)
+- [x] Приложение работает с PostgreSQL — живо проверено на реальном Postgres на каждом шаге
+- [x] `tsc`, `eslint`, `prettier`, `build` — чисто (Step 08, финальная проверка)
+
+Два пункта сверх исходного плана, добавленные Product Owner 2026-07-11 по итогам живой
+проверки Step 06: Step 07 (устранение реальной потери данных при восстановлении БД) и Step 08
+(видимое предупреждение пользователю — закрывает разрыв с ADR-0012 Decision 5).
 
 ---
 

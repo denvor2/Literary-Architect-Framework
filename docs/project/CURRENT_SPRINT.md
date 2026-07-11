@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 23 — PostgreSQL + Prisma (see ROADMAP_18-27.md)** — **closed**
+**Sprint 24 — Миграция localStorage → Database (see ROADMAP_18-27.md)** — **closed**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,10 +10,48 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** Closed — Sprint 23 completed, including Step 03 (`prisma migrate dev`, unblocked
-  2026-07-10 once Docker was confirmed installed).
+- **Status:** Closed — all eight Step Cards completed (six originally scoped + two added
+  mid-sprint by Product Owner decision, 2026-07-11, after live verification surfaced a real gap).
 - **Phase:** Phase 1 (MVP)
-- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 23 row).
+- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 24 row, Definition of Done fully
+  checked).
+
+## Sprint 24 — closed
+
+Миграция localStorage → Database — `Workspace.books` moves to PostgreSQL (via Sprint 23's
+Prisma schema), `localStorage` remains a fallback and the sole owner of ephemeral UI state
+(ADR-0012 Decision 2). ADR-0012 accepted, ratifying six architectural decisions (temporary
+single-user stopgap with a hard Sprint 28/29 deadline; dual-mode availability-per-call +
+last-write-wins + mandatory user-visible desync warning; coarse `/api/workspace` endpoint;
+entity-id collision fix; browser-side one-time migration).
+
+- **Step 01** — ADR-0012 accepted (`docs/adr/ADR-0012-persistence-migration.md`).
+- **Step 02** — `crypto.randomUUID()` replaces locally-scoped `String(nextNumber)` ids across
+  all entity-creating functions in `useWorkspaceController.ts`, including `createBook()` itself
+  (found during review, not in the card's original function list — the most common path hitting
+  the same collision).
+- **Step 03** — `apps/studio/src/repositories/{userRepository,bookRepository,index}.ts`:
+  server-only Prisma repository layer (`getOrCreateDefaultUser`/`loadBooksForUser`/
+  `saveBooksForUser`), live-verified against the real database via direct `psql` queries.
+- **Step 04** — `/api/workspace` (GET/PUT), thin HTTP wrapper over Step 03, live-verified with
+  curl against a scratch-port server.
+- **Step 05** — `workspaceStorage.ts`'s `loadWorkspace()`/`saveWorkspace()` become async and
+  dual-mode.
+- **Step 06** — `useWorkspaceController.ts` adapted to the async storage contract.
+- **Step 07** (added mid-sprint) — fixed a real data-loss race Step 06's own live verification
+  found: a non-empty database result previously won unconditionally over `localStorage`, silently
+  discarding edits made while the database was unreachable if the page reloaded after recovery
+  but before the next successful save. Fixed with a storage-layer-only "unsynced changes
+  pending" flag.
+- **Step 08** (added mid-sprint) — closes a gap between ADR-0012 Decision 5 (Product Owner
+  required a visible warning on desync/DB-unavailable, correcting an earlier silent-fallback
+  draft) and Step 06's card, which had mistakenly excluded any visual indicator. Adds
+  `SyncWarningBanner.tsx` and a new `syncWarning` field on the workspace-controller hook.
+
+All eight steps live-verified against a real, isolated Postgres database (never the Product
+Owner's actual data) and, from Step 06 onward, against the Product Owner's actual active
+`localhost:3000` dev-server session without disrupting it. Committed `d7ccaa6`, `182b88d`,
+`fd0282e`, `2a162cf`, `8c2bf7d`, plus archival commits.
 
 ## Sprint 15 — closed
 
@@ -146,4 +184,6 @@ PostgreSQL + Prisma — database schema matching domain model, Prisma client sin
 
 ## Next Action
 
-Scope Sprint 24 (Миграция localStorage → Database) per `docs/project/ROADMAP_18-27.md`.
+Scope Sprint 25 (Environment + HTTPS + Production hardening) per
+`docs/project/ROADMAP_18-27.md`. Sprint 28 (multi-user Admin/User system) has a hard deadline —
+no later than Sprint 29 — and should not be scoped later than that regardless of ordering.

@@ -35,23 +35,28 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 23 (PostgreSQL + Prisma) is closed — Prisma schema with 8 models, docker-compose
-postgres service, Prisma client singleton. `prisma migrate dev` applied and live-verified
-2026-07-10 (Docker confirmed installed). Sprints
-06 through 23 are all closed. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the next sprint
-goal.
+Sprint 24 (Миграция localStorage → Database) is closed — `Workspace.books` now round-trips
+through PostgreSQL (Sprint 23's schema), `localStorage` remains fallback + sole owner of
+ephemeral UI state, ADR-0012 accepted (see `docs/adr/ADR-0012-persistence-migration.md`).
+Sprints 06 through 24 are all closed. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the
+full step-by-step breakdown and the next sprint goal (Sprint 25, not yet scoped).
 
 **Process note:** this project is currently working without a separate Architect session — the
 Product Owner reviews Step Cards directly instead (see "Architecture Review before commit"
 below), though `architect-reviewer` (see above) can now do a first-pass review.
 
-**Session handoff note (2026-07-10):** the session that added the Subagents/Skills section
-above is ending here deliberately, per `docs/task-bus/BOOTSTRAP.md`'s "Session Refresh Trigger"
-(it had processed far more than the 5-Step-Card threshold that doc names) — not because
-anything broke. Separately, that same threshold is exactly why Sprint 20-23's code landed
-uncommitted-but-working in an earlier session that ran out of budget mid-flow; this session
-recovered and committed it (`1800638`/`7772dfd`) before doing anything else. Read this as a
-concrete argument for actually honoring the Session Refresh Trigger going forward, not a one-off.
+**Session handoff note (2026-07-11):** this session ran the `step-executor`/`sprint-planner`
+subagent workflow (introduced 2026-07-10, smoke-tested at this session's start) through its
+first real multi-step run — Sprint 24's eight Step Cards, plus two added mid-sprint after live
+verification surfaced a real data-loss bug (Step 07) and a gap against ADR-0012's mandatory
+user-visible desync warning (Step 08). The subagent pattern held up: each step-executor
+correctly refused to commit without `STATUS: OK`, one step-executor correctly stopped and
+escalated a genuine out-of-scope blocking finding (a `components/AssistantPanel.tsx` regression
+in the working tree, unrelated to any Step Card, resolved by the parent session with
+`git checkout HEAD --`) rather than guessing or silently fixing it. This session has now
+processed far more than `docs/task-bus/BOOTSTRAP.md`'s 5-Step-Card Session Refresh Trigger
+threshold — the next session should start fresh via Bootstrap rather than continuing this one's
+accumulated context, per that same rule.
 
 ## Architecture
 
@@ -106,10 +111,19 @@ concrete argument for actually honoring the Session Refresh Trigger going forwar
     `text`/`currentText`) plus a required `messages` array, uniformly across all four variants.
   - `apps/studio/src/storage/workspaceStorage.ts` — the only place that touches `localStorage`;
     also holds `migrateIfNeeded()` (old single-book format) and `normalizeBook()` (centralized
-    field-defaulting for `Book`).
+    field-defaulting for `Book`). Since Sprint 24 (ADR-0012), `loadWorkspace()`/
+    `saveWorkspace()` are async and dual-mode: `books` round-trips through `/api/workspace`
+    (Postgres primary once non-empty), `localStorage` remains the sole store for ephemeral UI
+    state and the fallback for `books` when the database is unreachable — checked on every call,
+    not just at session start. Also exports `getSyncWarning()` (`"db-unavailable"` |
+    `"recovered-local-wins"` | `null`), the signal `SyncWarningBanner.tsx` renders.
+  - `apps/studio/src/repositories/` (Sprint 24) — server-only Prisma repository layer
+    (`getOrCreateDefaultUser`/`loadBooksForUser`/`saveBooksForUser`), consumed only by
+    `/api/workspace` — not imported directly by any other code.
   - `apps/studio/src/workspace/useWorkspaceController.ts` — owns all `Workspace` state and
     mutation logic, including `appendMessage`/`createThread`/`activeThreads` for
-    `assistantThreads` (Sprint 13).
+    `assistantThreads` (Sprint 13). Since Sprint 24, its restore/persist effects `await` the
+    now-async storage calls above; its returned object also exposes `syncWarning`.
   - `apps/studio/src/components/AssistantPanel.tsx` — the single functional AI-interaction
     surface (mode cards + real chat history + input, responsive `lg:` layout), since Sprint 13
     Step 05. `EditorArea.tsx` went back to pure scene editing the same step — it no longer
@@ -155,6 +169,7 @@ concrete argument for actually honoring the Session Refresh Trigger going forwar
 | [ADR-0009](../adr/ADR-0009-critic-subcategories.md) | Critic Subcategories | Accepted |
 | [ADR-0010](../adr/ADR-0010-coauthor-structure-proposal.md) | Co-author Structure Proposal | Accepted |
 | [ADR-0011](../adr/ADR-0011-book-field-operations.md) | Book Field AI Suggestions | Accepted |
+| [ADR-0012](../adr/ADR-0012-persistence-migration.md) | Persistence Migration (Dual-Mode) | Accepted |
 
 ## Current Tech Stack
 
@@ -162,7 +177,9 @@ Approved (ADR-0003) — no need to read the ADR to get the list:
 
 - **Language / Runtime:** TypeScript, Node.js
 - **Frontend:** React, Next.js, Tailwind CSS, shadcn/ui
-- **Persistence:** PostgreSQL, Prisma — Phase 2+ only; Phase 1 uses local JSON, single-user.
+- **Persistence:** PostgreSQL, Prisma — live as of Sprint 24: `Workspace.books` persists to
+  Postgres, `localStorage` remains fallback + sole store for ephemeral UI state (ADR-0012).
+  Single local user only (temporary stopgap, hard deadline Sprint 28/29).
 - **AI:** official provider SDKs only (Anthropic SDK first, Sprint 04) — no orchestration
   frameworks (LangChain, LlamaIndex, or similar).
 - **Deployment targets:** Windows, Linux, Docker Compose, VPS, dedicated server, cloud.
@@ -172,16 +189,23 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Sprint 24 (see CURRENT_SPRINT.md) — Миграция localStorage → Database. Sprint 23 (PostgreSQL +
-Prisma) is closed — `prisma migrate dev` applied and live-verified 2026-07-10. Playwright E2E
-smoke tests are
-in place (`apps/studio/e2e/smoke.spec.ts`, 12 tests, all green). Run `npm run test:e2e` from
-`apps/studio/` to execute.
+Scope Sprint 25 (Environment + HTTPS + Production hardening) — see CURRENT_SPRINT.md and
+ROADMAP_18-27.md. Sprint 24 (Миграция localStorage → Database) is closed. Playwright E2E smoke
+tests (`apps/studio/e2e/smoke.spec.ts`, 12 tests) have **not** been re-run since Sprint 24's
+dual-mode storage change landed — `playwright.config.ts` reuses `localhost:3000`
+(`webServer.reuseExistingServer`), and every Sprint 24 Step Card deliberately avoided touching
+the Product Owner's active dev-server session, so this is a real, not just theoretical, gap.
+Run `npm run test:e2e` from `apps/studio/` once that session is free, before trusting the suite
+green against the new storage layer.
 
 ## Current Priorities
 
-1. Sprint 18+ — next sprint(s) TBD, see CURRENT_SPRINT.md.
-2. Backfill remaining Sprint 02 context (pricing, security) — see
+1. Sprint 25 (Environment + HTTPS + Production hardening) — not yet scoped, see
+   CURRENT_SPRINT.md.
+2. Sprint 28 (multi-user Admin/User system) has a hard deadline — no later than Sprint 29
+   (Product Owner, 2026-07-10) — see ROADMAP_18-27.md's Sprint 28 entry and
+   ADR-0012 Decision 1.
+3. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both still placeholders.
 

@@ -4,11 +4,14 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-10 (Sprint 23 closing)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 23 are all complete and
-committed; no blocking issues. Playwright E2E smoke tests (12 tests, all green) are in place.
-This project is currently working without a separate Architect session — the Product Owner
-reviews directly instead (see [HANDOVER.md](HANDOVER.md)).
+**Last updated:** 2026-07-11 (Sprint 24 closing)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 24 are all complete and
+committed; no blocking issues. Playwright E2E smoke tests (12 tests, all green) are in place
+(not re-run against the dual-mode storage yet — `playwright.config.ts` reuses
+`localhost:3000`, deliberately not exercised against the Product Owner's active session during
+Sprint 24; recommended before Sprint 25 closes). This project is currently working without a
+separate Architect session — the Product Owner reviews directly instead (see
+[HANDOVER.md](HANDOVER.md)).
 **Current Phase:** Phase 1 (MVP).
 
 ## Source of Truth
@@ -19,9 +22,16 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 24 — Миграция localStorage → Database (see `docs/project/ROADMAP_18-27.md`). Not yet
-scoped. Sprint 23 (PostgreSQL + Prisma) is closed — `prisma migrate dev` applied and
-live-verified 2026-07-10.
+Sprint 25 — Environment + HTTPS + Production hardening (see
+`docs/project/ROADMAP_18-27.md`). Not yet scoped.
+
+**Sprint 24 — Миграция localStorage → Database (closed).** `Workspace.books` now round-trips
+through PostgreSQL (Sprint 23's schema), with `localStorage` as fallback and sole owner of
+ephemeral UI state (ADR-0012). Eight Step Cards — six originally scoped plus two added
+mid-sprint (2026-07-11) after live verification of Step 06 surfaced a real data-loss race,
+which Step 07 fixed, and a gap against ADR-0012's mandatory user-visible desync warning, which
+Step 08 closed. See `docs/adr/ADR-0012-persistence-migration.md` and `CURRENT_SPRINT.md` for
+the full step-by-step summary.
 
 **Sprint 16-17 — Unified Book View (closed).** Replaced the three-screen split (book overview /
 chapter overview / single-scene editor) with a single continuous, scrollable `UnifiedBookView`
@@ -198,6 +208,14 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
 - **Sprint 22** — Docker + Infrastructure (closed). Containerization for local development and
   deployment. `Dockerfile` (multi-stage build, standalone output), `docker-compose.yml`,
   `.dockerignore`.
+- **Sprint 23** — PostgreSQL + Prisma (closed). Prisma schema (8 models), `docker-compose.yml`
+  `postgres` service, `src/lib/db.ts` client singleton. `prisma migrate dev` applied and
+  live-verified 2026-07-10.
+- **Sprint 24** — Миграция localStorage → Database (closed). `Workspace.books` now round-trips
+  through PostgreSQL, `localStorage` remains fallback + sole owner of ephemeral UI state.
+  ADR-0012 accepted. Eight steps (see `CURRENT_SPRINT.md` for the full breakdown) — including
+  two added mid-sprint after live verification found a real data-loss race (fixed) and a gap
+  against ADR-0012's mandatory user-visible desync warning (closed).
 
 ## Current Architecture
 
@@ -274,6 +292,17 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
 | [ADR-0006](../adr/ADR-0006-reader-expert-contract.md) | Reader Expert Contract | Accepted |
 | [ADR-0007](../adr/ADR-0007-multi-book-workspace.md) | Multi-Book Workspace | Accepted |
 | [ADR-0008](../adr/ADR-0008-coauthor-expert-contract.md) | Co-author Expert Contract | Accepted |
+| [ADR-0009](../adr/ADR-0009-critic-subcategories.md) | Critic Subcategories | Accepted |
+| [ADR-0010](../adr/ADR-0010-coauthor-structure-proposal.md) | Co-author Structure Proposal | Accepted |
+| [ADR-0011](../adr/ADR-0011-book-field-operations.md) | Book Field AI Suggestions | Accepted |
+| [ADR-0012](../adr/ADR-0012-persistence-migration.md) | Persistence Migration (Dual-Mode) | Accepted |
+
+**Note (2026-07-11):** this table and the "Current Architecture"/"Completed Milestones"
+sections above it had drifted — Sprint 18-22 shipped without their ADRs/architecture notes being
+folded back in here. Not fully backfilled in this pass (out of scope for a Sprint 24 close); the
+Accepted ADRs table above is now current, but treat the prose sections above at face value only
+where they explicitly mention a specific sprint — cross-check `docs/adr/` directly for anything
+not mentioned here.
 
 ## Technology Stack
 
@@ -281,8 +310,10 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 - **Language / Runtime:** TypeScript, Node.js
 - **Frontend:** React, Next.js, Tailwind CSS, shadcn/ui
-- **Persistence:** PostgreSQL, Prisma (ORM) — Phase 2+; Phase 1 continues using local JSON,
-  single-user, no database.
+- **Persistence:** PostgreSQL, Prisma (ORM) — live as of Sprint 24: `Workspace.books` persists
+  to Postgres via the Sprint 23 schema, with `localStorage` as fallback and the sole store for
+  ephemeral UI state (ADR-0012). Single local user only (temporary stopgap, hard deadline
+  Sprint 28/29 — see ADR-0012 Decision 1).
 - **AI Integration:** official provider SDKs only — Anthropic SDK integrated and
   live-validated in Sprint 04 (Test Connection, Line Editor); no orchestration frameworks
   (LangChain, LlamaIndex, or similar).
@@ -291,9 +322,11 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Current Priorities
 
-1. Sprint 18+ — next sprint(s) TBD, see `docs/project/ROADMAP_18-27.md` and
-   [CURRENT_SPRINT.md](CURRENT_SPRINT.md).
-2. Backfill remaining Sprint 02 context (pricing, security) — see
+1. Sprint 25 (Environment + HTTPS + Production hardening) — not yet scoped, see
+   `docs/project/ROADMAP_18-27.md` and [CURRENT_SPRINT.md](CURRENT_SPRINT.md).
+2. Sprint 28 (multi-user Admin/User system) has a hard deadline — no later than Sprint 29
+   (Product Owner, 2026-07-10) — do not let it slip past that regardless of ordering.
+3. Backfill remaining Sprint 02 context (pricing, security) — see
    `docs/vision/pricing.md` and `docs/vision/security.md`, both still placeholders.
 
 ## Open Decisions
@@ -320,4 +353,5 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-Sprint 18 (Ideas/Notes) — see `docs/project/ROADMAP_18-27.md`.
+Sprint 25 (Environment + HTTPS + Production hardening) — see
+`docs/project/ROADMAP_18-27.md`.

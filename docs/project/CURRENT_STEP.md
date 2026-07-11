@@ -9,17 +9,19 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-25-Step-01/02/04
+id: Sprint-25-Step-01/02/03/04
 status: done
-next: [Sprint-25-Step-03, Sprint-25-Step-05]
+next: [Sprint-25-Step-05, Sprint-25-Step-06]
 ```
 
-## Sprint 25 — UI/UX: структура интерфейса и настройка помощников (в процессе — 3 из 5 Step Card закрыты)
+## Sprint 25 — UI/UX: структура интерфейса и настройка помощников (в процессе — 4 из 6 Step Card закрыты)
 
-Три независимых Step Card закрыты одним коммитом реализации (`44c2d9a`) + отдельным коммитом
-архивации в `done/` (`eb939d0`). Sprint 25 **не закрыт** — `Sprint-25-Step-03` (gear-настройки
-помощников, по ADR-0013) и `Sprint-25-Step-05` (проход по единообразию дизайна через
-`ui-specialist`) ещё в `docs/task-bus/queue/pending/`.
+Три независимых Step Card (01/02/04) закрыты одним коммитом реализации (`44c2d9a`) + отдельным
+коммитом архивации в `done/` (`eb939d0`). Четвёртая, `Sprint-25-Step-03` (gear-настройки
+помощников, по ADR-0013), закрыта отдельно: коммит реализации `1edf1ac`, архивация в `done/`
+`bb7c23c`. Sprint 25 **не закрыт** — `Sprint-25-Step-05` (проход по единообразию дизайна через
+`ui-specialist`, требует все Step 01-04 в `done/` — теперь выполнено) и `Sprint-25-Step-06`
+(клиентский поиск по книгам/главам/сценам) ещё в `docs/task-bus/queue/pending/`.
 
 - **Step 01** — `AssistantPanel.tsx`: последний англоязычный заголовок `Assistants` →
   `Помощники`. `IdeasPanel` перенесён из `EditorArea`/`UnifiedBookView` в `Sidebar.tsx` (новая
@@ -55,9 +57,55 @@ next: [Sprint-25-Step-03, Sprint-25-Step-05]
   редактировался Step 02). Карточка "Принять" скрыта для uniqueness (только "Понятно") — решение
   самой карточки, не новое. ADR-0011 амендирован ("Amendment (Sprint 25)", `Status: Accepted,
   revised Sprint 25`).
-- **Next.** `Sprint-25-Step-03` (gear-настройки помощников по ADR-0013) и `Sprint-25-Step-05`
-  (дизайн-проход через `ui-specialist`) — в `docs/task-bus/queue/pending/`, спринт остаётся
-  открытым до их закрытия.
+- **Step 03** — gear-настройки помощников (ADR-0013). Новая Prisma-модель `AssistantSettings`
+  (`apps/studio/prisma/schema.prisma`, миграция `20260711091023_add_assistant_settings`) — одна
+  строка на `AssistantMode` (`@unique`), инстанс-wide, НЕ per-Book/per-User, максимум 4 строки.
+  Новый `apps/studio/src/repositories/assistantSettingsRepository.ts`
+  (`getAssistantSettings`/`getAllAssistantSettings`/`upsertAssistantSettings`) и REST-эндпоинт
+  `GET`/`POST /api/assistant-settings` (обычный CRUD, намеренно не через AI Bus). Все 4 Expert
+  route.ts (`critic`/`reader`/`line-editor`/`coauthor`) читают свой `promptSuffix` и добавляют его
+  **в конец** уже существующего системного промпта (append, не replace — ADR-0013); отказ БД при
+  чтении обёрнут в `try/catch` и тихо деградирует к «без кастомизации» (иначе недоступность БД
+  сломала бы все 4 AI-Expert'ов 500-кой). `AssistantPanel.tsx`: `GearButton` (шестерёнка `⚙`,
+  оверлей в углу каждой из 4 квадратных иконок режима, `stopPropagation()`, чтобы клик не
+  переключал режим) + `AssistantSettingsDialog` (отображаемое имя, дополнение к промпту, типовые
+  запросы построчно) — кастомное имя переопределяет `MODE_META[mode].label` везде, где оно
+  показывается; типовые запросы отрисованы как pill-кнопки, прокинутые и в общий чат, и в
+  `ReaderPanel` (новый опциональный проп `typicalRequests`). Никакой UI-проверки прав не
+  добавлено — единственный текущий пользователь имеет полный доступ ко всем 4 режимам (буквальное
+  требование ADR-0013 на этот спринт). Живая проверка: реальный HTTP + реальный Claude (canary-
+  маркер в кастомном `promptSuffix` реально появляется/исчезает в ответе Critic при включении/
+  очистке suffix, structured `reviews[]`-контракт не ломается) и реальный браузер (Playwright,
+  системный Chrome) — 4 gear-кнопки, диалог настроек Critic, кастомное имя реально заменяет
+  «Критик» в aria-label/заголовке, pill-кнопка типового запроса заполняет `<textarea>` чата.
+  Тестировалось против изолированной БД `literary_studio_step25_03_test`, не против реальной
+  `literary_studio` Product Owner (см. инцидент диагностики Step-01 выше) — подтверждено, что
+  таблицы `AssistantSettings` в реальной БД нет и количество строк `Book` не изменилось.
+
+- **Мелкие прямые правки (не Step Card, но реальные закоммиченные изменения — знать при старте
+  следующей сессии):**
+  - `AssistantPanel.tsx` — корневой `<aside>` всё ещё имел хардкод `lg:w-80`, оставшийся от
+    разметки до Step 02: панель помощника была всегда зажата в 320px независимо от положения
+    resizable-делителя, который Step 02 добавил в `page.tsx`. Убран, коммит `1604d70` — ширина
+    теперь реально следует за resizable Panel.
+  - `Header.tsx` — статичный литерал «Без названия» в хлебной крошке заголовка книги никогда не
+    был привязан к реальной активной книге (не читал `activeBook.title`). По прямому решению
+    Product Owner — удалён, а не довязан к реальным данным. Коммит `f4b07c4`.
+
+- **Next.** `Sprint-25-Step-05` (дизайн-проход через `ui-specialist`, разблокирован — Step 01-04
+  все в `done/`) и `Sprint-25-Step-06` (клиентский поиск в верхнем меню по книгам/главам/сценам) —
+  оба в `docs/task-bus/queue/pending/`, спринт остаётся открытым до их закрытия.
+  `Sprint-25-Step-06.md` был амендирован (коммит `e6b6a2f`) под уточнение Product Owner:
+  поиск глобальный по всем элементам рабочего пространства (включая Персонажей/Идеи, не только
+  Book/Chapter/Scene), плюс чекбокс «искать только в основном тексте» (по умолчанию выключен,
+  сужает до `Scene.text` активной книги). Карточка в этой редакции готова к исполнению
+  `step-executor` без дополнительных уточнений у Product Owner.
+
+**Session Refresh Trigger (`docs/task-bus/BOOTSTRAP.md`):** эта сессия сознательно передаёт
+работу свежей сессии сейчас — обработано 4 Step Card (01/02/03/04), скоро станет 5 с началом
+Step-05, что достигает порога в 5 карточек без Bootstrap-рефреша. Свежая сессия должна начать с
+`Bootstrap confirmed` и перечитать этот файл, а не полагаться на накопленный контекст текущей
+сессии.
 
 ## Sprint 24 — Миграция localStorage → Database (closed)
 

@@ -1003,7 +1003,9 @@ export function AssistantPanel({
 
         <div className="flex flex-1 flex-col gap-3 overflow-y-auto border-t border-zinc-200 pt-3 dark:border-zinc-800">
           <div className="flex items-center justify-between">
-            <div className={`flex items-center gap-1.5 text-xs font-medium ${meta.accent}`}>
+            <div
+              className={`flex items-center gap-1.5 text-xs font-medium ${meta.accent}`}
+            >
               <meta.icon className="h-4 w-4" />
               <span>{displayNameFor(selectedMode)}</span>
             </div>

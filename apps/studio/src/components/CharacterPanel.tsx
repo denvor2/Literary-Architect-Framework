@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { X } from "lucide-react";
 import type { Character } from "@/domain/model";
 
 type CharacterPanelProps = {
@@ -51,9 +52,10 @@ export function CharacterPanel({
                 onDelete?.();
               }
             }}
-            className="rounded-full border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+            className="text-red-600 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+            title="Удалить персонажа"
           >
-            Удалить персонажа
+            <X className="h-5 w-5" />
           </button>
         </div>
 

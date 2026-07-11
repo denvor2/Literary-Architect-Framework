@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import type { Idea } from "@/domain/model";
 
 type IdeasPanelProps = {
@@ -11,6 +12,14 @@ type IdeasPanelProps = {
 };
 
 function formatDate(isoString: string): string {
+  const date = new Date(isoString);
+  return date.toLocaleDateString("ru-RU", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+function formatDateExpanded(isoString: string): string {
   const date = new Date(isoString);
   return date.toLocaleDateString("ru-RU", {
     day: "numeric",
@@ -72,7 +81,7 @@ export function IdeasPanel({
                 <div className="flex flex-col gap-2 p-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-zinc-400 dark:text-zinc-600">
-                      {formatDate(idea.createdAt)}
+                      {formatDateExpanded(idea.createdAt)}
                     </span>
                     <div className="flex gap-2">
                       <button
@@ -87,15 +96,18 @@ export function IdeasPanel({
                             onDelete?.(idea.id);
                           }
                         }}
-                        className="rounded-full border border-red-300 px-2 py-0.5 text-xs text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+                        className="shrink-0 text-red-600 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        title="Удалить"
                       >
-                        Удалить
+                        <X className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                   <textarea
                     value={idea.text}
-                    onChange={(event) => onUpdate?.(idea.id, event.target.value)}
+                    onChange={(event) =>
+                      onUpdate?.(idea.id, event.target.value)
+                    }
                     placeholder="Текст заметки..."
                     rows={3}
                     className="w-full resize-none rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
@@ -123,9 +135,10 @@ export function IdeasPanel({
                         onDelete?.(idea.id);
                       }
                     }}
-                    className="shrink-0 rounded-full border border-red-300 px-2 py-0.5 text-xs text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+                    className="shrink-0 text-red-600 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                    title="Удалить"
                   >
-                    Удалить
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
               )}

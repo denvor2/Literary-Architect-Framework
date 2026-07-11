@@ -14,12 +14,14 @@ import {
 // "Скоро" item — no real Open/Save/Edit/View behavior exists to wire them
 // to. The language switcher and "Войти" are the same kind of inert visual
 // placeholder (no i18n infrastructure, no auth — auth is Sprint 29).
-type MenuKey = "file" | "edit" | "view";
+type MenuKey = "file" | "edit" | "view" | "help" | "about";
 
 const MENUS: ReadonlyArray<{ key: MenuKey; label: string }> = [
   { key: "file", label: "Файл" },
   { key: "edit", label: "Правка" },
   { key: "view", label: "Вид" },
+  { key: "help", label: "Руководство" },
+  { key: "about", label: "О программе" },
 ];
 
 // Sprint-25-Step-06: global search over the workspace's books plus the
@@ -317,7 +319,7 @@ export function Header({
         </div>
         <label
           htmlFor="search-main-text-only"
-          className="flex select-none items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400"
+          className="hidden select-none items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400"
         >
           <input
             id="search-main-text-only"

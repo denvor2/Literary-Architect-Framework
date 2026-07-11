@@ -11,14 +11,6 @@ type IdeasPanelProps = {
   onDelete?: (ideaId: string) => void;
 };
 
-function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleDateString("ru-RU", {
-    day: "numeric",
-    month: "short",
-  });
-}
-
 function formatDateExpanded(isoString: string): string {
   const date = new Date(isoString);
   return date.toLocaleDateString("ru-RU", {
@@ -71,14 +63,10 @@ export function IdeasPanel({
       ) : (
         <div className="flex flex-col gap-2">
           {ideas.map((idea) => (
-            <div
-              key={idea.id}
-              id={`idea-block-${idea.id}`}
-              className="rounded-md border border-zinc-200 dark:border-zinc-800"
-            >
+            <div key={idea.id} id={`idea-block-${idea.id}`}>
               {isExpanded(idea.id) ? (
                 // Expanded view
-                <div className="flex flex-col gap-2 p-3">
+                <div className="flex flex-col gap-2 p-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-zinc-400 dark:text-zinc-600">
                       {formatDateExpanded(idea.createdAt)}
@@ -115,19 +103,14 @@ export function IdeasPanel({
                 </div>
               ) : (
                 // Collapsed view - single line with truncation
-                <div className="flex items-center justify-between gap-2 p-3">
+                <div className="flex items-center justify-between gap-2 p-2">
                   <button
                     onClick={() => toggleExpanded(idea.id)}
                     className="min-w-0 flex-1 text-left"
                   >
-                    <div className="flex flex-col gap-1">
-                      <p className="line-clamp-1 text-sm text-zinc-900 dark:text-zinc-100">
-                        {idea.text}
-                      </p>
-                      <span className="text-xs text-zinc-400 dark:text-zinc-600">
-                        {formatDate(idea.createdAt)}
-                      </span>
-                    </div>
+                    <p className="line-clamp-1 text-sm text-zinc-900 dark:text-zinc-100">
+                      {idea.text}
+                    </p>
                   </button>
                   <button
                     onClick={() => {

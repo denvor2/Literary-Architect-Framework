@@ -25,7 +25,7 @@ bootstrap, not a statement that the Programmer role is permanently bound to Clau
 
 ## Subagents
 
-Three project subagents formalize the roles above so work survives a single session running out
+Six project subagents formalize the roles above so work survives a single session running out
 of budget (this has already happened once — Sprint 20-23 landed uncommitted-but-working when the
 executing session hit its limit; a follow-up session recovered it). Defined in `.claude/agents/`:
 
@@ -33,14 +33,26 @@ executing session hit its limit; a follow-up session recovered it). Defined in `
 |---|---|
 | A Step Card exists (in `pending/` or `active/`) and needs implementing | `step-executor` |
 | An ARP is ready in `active/` and needs a verdict before commit | `architect-reviewer` |
+| An ARP is ready in `active/` and needs independent functional re-verification | `tester` |
 | A roadmap line/idea has no Step Card yet | `sprint-planner` |
+| A UI/usability pass on an `apps/studio` component (review or implement) | `ui-specialist` |
+| A Step Card was just committed, or a sprint just closed, and docs need syncing | `docs-writer` |
+
+### Standing review pipeline (Product Owner decision, 2026-07-11)
+
+Every completed Step Card goes through **both** `architect-reviewer` and `tester` before
+`STATUS: OK`/commit — not either/or. `architect-reviewer` judges scope compliance, architectural
+consistency, and honesty of the ARP's own prose; `tester` doesn't trust that prose and
+independently re-drives the change on a fresh server to confirm it actually behaves as claimed.
+Additionally, `ui-specialist` reviews design consistency **once per sprint** (not per step) —
+normally as that sprint's own last Step Card, not a gate on every individual step.
 
 Rules for using them:
 
 - **A subagent does not see this conversation.** Always pass the Step Card's id or file path
-  (and, for `architect-reviewer`, the ARP's path too) explicitly in the prompt — plus enough
-  background (which sprint, why now) that it doesn't have to guess. Do not assume "it'll figure
-  it out."
+  (and, for `architect-reviewer`/`tester`, the ARP's path too) explicitly in the prompt — plus
+  enough background (which sprint, why now) that it doesn't have to guess. Do not assume "it'll
+  figure it out."
 - **Delegation does not relax the Stop Condition.** No subagent commits, pushes, or archives a
   card to `done/` — that stays a session/human action taken only after an explicit `STATUS: OK`,
   the same single point of accountability this project has used for every commit so far.
@@ -50,9 +62,10 @@ Rules for using them:
   stops and reports it rather than guessing — the same "resolve technical ambiguity yourself,
   escalate product decisions" split already used throughout this project's history.
 
-Two project skills support this workflow (`.claude/skills/`): `literary-studio-run` (how to
-start/drive `apps/studio`) and `literary-studio-live-verify` (this project's standing
-no-mocks verification technique, required by every Step Card's Validation section).
+Three project skills support this workflow (`.claude/skills/`): `literary-studio-run` (how to
+start/drive `apps/studio`), `literary-studio-live-verify` (this project's standing
+no-mocks verification technique, required by every Step Card's Validation section), and
+`literary-studio-ui-specialist` (the app's actual UI/design system, used by `ui-specialist`).
 
 ## Documentation Hierarchy
 
@@ -115,6 +128,12 @@ See [ADR-0002](docs/adr/ADR-0002-expert-contract-vision.md).
 - Do not expand scope without explicit approval.
 - If assumptions break: stop and escalate.
 - Keep documentation synchronized with reality.
+- **Don't ask for per-command confirmation on routine git/bash operations already within an
+  approved Step Card's scope** (status checks, running validation commands, starting/stopping a
+  scratch server, moving a card between `pending/`/`active/`, etc.) — Product Owner decision,
+  2026-07-11, to cut down on unnecessary friction. This does not relax anything genuinely
+  critical/irreversible (commit, push, delete, force-anything) — those still stop and confirm,
+  same as always.
 
 ---
 

@@ -90,9 +90,7 @@ test.describe("Навигация и сворачивание", () => {
     await expect(subtitleInput).toBeVisible();
 
     // Свернуть главу
-    await chapterBlock
-      .getByRole("button", { name: "Свернуть главу" })
-      .click();
+    await chapterBlock.getByRole("button", { name: "Свернуть главу" }).click();
 
     // Subtitle исчезает в этой главе
     await expect(subtitleInput).not.toBeVisible();
@@ -108,7 +106,9 @@ test.describe("Навигация и сворачивание", () => {
     page,
   }) => {
     await page.getByText("+ Новая книга").click();
-    await page.getByPlaceholder("Введите название...").fill("Сворачивание сцены");
+    await page
+      .getByPlaceholder("Введите название...")
+      .fill("Сворачивание сцены");
     await page.getByText("Создать книгу").click();
     await page.getByText("+ Новая глава").click();
 
@@ -129,9 +129,7 @@ test.describe("Навигация и сворачивание", () => {
     await expect(sceneBlock.locator("input").first()).toBeVisible();
 
     // Развернуть
-    await sceneBlock
-      .getByRole("button", { name: "Развернуть сцену" })
-      .click();
+    await sceneBlock.getByRole("button", { name: "Развернуть сцену" }).click();
     await expect(
       page.locator("textarea[placeholder='Начните писать сцену...']").first(),
     ).toBeVisible();
@@ -198,5 +196,36 @@ test.describe("Персистентность данных", () => {
     await expect(
       page.locator("textarea[placeholder='Начните писать сцену...']").first(),
     ).toHaveValue("Сохранённый текст.");
+  });
+});
+
+test.describe("CSS scrollbar-gutter fix verification", () => {
+  test("scrollbar-gutter stable applied to main element", async ({ page }) => {
+    // Verify the main element exists and CSS scrollbar-gutter is applied
+    const mainElement = page.locator("main").first();
+    await expect(mainElement).toBeVisible();
+
+    // Check if scrollbar-gutter: stable CSS property is applied
+    const scrollbarGutterValue = await mainElement.evaluate((el) => {
+      return window.getComputedStyle(el).scrollbarGutter;
+    });
+
+    // The CSS fix adds scrollbar-gutter: stable to main element
+    expect(scrollbarGutterValue).toBe("stable");
+  });
+
+  test("scrollbar-gutter stable also applied to html element", async ({
+    page,
+  }) => {
+    // Verify html element also has the scrollbar-gutter fix
+    const htmlElement = page.locator("html").first();
+
+    // Check if scrollbar-gutter: stable CSS property is applied to html
+    const scrollbarGutterValue = await htmlElement.evaluate((el) => {
+      return window.getComputedStyle(el).scrollbarGutter;
+    });
+
+    // The CSS fix also applies to html element for viewport scrollbar
+    expect(scrollbarGutterValue).toBe("stable");
   });
 });

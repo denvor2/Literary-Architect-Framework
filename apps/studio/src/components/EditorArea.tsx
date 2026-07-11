@@ -189,6 +189,7 @@ function UnifiedBookView({
   onUpdateSceneTitle,
   onUpdateBook,
   isFocusMode = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onToggleFocusMode,
   onSceneFocus,
   isChaptersCollapsed = false,
@@ -329,12 +330,6 @@ function UnifiedBookView({
             Реквизиты книги
           </h2>
           <div className="flex gap-2">
-            <button
-              onClick={onToggleFocusMode}
-              className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-            >
-              {isFocusMode ? "Выйти из фокуса" : "Фокус"}
-            </button>
             <button
               onClick={() => setIsDetailsCollapsed((value) => !value)}
               className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"

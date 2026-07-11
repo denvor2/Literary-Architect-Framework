@@ -9,10 +9,55 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-24-Step-08
+id: Sprint-25-Step-01/02/04
 status: done
-next: []
+next: [Sprint-25-Step-03, Sprint-25-Step-05]
 ```
+
+## Sprint 25 — UI/UX: структура интерфейса и настройка помощников (в процессе — 3 из 5 Step Card закрыты)
+
+Три независимых Step Card закрыты одним коммитом реализации (`44c2d9a`) + отдельным коммитом
+архивации в `done/` (`eb939d0`). Sprint 25 **не закрыт** — `Sprint-25-Step-03` (gear-настройки
+помощников, по ADR-0013) и `Sprint-25-Step-05` (проход по единообразию дизайна через
+`ui-specialist`) ещё в `docs/task-bus/queue/pending/`.
+
+- **Step 01** — `AssistantPanel.tsx`: последний англоязычный заголовок `Assistants` →
+  `Помощники`. `IdeasPanel` перенесён из `EditorArea`/`UnifiedBookView` в `Sidebar.tsx` (новая
+  секция после "Персонажи", сам компонент `IdeasPanel.tsx` не тронут — только место рендера и
+  источник пропов, переброшены через `apps/studio/src/app/page.tsx`). `Header.tsx` получил
+  chrome-only вводную строку меню: `Файл`/`Правка`/`Вид` (каждая — disabled-заглушка "Скоро"),
+  переключатель языка `RU` и `Войти` (оба `disabled`) — реализовано буквально как placeholder,
+  без функциональности, по прямому двукратному подтверждению Product Owner. Прошёл полный
+  review-конвейер: `architect-reviewer` изначально дал `STATUS: STOP` из-за неподтверждённой
+  целостности реальной продакшн Postgres-БД после инцидента диагностики ARP (тестовые записи
+  `"Тестовая книга light/dark"`, "восстановленные" вручную через `GET`+`PUT /api/workspace` без
+  независимой сверки); независимая проверка `tester` (`Sprint-25-Step-01-TEST-REPORT.md`,
+  `STATUS: PASS`) не обнаружила утечки тестовых данных в реальной БД и подтвердила её целостность
+  побайтовым сравнением снимков до/после — на основании этого шаг закрыт.
+- **Step 02** — `apps/studio/src/app/page.tsx`: перетаскиваемый делитель между `EditorArea` и
+  `AssistantPanel` (не Focus Mode, `≥ lg`) через новую зависимость
+  `react-resizable-panels@^4.12.1` (`Group`/`Panel`/`Separator`, `defaultSize="50"`,
+  `minSize="20"` — строками, не числом, см. API-ловушку ниже), позиция не персистится. Мобильная
+  раскладка (`< lg`) не тронута — решает собственный `useIsDesktopLayout()`
+  (`matchMedia`, порог 1024px). `AssistantPanel.tsx`: 2-колоночная grid-карточка picker'а режимов
+  заменена на ряд из 4 квадратных (40×40px) icon-кнопок без видимого текста, подпись — нативный
+  `title`/`aria-label`; описание активного режима вынесено в общий абзац под рядом иконок.
+  Найдена и обойдена API-ловушка библиотеки: числовые `defaultSize`/`minSize` — пиксели, не
+  проценты, только строковые значения — проценты.
+- **Step 04** — `book_field_suggestion` (`apps/studio/src/ai/operations.ts`) получил опциональное
+  поле `requestType: "comparables" | "brainstorm" | "uniqueness"`, прокинутое в `aiBus.ts` и
+  провалидированное в `apps/studio/src/app/api/book-field/route.ts`
+  (`SUPPORTED_TITLE_REQUEST_TYPES` + отдельный промпт на тип, только для `fieldName === "title"`,
+  остальные поля — без изменений). Единственная generic-кнопка "AI" у поля Title заменена на три
+  типизированные pill-кнопки ("Подобрать аналоги"/"Мозговой штурм"/"Проверить на уникальность") в
+  `EditorArea.tsx`, с собственным локальным состоянием компонента (вызывает `aiBus.execute()`
+  напрямую, не через `page.tsx` — `page.tsx` вне Allowed paths карточки и параллельно
+  редактировался Step 02). Карточка "Принять" скрыта для uniqueness (только "Понятно") — решение
+  самой карточки, не новое. ADR-0011 амендирован ("Amendment (Sprint 25)", `Status: Accepted,
+  revised Sprint 25`).
+- **Next.** `Sprint-25-Step-03` (gear-настройки помощников по ADR-0013) и `Sprint-25-Step-05`
+  (дизайн-проход через `ui-specialist`) — в `docs/task-bus/queue/pending/`, спринт остаётся
+  открытым до их закрытия.
 
 ## Sprint 24 — Миграция localStorage → Database (closed)
 

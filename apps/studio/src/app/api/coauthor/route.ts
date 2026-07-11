@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/ai/anthropic";
 import { getAssistantSettings } from "@/repositories";
 import { AssistantRole } from "@/generated/prisma/client";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // Discovery implementation (Sprint-12-Step-01). Disposable — not a designed contract.
 // Deliberately minimal: no shared types, no validation library. Unlike every prior Expert
@@ -19,6 +20,16 @@ import { AssistantRole } from "@/generated/prisma/client";
 const STRUCTURE_SYSTEM_PROMPT = `You are a literary co-author helping plan a book's structure. Given the book's full context (metadata, existing chapters/scenes, characters), propose a chapter-and-scene structure as a raw JSON object with this exact shape:\n\n{ "chapters": [ { "title": "...", "subtitle": "...", "scenes": [ { "title": "...", "description": "1-2 sentence summary of what happens" } ] } ] }\n\nRules:\n- Propose a complete structure that fits the book's premise, genre, and existing content.\n- If chapters already exist, build on them — propose new chapters/scenes that continue the story.\n- Each scene description should be concise (1-2 sentences).\n- Respond with ONLY the raw JSON object — no markdown code fences, no explanation, no text before or after.\n- The structure must be valid JSON.`;
 
 export async function POST(request: Request) {
+  // Rate limiting check (Sprint 27)
+  const clientIp = getClientIp(request);
+  const rateLimitResult = checkRateLimit(clientIp);
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { ok: false, error: "rate limit exceeded" },
+      { status: 429 },
+    );
+  }
+
   const body = await request.json();
   const bookContext = body?.bookContext;
   const messages = body?.messages;

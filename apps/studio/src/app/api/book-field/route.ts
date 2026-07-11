@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/ai/anthropic";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import type { BookFieldName, BookFieldRequestType } from "@/ai/operations";
 
 // Sprint-21-Step-02: AI suggestion for Book metadata fields (ADR-0011).
@@ -63,6 +64,16 @@ const TITLE_REQUEST_PROMPTS: Record<BookFieldRequestType, string> = {
 };
 
 export async function POST(request: Request) {
+  // Rate limiting check (Sprint 27)
+  const clientIp = getClientIp(request);
+  const rateLimitResult = checkRateLimit(clientIp);
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { ok: false, error: "rate limit exceeded" },
+      { status: 429 },
+    );
+  }
+
   const body = await request.json();
   const fieldName = body?.fieldName;
   const currentValue = body?.currentValue;

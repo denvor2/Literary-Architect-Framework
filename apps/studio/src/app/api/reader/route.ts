@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/ai/anthropic";
 import { getAssistantSettings } from "@/repositories";
 import { AssistantRole } from "@/generated/prisma/client";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // Discovery implementation (Sprint-09-Step-01). Disposable — not a designed contract.
 // Deliberately minimal: no shared types, no validation library, mirrors
@@ -18,6 +19,16 @@ import { AssistantRole } from "@/generated/prisma/client";
 // Additive — absent `persona` produces byte-identical behavior to before this step, same
 // principle as `bookContext`'s addition to Line Editor in Sprint-12-Step-02.
 export async function POST(request: Request) {
+  // Rate limiting check (Sprint 27)
+  const clientIp = getClientIp(request);
+  const rateLimitResult = checkRateLimit(clientIp);
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { ok: false, error: "rate limit exceeded" },
+      { status: 429 },
+    );
+  }
+
   const body = await request.json();
   const sceneText = body?.sceneText;
   const messages = body?.messages;

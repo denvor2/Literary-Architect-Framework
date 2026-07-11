@@ -24,13 +24,23 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Copy node_modules from builder (required for prisma migrate deploy)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy prisma schema and migrations (required for database schema setup)
+COPY --from=builder /app/prisma ./prisma
 
 # Copy built app from builder
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy entrypoint script that runs migrations and starts the server
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
 USER nextjs
 
@@ -39,4 +49,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+# Entrypoint script runs prisma migrate deploy before starting the server
+ENTRYPOINT ["./entrypoint.sh"]

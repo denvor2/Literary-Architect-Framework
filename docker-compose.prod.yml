@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: literary-studio-db
+    environment:
+      POSTGRES_DB: literary_studio
+      POSTGRES_USER: studio
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studio -d literary_studio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  studio:
+    build:
+      context: ./apps/studio
+      dockerfile: Dockerfile
+    container_name: literary-studio-app
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://studio:${DB_PASSWORD:-changeme}@postgres:5432/literary_studio
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_REQUESTS_PER_WINDOW: "10"
+      RATE_LIMIT_WINDOW_MS: "900000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: literary-studio-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - studio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-k", "https://localhost/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local

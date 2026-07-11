@@ -22,6 +22,41 @@ import {
 
 export type AssistantMode = "coauthor" | "editor" | "critic" | "reader";
 
+// Hotfix: localStorage fallback for AssistantSettings when database is unavailable
+// Matches the dual-mode storage pattern from workspaceStorage.ts
+const ASSISTANT_SETTINGS_STORAGE_KEY = "literary-studio:assistant-settings";
+
+function getAssistantSettingsFromLocalStorage(): Record<
+  AssistantMode,
+  AssistantSettingsEntry | null
+> {
+  try {
+    const stored = window.localStorage.getItem(ASSISTANT_SETTINGS_STORAGE_KEY);
+    if (!stored)
+      return { coauthor: null, editor: null, critic: null, reader: null };
+    const parsed = JSON.parse(stored);
+    return parsed;
+  } catch {
+    return { coauthor: null, editor: null, critic: null, reader: null };
+  }
+}
+
+function saveAssistantSettingsToLocalStorage(
+  mode: AssistantMode,
+  settings: AssistantSettingsEntry,
+) {
+  try {
+    const current = getAssistantSettingsFromLocalStorage();
+    const updated = { ...current, [mode]: settings };
+    window.localStorage.setItem(
+      ASSISTANT_SETTINGS_STORAGE_KEY,
+      JSON.stringify(updated),
+    );
+  } catch {
+    // localStorage write failed, silently continue without persistence
+  }
+}
+
 // Sprint-08-Step-03: a Critic review, unlike every other entry here. Shape
 // matches /api/critic's response.reviews — not validated at runtime, per
 // that route's own documented discovery-stage risk.
@@ -179,28 +214,42 @@ function AssistantSettingsDialog({
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
+    const settingsToSave = {
+      displayName: displayName.trim() || null,
+      promptSuffix: promptSuffix.trim() || null,
+      typicalRequests,
+    };
+
     try {
       const response = await fetch("/api/assistant-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode,
-          displayName: displayName.trim() || null,
-          promptSuffix: promptSuffix.trim() || null,
-          typicalRequests,
+          ...settingsToSave,
         }),
       });
       const data = await response.json();
       if (!data.ok) {
         throw new Error(data.error);
       }
+      // Success: server saved, update UI and clear localStorage override
       onSaved(mode, {
         displayName: data.settings.displayName,
         promptSuffix: data.settings.promptSuffix,
         typicalRequests: data.settings.typicalRequests,
       });
     } catch {
-      setStatus("error");
+      // API failed: save to localStorage as fallback and still update UI
+      // This ensures Settings are not lost when database is unavailable (ADR-0012 pattern)
+      try {
+        saveAssistantSettingsToLocalStorage(mode, settingsToSave);
+        // Update UI with the settings we just saved locally
+        onSaved(mode, settingsToSave);
+      } catch {
+        // localStorage also failed, show error
+        setStatus("error");
+      }
     }
   }
 
@@ -744,14 +793,24 @@ export function AssistantPanel({
     fetch("/api/assistant-settings")
       .then((response) => response.json())
       .then((data) => {
-        if (!cancelled && data.ok) {
-          setSettingsMap(data.settings);
+        if (!cancelled) {
+          if (data.ok) {
+            // Database available: use server settings
+            setSettingsMap(data.settings);
+          } else {
+            // Database unavailable (503, etc.): fallback to localStorage
+            // (hotfix for Settings persistence when database is unavailable)
+            const localSettings = getAssistantSettingsFromLocalStorage();
+            setSettingsMap(localSettings);
+          }
         }
       })
       .catch(() => {
-        // Same degrade-safely principle as the server side: if this fetch
-        // fails, every mode simply keeps its hardcoded default (no gear
-        // customization applied) — not a visible error.
+        // Fetch failed entirely: fallback to localStorage
+        if (!cancelled) {
+          const localSettings = getAssistantSettingsFromLocalStorage();
+          setSettingsMap(localSettings);
+        }
       });
     return () => {
       cancelled = true;

@@ -9,10 +9,16 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-25-Step-01/02/03/04/05/06
+id: Sprint-26-Step-01
 status: done
-next: [Sprint-26]
+next: [Sprint-26-Step-02]
 ```
+
+## Sprint 26 — Быстрые UI-фиксы (в процессе — 1 из 5 Step Card закрыта)
+
+**Step 01 (завершён, 2026-07-11):** Скрыть кнопку Фокуса (Focus Mode) — логика сохранена, кнопка удалена из UI. Коммит `c0eaf78`, архивация в `done/`.
+
+---
 
 ## Sprint 25 — UI/UX: структура интерфейса и настройка помощников (завершён — все 6 Step Card закрыты)
 

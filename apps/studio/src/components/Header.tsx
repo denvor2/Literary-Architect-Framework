@@ -35,10 +35,6 @@ export function Header() {
         <span className="text-lg font-semibold tracking-tight text-black dark:text-zinc-50">
           Literary Studio
         </span>
-        <span className="text-zinc-300 dark:text-zinc-700">/</span>
-        <span className="text-sm text-zinc-600 dark:text-zinc-400">
-          Без названия
-        </span>
       </div>
 
       <nav ref={menuBarRef} className="flex items-center gap-1">

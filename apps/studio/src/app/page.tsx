@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { EditorArea } from "@/components/EditorArea";
 import { CharacterPanel } from "@/components/CharacterPanel";
 import { AssistantPanel } from "@/components/AssistantPanel";
+import { SyncWarningBanner } from "@/components/SyncWarningBanner";
 import { DeveloperTools } from "@/components/DeveloperTools";
 import { NewBookDialog } from "@/components/NewBookDialog";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
@@ -52,6 +53,7 @@ export default function Home() {
     renameThread,
     deleteThread,
     activeThreads,
+    syncWarning,
   } = useWorkspaceController();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // Ephemeral UI state only — not part of Workspace, not persisted.
@@ -227,6 +229,7 @@ export default function Home() {
   return (
     <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
       <Header />
+      <SyncWarningBanner warning={syncWarning} />
       <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
         {!isFocusMode && (
           <Sidebar

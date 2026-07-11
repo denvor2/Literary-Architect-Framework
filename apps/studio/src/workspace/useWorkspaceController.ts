@@ -10,7 +10,12 @@ import type {
   Idea,
 } from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
-import { loadWorkspace, saveWorkspace } from "@/storage/workspaceStorage";
+import {
+  getSyncWarning,
+  loadWorkspace,
+  saveWorkspace,
+  type SyncWarning,
+} from "@/storage/workspaceStorage";
 
 // Used only as the pre-hydration initial state (see the restore effect
 // below) — must match server render, so it cannot itself call
@@ -38,6 +43,11 @@ const EMPTY_WORKSPACE: Workspace = {
 export function useWorkspaceController() {
   const [workspace, setWorkspace] = useState<Workspace>(EMPTY_WORKSPACE);
   const [isLoaded, setIsLoaded] = useState(false);
+  // Sprint-24-Step-08 (ADR-0012 Decision 5): mirrors Step 07's
+  // getSyncWarning() into React state so the UI (SyncWarningBanner) can
+  // render it — refreshed after every loadWorkspace()/saveWorkspace() call
+  // below, the same two places that already touch the module-level signal.
+  const [syncWarning, setSyncWarning] = useState<SyncWarning | null>(null);
   const {
     books,
     activeBookId,
@@ -47,22 +57,53 @@ export function useWorkspaceController() {
   } = workspace;
 
   // Restore the previous workspace once, on mount. This intentionally
-  // synchronizes React state from an external system (localStorage), which
+  // synchronizes React state from an external system (localStorage, and as
+  // of Sprint-24-Step-05/ADR-0012, best-effort the database too), which
   // cannot be read during server rendering — an effect is the correct,
-  // hydration-safe place for it, even though the linter's general-purpose
-  // heuristic flags the first setState call inside an effect body.
+  // hydration-safe place for it.
+  //
+  // Sprint-24-Step-06: loadWorkspace() is now async (Promise<Workspace>) —
+  // awaited inside the effect's own async IIFE (an effect callback itself
+  // cannot be async; the setState calls end up inside that IIFE's body
+  // rather than directly in the effect body, which is why the linter's
+  // set-state-in-effect heuristic — previously suppressed here with an
+  // explicit disable comment — no longer fires and the comment was removed
+  // as unused). Until the promise resolves, `workspace` stays at its
+  // `EMPTY_WORKSPACE` initial state (same as the pre-Sprint-24 synchronous
+  // gap between mount and the old, synchronous loadWorkspace() call) — no
+  // separate loading screen is introduced, per the Step Card's scope.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setWorkspace(loadWorkspace());
-    setIsLoaded(true);
+    let cancelled = false;
+    void (async () => {
+      const restored = await loadWorkspace();
+      if (cancelled) return;
+      setWorkspace(restored);
+      setIsLoaded(true);
+      setSyncWarning(getSyncWarning());
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Persist the whole workspace under one key whenever it changes — but only
   // after the initial restore above has run, so we never overwrite existing
   // saved data with the default empty state during the first render.
+  //
+  // Sprint-24-Step-06: saveWorkspace() is now async (Promise<void>) — called
+  // without `await` here (rendering must not block on it), with `.catch(() =>
+  // {})` guarding only against an unhandled-rejection warning at this call
+  // site; saveWorkspace() itself is already guaranteed by its Step-05
+  // contract to never reject (localStorage write is synchronous and always
+  // succeeds when reached, the database push is best-effort and swallows its
+  // own failures). No debounce/throttle added — every workspace change still
+  // triggers an attempted write, unchanged from today's localStorage-only
+  // behavior.
   useEffect(() => {
     if (!isLoaded) return;
-    saveWorkspace(workspace);
+    saveWorkspace(workspace)
+      .catch(() => {})
+      .finally(() => setSyncWarning(getSyncWarning()));
   }, [workspace, isLoaded]);
 
   const activeBook = books.find((book) => book.id === activeBookId);
@@ -772,5 +813,6 @@ export function useWorkspaceController() {
     renameThread,
     deleteThread,
     activeThreads,
+    syncWarning,
   };
 }

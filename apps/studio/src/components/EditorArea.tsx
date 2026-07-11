@@ -3,6 +3,7 @@ import type { Book, Chapter } from "@/domain/model";
 import type { BookFieldName, BookFieldRequestType } from "@/ai/operations";
 import { execute as aiBusExecute } from "@/ai/aiBus";
 import { GENRES, LANGUAGES } from "@/components/NewBookDialog";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 // Sprint-13-Step-05: pure scene/chapter/book editing again — the AI
 // interaction that used to live here (SceneImprove, MODE_INFO, and the
@@ -325,168 +326,181 @@ function UnifiedBookView({
           isFocusMode ? "mx-auto max-w-3xl" : ""
         }`}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Реквизиты книги
-          </h2>
-          <div className="flex gap-2">
+        <div
+          className={`rounded-md bg-zinc-50 dark:bg-zinc-950 ${
+            isDetailsCollapsed ? "p-3" : "p-6"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Реквизиты книги
+            </h2>
             <button
               onClick={() => setIsDetailsCollapsed((value) => !value)}
-              className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+              aria-label={
+                isDetailsCollapsed
+                  ? "Развернуть реквизиты"
+                  : "Свернуть реквизиты"
+              }
+              className="rounded-md border border-zinc-300 p-1 text-zinc-500 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
-              {isDetailsCollapsed ? "Развернуть" : "Свернуть"}
+              {isDetailsCollapsed ? (
+                <ChevronDown size={16} />
+              ) : (
+                <ChevronUp size={16} />
+              )}
             </button>
           </div>
-        </div>
-        {!isDetailsCollapsed && (
-          <div className="flex max-w-2xl flex-col gap-2">
-            <div className="flex items-center gap-2">
+          {!isDetailsCollapsed && (
+            <div className="mt-4 flex max-w-2xl flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <input
+                  value={book.title}
+                  onChange={(event) =>
+                    onUpdateBook?.(book.id, { title: event.target.value })
+                  }
+                  placeholder="Название книги..."
+                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {TITLE_QUICK_REQUESTS.map((quickRequest) => (
+                  <button
+                    key={quickRequest.key}
+                    onClick={() => handleTitleQuickRequest(quickRequest.key)}
+                    disabled={titleLoadingType !== null}
+                    className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  >
+                    {titleLoadingType === quickRequest.key
+                      ? "…"
+                      : quickRequest.label}
+                  </button>
+                ))}
+              </div>
+              {renderTitleSuggestion()}
+              <div className="flex gap-2">
+                <select
+                  value={book.genre}
+                  onChange={(event) =>
+                    onUpdateBook?.(book.id, { genre: event.target.value })
+                  }
+                  className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+                >
+                  {GENRES.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={book.language}
+                  onChange={(event) =>
+                    onUpdateBook?.(book.id, { language: event.target.value })
+                  }
+                  className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+                >
+                  {LANGUAGES.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-start gap-2">
+                <textarea
+                  value={book.premise}
+                  onChange={(event) =>
+                    onUpdateBook?.(book.id, { premise: event.target.value })
+                  }
+                  placeholder="О чём эта книга?"
+                  rows={4}
+                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                />
+                {onRequestFieldSuggestion && (
+                  <button
+                    onClick={() => onRequestFieldSuggestion("premise")}
+                    disabled={isFieldSuggestionLoading}
+                    title="AI-предложение"
+                    className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  >
+                    {isFieldSuggestionLoading &&
+                    fieldSuggestion?.fieldName === "premise"
+                      ? "…"
+                      : "AI"}
+                  </button>
+                )}
+              </div>
+              {renderFieldSuggestion("premise")}
               <input
-                value={book.title}
-                onChange={(event) =>
-                  onUpdateBook?.(book.id, { title: event.target.value })
-                }
-                placeholder="Название книги..."
-                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-              />
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {TITLE_QUICK_REQUESTS.map((quickRequest) => (
-                <button
-                  key={quickRequest.key}
-                  onClick={() => handleTitleQuickRequest(quickRequest.key)}
-                  disabled={titleLoadingType !== null}
-                  className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                >
-                  {titleLoadingType === quickRequest.key
-                    ? "…"
-                    : quickRequest.label}
-                </button>
-              ))}
-            </div>
-            {renderTitleSuggestion()}
-            <div className="flex gap-2">
-              <select
-                value={book.genre}
-                onChange={(event) =>
-                  onUpdateBook?.(book.id, { genre: event.target.value })
-                }
-                className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
-              >
-                {GENRES.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={book.language}
-                onChange={(event) =>
-                  onUpdateBook?.(book.id, { language: event.target.value })
-                }
-                className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
-              >
-                {LANGUAGES.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-start gap-2">
-              <textarea
-                value={book.premise}
-                onChange={(event) =>
-                  onUpdateBook?.(book.id, { premise: event.target.value })
-                }
-                placeholder="О чём эта книга?"
-                rows={4}
-                className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-              />
-              {onRequestFieldSuggestion && (
-                <button
-                  onClick={() => onRequestFieldSuggestion("premise")}
-                  disabled={isFieldSuggestionLoading}
-                  title="AI-предложение"
-                  className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                >
-                  {isFieldSuggestionLoading &&
-                  fieldSuggestion?.fieldName === "premise"
-                    ? "…"
-                    : "AI"}
-                </button>
-              )}
-            </div>
-            {renderFieldSuggestion("premise")}
-            <input
-              value={book.tags.join(", ")}
-              onChange={(event) =>
-                onUpdateBook?.(book.id, {
-                  tags: event.target.value
-                    .split(",")
-                    .map((tag) => tag.trim())
-                    .filter((tag) => tag.length > 0),
-                })
-              }
-              placeholder="Теги (через запятую)..."
-              className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
-            />
-            <div className="flex items-start gap-2">
-              <textarea
-                value={book.shortAnnotation}
+                value={book.tags.join(", ")}
                 onChange={(event) =>
                   onUpdateBook?.(book.id, {
-                    shortAnnotation: event.target.value,
+                    tags: event.target.value
+                      .split(",")
+                      .map((tag) => tag.trim())
+                      .filter((tag) => tag.length > 0),
                   })
                 }
-                placeholder="Краткая аннотация..."
-                rows={2}
-                className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                placeholder="Теги (через запятую)..."
+                className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
               />
-              {onRequestFieldSuggestion && (
-                <button
-                  onClick={() => onRequestFieldSuggestion("shortAnnotation")}
-                  disabled={isFieldSuggestionLoading}
-                  title="AI-предложение"
-                  className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                >
-                  {isFieldSuggestionLoading &&
-                  fieldSuggestion?.fieldName === "shortAnnotation"
-                    ? "…"
-                    : "AI"}
-                </button>
-              )}
+              <div className="flex items-start gap-2">
+                <textarea
+                  value={book.shortAnnotation}
+                  onChange={(event) =>
+                    onUpdateBook?.(book.id, {
+                      shortAnnotation: event.target.value,
+                    })
+                  }
+                  placeholder="Краткая аннотация..."
+                  rows={2}
+                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                />
+                {onRequestFieldSuggestion && (
+                  <button
+                    onClick={() => onRequestFieldSuggestion("shortAnnotation")}
+                    disabled={isFieldSuggestionLoading}
+                    title="AI-предложение"
+                    className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  >
+                    {isFieldSuggestionLoading &&
+                    fieldSuggestion?.fieldName === "shortAnnotation"
+                      ? "…"
+                      : "AI"}
+                  </button>
+                )}
+              </div>
+              {renderFieldSuggestion("shortAnnotation")}
+              <div className="flex items-start gap-2">
+                <textarea
+                  value={book.fullAnnotation}
+                  onChange={(event) =>
+                    onUpdateBook?.(book.id, {
+                      fullAnnotation: event.target.value,
+                    })
+                  }
+                  placeholder="Полная аннотация..."
+                  rows={6}
+                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                />
+                {onRequestFieldSuggestion && (
+                  <button
+                    onClick={() => onRequestFieldSuggestion("fullAnnotation")}
+                    disabled={isFieldSuggestionLoading}
+                    title="AI-предложение"
+                    className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  >
+                    {isFieldSuggestionLoading &&
+                    fieldSuggestion?.fieldName === "fullAnnotation"
+                      ? "…"
+                      : "AI"}
+                  </button>
+                )}
+              </div>
+              {renderFieldSuggestion("fullAnnotation")}
             </div>
-            {renderFieldSuggestion("shortAnnotation")}
-            <div className="flex items-start gap-2">
-              <textarea
-                value={book.fullAnnotation}
-                onChange={(event) =>
-                  onUpdateBook?.(book.id, {
-                    fullAnnotation: event.target.value,
-                  })
-                }
-                placeholder="Полная аннотация..."
-                rows={6}
-                className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-              />
-              {onRequestFieldSuggestion && (
-                <button
-                  onClick={() => onRequestFieldSuggestion("fullAnnotation")}
-                  disabled={isFieldSuggestionLoading}
-                  title="AI-предложение"
-                  className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                >
-                  {isFieldSuggestionLoading &&
-                  fieldSuggestion?.fieldName === "fullAnnotation"
-                    ? "…"
-                    : "AI"}
-                </button>
-              )}
-            </div>
-            {renderFieldSuggestion("fullAnnotation")}
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="flex flex-col gap-8">
           <div className="flex items-center justify-between">

@@ -9,12 +9,12 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-24-Step-04
+id: Sprint-24-Step-08
 status: done
-next: [Sprint-24-Step-05]
+next: []
 ```
 
-## Sprint 24 — Миграция localStorage → Database (in progress)
+## Sprint 24 — Миграция localStorage → Database (closed)
 
 - **Step 01** — ADR-0012 accepted: temporary single-user stopgap (hard deadline Sprint 28/29),
   dual-mode availability-per-call + last-write-wins + mandatory user-visible desync warning,
@@ -37,8 +37,22 @@ next: [Sprint-24-Step-05]
   repository layer (ADR-0012 Decision 3, coarse whole-tree contract). Live-verified with curl
   against a scratch-port (3417) production server, Product Owner's dev server on 3000 left
   untouched.
-- **Next:** Step 05 (dual-mode `workspaceStorage.ts` — Postgres primary, `localStorage`
-  fallback with desync warning).
+- **Step 05** — `workspaceStorage.ts`'s `loadWorkspace()`/`saveWorkspace()` become async and
+  dual-mode: `localStorage` read first (sole owner of ephemeral UI state), database consulted on
+  every call, silent fallback on failure, one-time browser-side migration when DB is empty but
+  `localStorage` isn't.
+- **Step 06** — `useWorkspaceController.ts`'s restore/persist effects adapted to the async
+  signatures — this is what made Step 05's edit functional again (briefly broken by design
+  until this step landed).
+- **Step 07** (added mid-sprint, 2026-07-11) — fixed a real data-loss race Step 06's own live
+  verification found: a non-empty database result won unconditionally over fresher
+  `localStorage` edits made while the database was unreachable. Fixed with a storage-layer-only
+  "unsynced changes pending" flag (separate `localStorage` key, not a domain field).
+- **Step 08** (added mid-sprint, 2026-07-11) — closes a gap between ADR-0012 Decision 5
+  (Product Owner required a visible warning on desync/DB-unavailable) and Step 06's card, which
+  had mistakenly excluded any visual indicator. Adds `SyncWarningBanner.tsx` + a new
+  `syncWarning` field on the hook's return value.
+- **Sprint 24 closed.** Next: scope Sprint 25 (Environment + HTTPS + Production hardening).
 
 ## Sprint 23 — PostgreSQL + Prisma (closed)
 

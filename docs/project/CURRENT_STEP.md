@@ -9,14 +9,16 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-26-Step-01
+id: Sprint-26-Step-01/02
 status: done
-next: [Sprint-26-Step-02]
+next: [Sprint-26-Step-03]
 ```
 
-## Sprint 26 — Быстрые UI-фиксы (в процессе — 1 из 5 Step Card закрыта)
+## Sprint 26 — Быстрые UI-фиксы (в процессе — 2 из 5 Step Card закрыты)
 
 **Step 01 (завершён, 2026-07-11):** Скрыть кнопку Фокуса (Focus Mode) — логика сохранена, кнопка удалена из UI. Коммит `c0eaf78`, архивация в `done/`.
+
+**Step 02 (завершён, 2026-07-11):** Срочный баг-фикс: ошибка сохранения типового запроса в AssistantSettingsDialog. Найдена и исправлена проблема инициализации Prisma при отсутствии DATABASE_URL; добавлена graceful деградация в db.ts и проверки доступности БД во всех репозиториях. Коммит `ce4e942`, архивация в `done/`.
 
 ---
 

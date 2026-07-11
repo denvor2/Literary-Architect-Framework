@@ -182,8 +182,23 @@ PostgreSQL + Prisma — database schema matching domain model, Prisma client sin
 - This project is currently working without a separate Architect session — the Product Owner
   reviews directly (see `docs/project/HANDOVER.md`).
 
+
 ## Next Action
 
-Scope Sprint 25 (Environment + HTTPS + Production hardening) per
-`docs/project/ROADMAP_18-27.md`. Sprint 28 (multi-user Admin/User system) has a hard deadline —
-no later than Sprint 29 — and should not be scoped later than that regardless of ordering.
+Sprint 25 scoped 2026-07-11: "UI/UX: структура интерфейса и настройка помощников" - see
+docs/project/ROADMAP_18-27.md's Sprint 25 entry and the five Step Cards in
+docs/task-bus/queue/pending/ (Sprint-25-Step-01 through Step-05). This is a Product Owner
+insertion ahead of the previously-planned "Sprint 25 (Environment + HTTPS + Production
+hardening)", which has shifted to Sprint 26 - all subsequent sprints through the previously
+fixed Sprint 28 (multi-user) shifted by +1 as well; multi-user is now Sprint 29, exactly at its
+previously-fixed hard deadline ("не позже 5 спринтов от Sprint 24") with no slack remaining -
+see ROADMAP_18-27.md's renumbering note for the full accounting.
+
+Sprint 25 Step 03 (per-assistant "gear" settings) requires ADR-0013 to be drafted and, more
+importantly, requires a direct Product Owner decision on several open forks before it can be
+marked Accepted - including a newly-surfaced overlap with Sprint 29's already-fixed Admin
+requirement for editable AI Expert system prompts. Do not let step-executor start Sprint 25
+Step 03 as a plain implementation task; it is scoped as an architecture-type Step Card for
+exactly this reason. Sprint 25 Step 02 (assistant-mode picker reorganization) also has an open
+UX fork (tabs vs. icon-strip vs. other) flagged for direct Product Owner confirmation before
+that part of the step proceeds - see the Step Card itself.

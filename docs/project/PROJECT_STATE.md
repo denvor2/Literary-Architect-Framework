@@ -22,8 +22,10 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 25 — Environment + HTTPS + Production hardening (see
-`docs/project/ROADMAP_18-27.md`). Not yet scoped.
+Sprint 26 — Быстрые UI-фиксы: 5 пунктов из Product Owner feedback (скрыть Focus, баг-фикс
+типового запроса, Ideas списком, Requisites с фоном, Search с чекбоксом под полем).
+Step Card уже в `docs/task-bus/queue/pending/` (Sprint-26-Step-01..05.md), готовы к
+исполнению. See `docs/project/ROADMAP_18-27.md` Sprint 26 для деталей.
 
 **Sprint 24 — Миграция localStorage → Database (closed).** `Workspace.books` now round-trips
 through PostgreSQL (Sprint 23's schema), with `localStorage` as fallback and sole owner of
@@ -322,10 +324,10 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Current Priorities
 
-1. Sprint 25 (Environment + HTTPS + Production hardening) — not yet scoped, see
-   `docs/project/ROADMAP_18-27.md` and [CURRENT_SPRINT.md](CURRENT_SPRINT.md).
-2. Sprint 28 (multi-user Admin/User system) has a hard deadline — no later than Sprint 29
-   (Product Owner, 2026-07-10) — do not let it slip past that regardless of ordering.
+1. Sprint 26 (Быстрые UI-фиксы) — 5 Step Card уже в `pending/`, готовы к исполнению.
+2. Sprint 30 (Multi-user Admin/User system) has a hard deadline — no later than Sprint 30
+   (Product Owner, 2026-07-11, сдвинут с исходного Sprint 29) — do not let it slip past
+   that regardless of ordering. Жёсткий срок без запаса.
 3. Backfill remaining Sprint 02 context (pricing, security) — see
    `docs/vision/pricing.md` and `docs/vision/security.md`, both still placeholders.
 
@@ -353,5 +355,6 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-Sprint 25 (Environment + HTTPS + Production hardening) — see
-`docs/project/ROADMAP_18-27.md`.
+Sprint 26 (Быстрые UI-фиксы) — 5 Step Card в очереди, затем Sprint 27 (Production hardening)
+и остальные спринты согласно новой нумерации в `docs/project/ROADMAP_18-27.md` (перенумерован
+2026-07-11 по решению Product Owner — см. примечание в начале roadmap).

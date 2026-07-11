@@ -3,6 +3,16 @@
 import { useEffect, useState } from "react";
 import * as aiBus from "@/ai/aiBus";
 import type { AssistantThread, Book, ChatMessage } from "@/domain/model";
+import {
+  Pen,
+  Wand2,
+  Eye,
+  BookOpen,
+  Settings,
+  ArrowLeftRight,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 // Sprint-13-Step-05: single functional AI surface, replacing two previously
 // redundant ones — this file's old decorative, unwired card list, and the
@@ -37,17 +47,20 @@ const CRITIC_SUBCATEGORIES = [
   { key: "style", label: "Стиль" },
 ] as const;
 
-// Sprint-13-Step-05: deliberately just display metadata (emoji/label/
+// Sprint-13-Step-05: deliberately just display metadata (icon/label/
 // description/accent/placeholder) — the previous MODE_INFO also carried a
 // "perception layer" (fake scene phase, consistency indicator, an explicit
 // "no memory" disclosure) built specifically to compensate for the absence
 // of real chat history. That history is now real and persisted, so the old
 // layer would be actively false, not just outdated — removed rather than
 // carried forward (confirmed with Product Owner).
+// Sprint-25-Step-05: emoji replaced with lucide-react icons (Pen, Wand2, Eye,
+// BookOpen) for design consistency and accessibility. Icons are 18px (text-lg)
+// to match the previous emoji glyph size.
 const MODE_META: Record<
   AssistantMode,
   {
-    emoji: string;
+    icon: React.ComponentType<{ className?: string }>;
     label: string;
     description: string;
     accent: string;
@@ -56,7 +69,7 @@ const MODE_META: Record<
   }
 > = {
   coauthor: {
-    emoji: "🟡",
+    icon: Pen,
     label: "Соавтор",
     description: "Пишет и развивает текст вместе с вами.",
     accent: "text-amber-600 dark:text-amber-400",
@@ -64,7 +77,7 @@ const MODE_META: Record<
     placeholder: "Что дальше в этой книге? (необязательно)",
   },
   editor: {
-    emoji: "🟢",
+    icon: Wand2,
     label: "Редактор",
     description: "Улучшает грамматику, ясность и стиль.",
     accent: "text-emerald-600 dark:text-emerald-400",
@@ -72,7 +85,7 @@ const MODE_META: Record<
     placeholder: "Что улучшить в этой сцене? (необязательно)",
   },
   critic: {
-    emoji: "🔴",
+    icon: Eye,
     label: "Критик",
     description: "Даёт оценку вашему тексту.",
     accent: "text-red-600 dark:text-red-400",
@@ -80,7 +93,7 @@ const MODE_META: Record<
     placeholder: "На что обратить внимание? (необязательно)",
   },
   reader: {
-    emoji: "🔵",
+    icon: BookOpen,
     label: "Читатель",
     description: "Показывает, как отреагирует читатель.",
     accent: "text-blue-600 dark:text-blue-400",
@@ -117,6 +130,7 @@ const EMPTY_SETTINGS_MAP: Record<AssistantMode, AssistantSettingsEntry | null> =
 // plain overlay button on each of the 4 mode icons (Step Card's Allowed
 // paths note: "gear-иконка на каждом режиме"), not just on the currently
 // selected one.
+// Sprint-25-Step-05: replaced emoji gear with lucide Settings icon.
 function GearButton({ onOpen, label }: { onOpen: () => void; label: string }) {
   return (
     <button
@@ -126,9 +140,9 @@ function GearButton({ onOpen, label }: { onOpen: () => void; label: string }) {
       }}
       title={`Настройки: ${label}`}
       aria-label={`Настройки режима «${label}»`}
-      className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-zinc-300 bg-white text-[9px] leading-none text-zinc-500 shadow-sm transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+      className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-500 shadow-sm transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
     >
-      ⚙
+      <Settings className="h-3 w-3" />
     </button>
   );
 }
@@ -436,25 +450,25 @@ function ReaderPanel({
                 className={
                   inCompare
                     ? "text-blue-600 dark:text-blue-400"
-                    : "text-zinc-400"
+                    : "text-zinc-400 dark:text-zinc-600"
                 }
               >
-                ⇄
+                <ArrowLeftRight className="h-4 w-4" />
               </button>
               <button
                 onClick={() => startRename(thread)}
                 title="Переименовать"
-                className="text-zinc-400"
+                className="text-zinc-400 dark:text-zinc-600"
               >
-                ✎
+                <Pencil className="h-4 w-4" />
               </button>
               <button
                 onClick={() => onDeleteThread(thread.id)}
                 disabled={threads.length <= 1}
                 title="Удалить"
-                className="text-zinc-400 disabled:opacity-30"
+                className="text-zinc-400 dark:text-zinc-600 disabled:opacity-30"
               >
-                ✕
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           );
@@ -950,11 +964,10 @@ export function AssistantPanel({
         </h2>
         {/* Sprint-25-Step-02: square icon buttons + hover tooltip, replacing
           the previous 2-column card grid with a description in every card —
-          Product Owner decision (see this step's Step Card, "Часть 2"). The
-          emoji glyph stays as the button's content on purpose — swapping it
-          for a real icon set is Sprint-25-Step-05's job, not this step's
-          (see Step Card's "Координация с содержимым иконки"). Native `title`
-          supplies the hover tooltip — no new dependency for that alone. */}
+          Product Owner decision (see this step's Step Card, "Часть 2").
+          Sprint-25-Step-05: emoji glyph replaced with lucide-react icon
+          components (Pen, Wand2, Eye, BookOpen). Native `title` supplies the
+          hover tooltip. */}
         <div className="flex gap-2">
           {ASSISTANT_MODES.map((mode) => {
             const info = MODE_META[mode];
@@ -973,7 +986,7 @@ export function AssistantPanel({
                       : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
                   }`}
                 >
-                  {info.emoji}
+                  <info.icon className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
                 </button>
                 <GearButton
                   label={label}
@@ -990,9 +1003,10 @@ export function AssistantPanel({
 
         <div className="flex flex-1 flex-col gap-3 overflow-y-auto border-t border-zinc-200 pt-3 dark:border-zinc-800">
           <div className="flex items-center justify-between">
-            <p className={`text-xs font-medium ${meta.accent}`}>
-              {meta.emoji} {displayNameFor(selectedMode)}
-            </p>
+            <div className={`flex items-center gap-1.5 text-xs font-medium ${meta.accent}`}>
+              <meta.icon className="h-4 w-4" />
+              <span>{displayNameFor(selectedMode)}</span>
+            </div>
             <div className="flex gap-1.5">
               {selectedMode === "coauthor" && (
                 <button

@@ -117,10 +117,11 @@ collision, which is between chapters/scenes of *different* books, not within one
   simultaneous tabs/devices loses the earlier edit — accepted as tolerable for single-user Phase
   1.
 - **Database health visibility and the ability to take a backup** are confirmed as a real
-  requirement, but explicitly scoped to the future Admin role, which does not exist before the
-  future multi-user sprint (see Decision 1). Sprint 24 does **not** implement this — there is no
-  Admin UI to build it into. It is recorded here as an accepted requirement for the future Admin
-  functionality, not as a Sprint 24 Step Card.
+  requirement. A basic backup mechanism (`pg_dump`-based script without UI) is scheduled for Sprint 27 
+  (Product Owner decision, 2026-07-12), as a temporary measure to protect data in case live users 
+  appear before the Admin UI is built (Sprint 30). The full Admin-UI health-visibility/restore 
+  functionality remains scoped to the future Admin role, which does not exist before the future 
+  multi-user sprint (see Decision 1).
 
 ### 6. Existing-Data Migration Mechanism
 
@@ -138,8 +139,8 @@ application operates in "database is the primary source" mode.
 ## Consequences
 
 - The single-user stopgap (Decision 1) means `Book.userId` is always the same value for the
-  lifetime of Sprint 24-27 — any code written against it must not assume multiple users exist, and
-  must not be mistaken for a finished authorization model. The Sprint 28/29 deadline is the
+  lifetime of Sprint 24-29 — any code written against it must not assume multiple users exist, and
+  must not be mistaken for a finished authorization model. The Sprint 30 deadline is the
   concrete forcing function that prevents this from silently becoming permanent.
 - The coarse `/api/workspace` endpoint (Decision 3) means every `saveWorkspace()` call sends the
   entire `books[]` tree over the network, not just the changed entity — acceptable for a
@@ -163,9 +164,11 @@ application operates in "database is the primary source" mode.
   Sprint 25 if real usage shows it matters.
 - No granular conflict resolution across tabs/devices — last-write-wins can lose an earlier edit
   made in another tab. Accepted as a known Phase 1 limitation, not addressed here.
-- Database health/backup visibility (Decision 5) has no implementation surface at all until the
-  Admin role exists (Sprint 28/29) — until then, database health is only observable by an operator
-  with direct `psql`/`docker` access, not through the product.
+- Database health/backup visibility (Decision 5) splits into two parts. A basic backup mechanism
+  (`pg_dump` script without UI) is scheduled for Sprint 27 (Product Owner decision, 2026-07-12). 
+  The full Admin-UI health-visibility/restore functionality has no implementation surface until the 
+  Admin role exists (Sprint 30) — until then, database health is only observable by an operator with 
+  direct `psql`/`docker` access (or via the Sprint 27 backup script), not through the product.
 - The one-time browser-side migration (Decision 6) has no explicit user-facing confirmation step —
   it runs transparently on first load. Acceptable for a single local user with no risk of
   ambiguity about which data set is authoritative (empty DB + non-empty `localStorage` has exactly
@@ -175,7 +178,7 @@ application operates in "database is the primary source" mode.
 
 Revisit when:
 
-- The Sprint 28/29 multi-user system lands — the single-user stopgap (Decision 1) and its
+- The Sprint 30 multi-user system lands — the single-user stopgap (Decision 1) and its
   `getOrCreateDefaultUser()` implementation must be replaced, not extended.
 - The `books[]` tree grows large enough that the coarse `/api/workspace` PUT becomes a measurable
   performance problem (consider granular REST or partial updates at that point, not before).
@@ -183,5 +186,6 @@ Revisit when:
   -wins would need to be revisited).
 - A retry/backoff queue for failed database writes is found to be genuinely necessary in practice
   (tracked as Sprint 25 "Production hardening" candidate).
-- Admin-role database health/backup functionality is scheduled (Sprint 28/29 or later) — that
+- Admin-role database health/backup functionality is scheduled (Sprint 30 or later) — that
   work should read this ADR's Decision 5 for the exact confirmed requirement before designing it.
+  Note that a basic backup mechanism (without UI) is scheduled earlier, in Sprint 27.

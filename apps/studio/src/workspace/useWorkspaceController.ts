@@ -8,6 +8,7 @@ import type {
   ChatMessage,
   Character,
   Idea,
+  Series,
 } from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
 import {
@@ -22,6 +23,7 @@ import {
 // loadWorkspace(), which depends on window.localStorage.
 const EMPTY_WORKSPACE: Workspace = {
   books: [],
+  series: [], // Sprint-29-Step-05: initially empty series collection
   activeBookId: null,
   selectedChapterId: null,
   selectedSceneId: null,
@@ -50,6 +52,7 @@ export function useWorkspaceController() {
   const [syncWarning, setSyncWarning] = useState<SyncWarning | null>(null);
   const {
     books,
+    series,
     activeBookId,
     selectedChapterId,
     selectedSceneId,
@@ -763,6 +766,232 @@ export function useWorkspaceController() {
     });
   }
 
+  // Sprint-29-Step-05: Series CRUD methods. All API errors throw exceptions
+  // (ADR-0012 Decision 5 — no silent fallback).
+
+  // Helper: call Series API endpoint and throw on error.
+  async function callSeriesApi(
+    endpoint: string,
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    body?: unknown,
+  ): Promise<unknown> {
+    try {
+      const options: RequestInit = { method };
+      if (body !== undefined) {
+        options.headers = { "Content-Type": "application/json" };
+        options.body = JSON.stringify(body);
+      }
+      const response = await fetch(endpoint, options);
+      if (!response.ok) {
+        throw new Error(
+          `Series API error: ${response.status} ${response.statusText}`,
+        );
+      }
+      const data = await response.json();
+      if (!data.ok) {
+        throw new Error(data.error || "Series API returned ok: false");
+      }
+      return data;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown Series API error";
+      throw new Error(message);
+    }
+  }
+
+  function createSeries(title: string, description?: string): Series {
+    if (!title || title.trim().length === 0) {
+      throw new Error("Series title cannot be empty");
+    }
+
+    const newSeries: Series = {
+      id: crypto.randomUUID(),
+      title: title.trim(),
+      description: description?.trim() ?? "",
+      order: workspace.series.length, // order = next index
+      createdAt: new Date().toISOString(),
+    };
+
+    // Call API asynchronously — fire and persist locally first, then sync
+    // to API. On error, throw.
+    void (async () => {
+      try {
+        await callSeriesApi("/api/series", "POST", {
+          id: newSeries.id,
+          title: newSeries.title,
+          description: newSeries.description,
+          order: newSeries.order,
+          createdAt: newSeries.createdAt,
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to create series";
+        console.error("createSeries API error:", message);
+        throw error;
+      }
+    })();
+
+    setWorkspace((previous) => ({
+      ...previous,
+      series: [...previous.series, newSeries],
+    }));
+
+    return newSeries;
+  }
+
+  function updateSeries(
+    seriesId: string,
+    title: string,
+    description: string,
+  ): Series {
+    const series = workspace.series.find((s) => s.id === seriesId);
+    if (!series) {
+      throw new Error(`Series with id ${seriesId} not found`);
+    }
+
+    if (!title || title.trim().length === 0) {
+      throw new Error("Series title cannot be empty");
+    }
+
+    const updatedSeries: Series = {
+      ...series,
+      title: title.trim(),
+      description: description.trim(),
+    };
+
+    void (async () => {
+      try {
+        await callSeriesApi("/api/series", "PUT", {
+          id: updatedSeries.id,
+          title: updatedSeries.title,
+          description: updatedSeries.description,
+          order: updatedSeries.order,
+          createdAt: updatedSeries.createdAt,
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to update series";
+        console.error("updateSeries API error:", message);
+        throw error;
+      }
+    })();
+
+    setWorkspace((previous) => ({
+      ...previous,
+      series: previous.series.map((s) =>
+        s.id === seriesId ? updatedSeries : s,
+      ),
+    }));
+
+    return updatedSeries;
+  }
+
+  function deleteSeries(seriesId: string): void {
+    const series = workspace.series.find((s) => s.id === seriesId);
+    if (!series) {
+      throw new Error(`Series with id ${seriesId} not found`);
+    }
+
+    void (async () => {
+      try {
+        await callSeriesApi(
+          `/api/series?id=${encodeURIComponent(seriesId)}`,
+          "DELETE",
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to delete series";
+        console.error("deleteSeries API error:", message);
+        throw error;
+      }
+    })();
+
+    setWorkspace((previous) => {
+      // Remove the series and disconnect books that belonged to it
+      const updatedBooks = previous.books.map((book) =>
+        book.seriesId === seriesId ? { ...book, seriesId: undefined } : book,
+      );
+      return {
+        ...previous,
+        series: previous.series.filter((s) => s.id !== seriesId),
+        books: updatedBooks,
+      };
+    });
+  }
+
+  function addBookToSeries(bookId: string, seriesId: string): Book {
+    const book = workspace.books.find((b) => b.id === bookId);
+    if (!book) {
+      throw new Error(`Book with id ${bookId} not found`);
+    }
+
+    const series = workspace.series.find((s) => s.id === seriesId);
+    if (!series) {
+      throw new Error(`Series with id ${seriesId} not found`);
+    }
+
+    const updatedBook: Book = { ...book, seriesId };
+
+    void (async () => {
+      try {
+        await saveWorkspace({
+          ...workspace,
+          books: workspace.books.map((b) =>
+            b.id === bookId ? updatedBook : b,
+          ),
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to add book to series";
+        console.error("addBookToSeries API error:", message);
+        throw error;
+      }
+    })();
+
+    setWorkspace((previous) => ({
+      ...previous,
+      books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
+    }));
+
+    return updatedBook;
+  }
+
+  function removeBookFromSeries(bookId: string): Book {
+    const book = workspace.books.find((b) => b.id === bookId);
+    if (!book) {
+      throw new Error(`Book with id ${bookId} not found`);
+    }
+
+    const updatedBook: Book = { ...book, seriesId: undefined };
+
+    void (async () => {
+      try {
+        await saveWorkspace({
+          ...workspace,
+          books: workspace.books.map((b) =>
+            b.id === bookId ? updatedBook : b,
+          ),
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to remove book from series";
+        console.error("removeBookFromSeries API error:", message);
+        throw error;
+      }
+    })();
+
+    setWorkspace((previous) => ({
+      ...previous,
+      books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
+    }));
+
+    return updatedBook;
+  }
+
   // Derived convenience value for Step 05's UI — the active dialog per role
   // of the active book (last element of each role's thread array).
   const activeThreads = activeBook
@@ -778,6 +1007,7 @@ export function useWorkspaceController() {
     workspace,
     activeBook,
     books,
+    series,
     activeBookId,
     chapters,
     selectedChapterId,
@@ -814,5 +1044,10 @@ export function useWorkspaceController() {
     deleteThread,
     activeThreads,
     syncWarning,
+    createSeries,
+    updateSeries,
+    deleteSeries,
+    addBookToSeries,
+    removeBookFromSeries,
   };
 }

@@ -1,4 +1,4 @@
-import type { Book, Chapter, Character, Idea } from "@/domain/model";
+import type { Book, Chapter, Character, Idea, Series } from "@/domain/model";
 import { IdeasPanel } from "@/components/IdeasPanel";
 
 type SidebarProps = {
@@ -29,6 +29,12 @@ type SidebarProps = {
   onCreateIdea?: () => void;
   onUpdateIdea?: (ideaId: string, text: string) => void;
   onDeleteIdea?: (ideaId: string) => void;
+  // Sprint-29-Step-06: Series support
+  series?: readonly Series[];
+  collapsedSeriesIds?: ReadonlySet<string>;
+  onToggleSeriesCollapsed?: (seriesId: string) => void;
+  onCreateSeries?: () => void;
+  onEditSeries?: (seriesId: string) => void;
 };
 
 // Sprint-16-17-Step-02: the unified view (EditorArea.tsx) shows every
@@ -65,6 +71,11 @@ export function Sidebar({
   onCreateIdea,
   onUpdateIdea,
   onDeleteIdea,
+  series = [],
+  collapsedSeriesIds,
+  onToggleSeriesCollapsed,
+  onCreateSeries,
+  onEditSeries,
 }: SidebarProps) {
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
@@ -100,6 +111,76 @@ export function Sidebar({
                 </button>
               </li>
             ))}
+          </ul>
+        )}
+      </div>
+      <div>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Серии
+          </h2>
+          <button
+            onClick={() => onCreateSeries?.()}
+            className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+          >
+            +
+          </button>
+        </div>
+        {series.length === 0 ? (
+          <p className="text-sm text-zinc-400 dark:text-zinc-600">
+            Пока нет серий
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-1">
+            {series.map((s) => {
+              const isSeriesCollapsed = collapsedSeriesIds?.has(s.id) ?? false;
+              const booksInSeries = books.filter((b) => b.seriesId === s.id);
+              return (
+                <li key={s.id}>
+                  <div className="flex items-center gap-1">
+                    {booksInSeries.length > 0 && (
+                      <button
+                        onClick={() => onToggleSeriesCollapsed?.(s.id)}
+                        aria-label={
+                          isSeriesCollapsed
+                            ? "Развернуть серию"
+                            : "Свернуть серию"
+                        }
+                        className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                      >
+                        {isSeriesCollapsed ? "▸" : "▾"}
+                      </button>
+                    )}
+                    {booksInSeries.length === 0 && <div className="w-6" />}
+                    <button
+                      onClick={() => onEditSeries?.(s.id)}
+                      className="w-full rounded-md px-2 py-1 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                      title={s.description || ""}
+                    >
+                      {s.title || "Без названия"}
+                    </button>
+                  </div>
+                  {!isSeriesCollapsed && booksInSeries.length > 0 && (
+                    <ul className="ml-3 mt-1 flex flex-col gap-1 border-l border-zinc-200 pl-2 dark:border-zinc-800">
+                      {booksInSeries.map((book) => (
+                        <li key={book.id}>
+                          <button
+                            onClick={() => onSelectBook?.(book.id)}
+                            className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                              book.id === activeBookId
+                                ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                            }`}
+                          >
+                            {book.title || "Без названия"}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

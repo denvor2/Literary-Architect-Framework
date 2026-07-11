@@ -10,6 +10,8 @@ import { AssistantPanel } from "@/components/AssistantPanel";
 import { SyncWarningBanner } from "@/components/SyncWarningBanner";
 import { DeveloperTools } from "@/components/DeveloperTools";
 import { NewBookDialog } from "@/components/NewBookDialog";
+import { NewSeriesDialog } from "@/components/NewSeriesDialog";
+import { SeriesEditDialog } from "@/components/SeriesEditDialog";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 import { execute as aiBusExecute } from "@/ai/aiBus";
 import type { BookFieldName } from "@/ai/operations";
@@ -49,6 +51,7 @@ export default function Home() {
     workspace,
     activeBook,
     books,
+    series,
     activeBookId,
     chapters,
     selectedChapterId,
@@ -85,8 +88,23 @@ export default function Home() {
     deleteThread,
     activeThreads,
     syncWarning,
+    createSeries,
+    updateSeries,
+    deleteSeries,
+    // Sprint-29-Step-06: addBookToSeries and removeBookFromSeries imported for
+    // future drag-drop UI (not yet implemented in this step)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    addBookToSeries,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    removeBookFromSeries,
   } = useWorkspaceController();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // Sprint-29-Step-06: Series dialog state
+  const [isNewSeriesDialogOpen, setIsNewSeriesDialogOpen] = useState(false);
+  const [editingSeriesId, setEditingSeriesId] = useState<string | null>(null);
+  const [collapsedSeriesIds, setCollapsedSeriesIds] = useState<Set<string>>(
+    new Set(),
+  );
   // Ephemeral UI state only — not part of Workspace, not persisted.
   const [isFocusMode, setIsFocusMode] = useState(false);
   // Sprint-25-Step-02: drives whether the main-content/AssistantPanel split
@@ -344,6 +362,22 @@ export default function Home() {
             onCreateIdea={createIdea}
             onUpdateIdea={updateIdea}
             onDeleteIdea={deleteIdea}
+            // Sprint-29-Step-06: Series support
+            series={series}
+            collapsedSeriesIds={collapsedSeriesIds}
+            onToggleSeriesCollapsed={(seriesId) =>
+              setCollapsedSeriesIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(seriesId)) {
+                  next.delete(seriesId);
+                } else {
+                  next.add(seriesId);
+                }
+                return next;
+              })
+            }
+            onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
+            onEditSeries={setEditingSeriesId}
           />
         )}
         {(() => {
@@ -469,6 +503,36 @@ export default function Home() {
           }}
         />
       )}
+
+      {/* Sprint-29-Step-06: Series dialogs */}
+      {isNewSeriesDialogOpen && (
+        <NewSeriesDialog
+          onCancel={() => setIsNewSeriesDialogOpen(false)}
+          onCreate={(title, description) => {
+            createSeries(title, description);
+            setIsNewSeriesDialogOpen(false);
+          }}
+        />
+      )}
+
+      {editingSeriesId &&
+        (() => {
+          const editingSeries = series.find((s) => s.id === editingSeriesId);
+          return editingSeries ? (
+            <SeriesEditDialog
+              series={editingSeries}
+              onCancel={() => setEditingSeriesId(null)}
+              onSave={(title, description) => {
+                updateSeries(editingSeriesId, title, description);
+                setEditingSeriesId(null);
+              }}
+              onDelete={() => {
+                deleteSeries(editingSeriesId);
+                setEditingSeriesId(null);
+              }}
+            />
+          ) : null;
+        })()}
     </div>
   );
 }

@@ -99,6 +99,7 @@ function writeSyncPendingFlag(pending: boolean): void {
 
 const EMPTY_WORKSPACE: Workspace = {
   books: [],
+  series: [], // Sprint-29-Step-05: initially empty series collection
   activeBookId: null,
   selectedChapterId: null,
   selectedSceneId: null,
@@ -187,6 +188,7 @@ function migrateIfNeeded(parsed: unknown): Workspace {
     });
     return {
       books: [migratedBook],
+      series: [], // Sprint-29-Step-05: no series in old format
       activeBookId: migratedBook.id,
       selectedChapterId: (data.selectedChapterId as string | null) ?? null,
       selectedSceneId: (data.selectedSceneId as string | null) ?? null,

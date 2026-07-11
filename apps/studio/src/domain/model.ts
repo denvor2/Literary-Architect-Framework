@@ -41,6 +41,7 @@ export type Book = {
   readonly characters: readonly Character[];
   readonly assistantThreads: AssistantThreads;
   readonly ideas: readonly Idea[];
+  readonly seriesId?: string; // Sprint-29-Step-05: optional reference to Series
 };
 
 export type Character = {
@@ -77,4 +78,14 @@ export type AssistantThreads = {
   readonly editor: readonly AssistantThread[];
   readonly critic: readonly AssistantThread[];
   readonly reader: readonly AssistantThread[];
+};
+
+// Sprint-29-Step-05: Series domain model for grouping books.
+// Persistent data stored in Postgres via /api/series endpoints (Step-04).
+export type Series = {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly order: number;
+  readonly createdAt: string; // ISO string
 };

@@ -15,12 +15,15 @@ model User {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   books     Book[]
+  series    Series[]
 }
 
 model Book {
   id              String   @id @default(cuid())
   userId          String
   user            User     @relation(fields: [userId], references: [id])
+  seriesId        String?
+  series          Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull)
   title           String
   genre           String
   language        String
@@ -35,6 +38,8 @@ model Book {
   characters        Character[]
   ideas             Idea[]
   assistantThreads  AssistantThread[]
+
+  @@index([seriesId])
 }
 
 model Chapter {
@@ -132,4 +137,19 @@ model AssistantSettings {
   promptSuffix    String?
   typicalRequests String[]      @default([])
   updatedAt       DateTime      @updatedAt
+}
+
+// Sprint-29-Step-02: Series entity for grouping related books with common characters/world
+model Series {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  books       Book[]
+
+  @@index([userId])
 }

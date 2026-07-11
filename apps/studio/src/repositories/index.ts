@@ -11,3 +11,8 @@ export {
   upsertAssistantSettings,
 } from "./assistantSettingsRepository";
 export type { AssistantSettingsRecord } from "./assistantSettingsRepository";
+// Sprint-29-Step-03: series repository layer. Step-04's `/api/series` route
+// should import from here, not directly from seriesRepository.ts — same
+// internal-split principle as books.
+export { loadSeriesForUser, saveSeriesToUser } from "./seriesRepository";
+export type { Series } from "./seriesRepository";

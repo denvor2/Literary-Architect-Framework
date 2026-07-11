@@ -25,6 +25,20 @@ export async function GET() {
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
+    // Check if error is due to prisma being unavailable
+    if (
+      errorMessage.includes("Cannot read properties of undefined") ||
+      errorMessage.includes("prisma")
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Database connection unavailable. Using default settings. Configuration persists in browser storage.",
+        },
+        { status: 503 },
+      );
+    }
     return NextResponse.json(
       { ok: false, error: errorMessage },
       { status: 500 },
@@ -71,6 +85,20 @@ export async function POST(request: Request) {
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
+    // Check if error is due to prisma being unavailable
+    if (
+      errorMessage.includes("Cannot read properties of undefined") ||
+      errorMessage.includes("prisma")
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Database connection unavailable. Settings could not be saved. This may be a temporary issue.",
+        },
+        { status: 503 },
+      );
+    }
     return NextResponse.json(
       { ok: false, error: errorMessage },
       { status: 500 },

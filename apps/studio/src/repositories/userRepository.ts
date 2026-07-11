@@ -11,6 +11,9 @@ import { prisma } from "@/lib/db";
 import type { User } from "@/generated/prisma/client";
 
 export async function getOrCreateDefaultUser(): Promise<User> {
+  if (!prisma) {
+    throw new Error("Database connection unavailable. Cannot retrieve or create user.");
+  }
   const existingUser = await prisma.user.findFirst({
     orderBy: { createdAt: "asc" },
   });

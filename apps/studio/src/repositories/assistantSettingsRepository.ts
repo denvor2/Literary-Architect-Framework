@@ -32,6 +32,11 @@ function toRecord(row: PrismaAssistantSettings): AssistantSettingsRecord {
 export async function getAssistantSettings(
   mode: AssistantRole,
 ): Promise<AssistantSettingsRecord | null> {
+  if (!prisma) {
+    throw new Error(
+      "Database connection unavailable. Cannot retrieve assistant settings.",
+    );
+  }
   const row = await prisma.assistantSettings.findUnique({ where: { mode } });
   return row ? toRecord(row) : null;
 }
@@ -39,6 +44,11 @@ export async function getAssistantSettings(
 export async function getAllAssistantSettings(): Promise<
   Record<AssistantRole, AssistantSettingsRecord | null>
 > {
+  if (!prisma) {
+    throw new Error(
+      "Database connection unavailable. Cannot retrieve assistant settings.",
+    );
+  }
   const rows = await prisma.assistantSettings.findMany();
   const map: Record<AssistantRole, AssistantSettingsRecord | null> = {
     coauthor: null,
@@ -60,6 +70,11 @@ export async function upsertAssistantSettings(
     typicalRequests: string[];
   },
 ): Promise<AssistantSettingsRecord> {
+  if (!prisma) {
+    throw new Error(
+      "Database connection unavailable. Cannot save assistant settings.",
+    );
+  }
   const row = await prisma.assistantSettings.upsert({
     where: { mode },
     create: { mode, ...data },

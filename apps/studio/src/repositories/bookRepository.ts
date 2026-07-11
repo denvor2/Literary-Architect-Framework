@@ -135,6 +135,9 @@ function toDomainBook(book: BookWithRelations): DomainBook {
 }
 
 export async function loadBooksForUser(userId: string): Promise<DomainBook[]> {
+  if (!prisma) {
+    throw new Error("Database connection unavailable. Cannot load books.");
+  }
   const books = await prisma.book.findMany({
     where: { userId },
     orderBy: { createdAt: "asc" },
@@ -147,6 +150,9 @@ export async function saveBooksForUser(
   userId: string,
   books: readonly DomainBook[],
 ): Promise<void> {
+  if (!prisma) {
+    throw new Error("Database connection unavailable. Cannot save books.");
+  }
   await prisma.$transaction(
     async (tx) => {
       const incomingBookIds = books.map((book) => book.id);

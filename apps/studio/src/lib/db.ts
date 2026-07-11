@@ -15,18 +15,36 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-function createPrismaClient(): PrismaClient {
+function createPrismaClient(): PrismaClient | undefined {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    throw new Error(
-      "DATABASE_URL is not set. Configure it in .env.local or docker-compose environment.",
-    );
+    // DATABASE_URL not configured - log a warning but don't throw.
+    // The app will fall back to localStorage. This is expected in
+    // development environments without a database configured.
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[db] DATABASE_URL not set. Using localStorage fallback for data persistence.",
+      );
+    }
+    return undefined;
   }
-  const adapter = new PrismaPg({ connectionString });
-  return new PrismaClient({ adapter });
+  try {
+    const adapter = new PrismaPg({ connectionString });
+    return new PrismaClient({ adapter });
+  } catch (error) {
+    // Connection failed - log error but don't crash.
+    // The app will use localStorage fallback.
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.warn(
+      `[db] Failed to initialize Prisma client: ${errorMessage}. Using localStorage fallback.`,
+    );
+    return undefined;
+  }
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+export const prisma = (globalForPrisma.prisma ?? createPrismaClient()) as
+  PrismaClient | undefined;
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

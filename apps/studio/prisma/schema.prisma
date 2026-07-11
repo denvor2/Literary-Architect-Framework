@@ -117,3 +117,19 @@ enum MessageRole {
   user
   assistant
 }
+
+// Sprint-25-Step-03 (ADR-0013): one record per AssistantMode (coauthor/
+// editor/critic/reader), instance-wide — NOT per Book, NOT per User (no
+// real Users exist yet, ADR-0012 Decision 1). This is the Admin-default
+// layer ADR-0013's "Storage scope" describes; a later per-(User, mode)
+// override table is explicitly Sprint 29/ADR-0015's job, not built here.
+// `mode` reuses the existing AssistantRole enum rather than introducing a
+// parallel one — same four values, same meaning, one source of truth.
+model AssistantSettings {
+  id              String        @id @default(cuid())
+  mode            AssistantRole @unique
+  displayName     String?
+  promptSuffix    String?
+  typicalRequests String[]      @default([])
+  updatedAt       DateTime      @updatedAt
+}

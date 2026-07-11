@@ -5,3 +5,9 @@
 
 export { getOrCreateDefaultUser } from "./userRepository";
 export { loadBooksForUser, saveBooksForUser } from "./bookRepository";
+export {
+  getAssistantSettings,
+  getAllAssistantSettings,
+  upsertAssistantSettings,
+} from "./assistantSettingsRepository";
+export type { AssistantSettingsRecord } from "./assistantSettingsRepository";

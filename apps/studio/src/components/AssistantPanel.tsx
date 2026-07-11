@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as aiBus from "@/ai/aiBus";
 import type { AssistantThread, Book, ChatMessage } from "@/domain/model";
 
@@ -91,6 +91,179 @@ const MODE_META: Record<
 
 const ASSISTANT_MODES = Object.keys(MODE_META) as AssistantMode[];
 
+// Sprint-25-Step-03 (ADR-0013): per-mode customization (display name/prompt
+// suffix/typical requests), one row per AssistantMode, instance-wide — see
+// docs/adr/ADR-0013-assistant-settings.md and
+// apps/studio/src/app/api/assistant-settings/route.ts. `promptSuffix` is
+// only ever read here to show it back in the settings dialog for editing —
+// it is never sent to any Expert route from the client; each route reads
+// its own mode's suffix itself (server-side), append-only onto its existing
+// hardcoded system prompt.
+type AssistantSettingsEntry = {
+  displayName: string | null;
+  promptSuffix: string | null;
+  typicalRequests: string[];
+};
+
+const EMPTY_SETTINGS_MAP: Record<AssistantMode, AssistantSettingsEntry | null> =
+  {
+    coauthor: null,
+    editor: null,
+    critic: null,
+    reader: null,
+  };
+
+// Sprint-25-Step-03: gear icon opening the per-mode settings dialog — a
+// plain overlay button on each of the 4 mode icons (Step Card's Allowed
+// paths note: "gear-иконка на каждом режиме"), not just on the currently
+// selected one.
+function GearButton({ onOpen, label }: { onOpen: () => void; label: string }) {
+  return (
+    <button
+      onClick={(event) => {
+        event.stopPropagation();
+        onOpen();
+      }}
+      title={`Настройки: ${label}`}
+      aria-label={`Настройки режима «${label}»`}
+      className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-zinc-300 bg-white text-[9px] leading-none text-zinc-500 shadow-sm transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+    >
+      ⚙
+    </button>
+  );
+}
+
+// Sprint-25-Step-03: the "gear" settings dialog for a single mode — display
+// name (pure UI label, never sent to the model), prompt suffix (appended,
+// not replacing, the mode's hardcoded base prompt — ADR-0013's Override
+// semantics), and typical requests (one per line; rendered as pill buttons
+// that pre-fill the chat input, same UX pattern as CRITIC_SUBCATEGORIES
+// above). No permission check of any kind — ADR-0013's Implementation
+// constraint for this step: the single current user has full access.
+function AssistantSettingsDialog({
+  mode,
+  initial,
+  onCancel,
+  onSaved,
+}: {
+  mode: AssistantMode;
+  initial: AssistantSettingsEntry | null;
+  onCancel: () => void;
+  onSaved: (mode: AssistantMode, settings: AssistantSettingsEntry) => void;
+}) {
+  const meta = MODE_META[mode];
+  const [displayName, setDisplayName] = useState(initial?.displayName ?? "");
+  const [promptSuffix, setPromptSuffix] = useState(initial?.promptSuffix ?? "");
+  const [typicalRequestsText, setTypicalRequestsText] = useState(
+    (initial?.typicalRequests ?? []).join("\n"),
+  );
+  const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
+
+  async function handleSave() {
+    setStatus("saving");
+    const typicalRequests = typicalRequestsText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    try {
+      const response = await fetch("/api/assistant-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode,
+          displayName: displayName.trim() || null,
+          promptSuffix: promptSuffix.trim() || null,
+          typicalRequests,
+        }),
+      });
+      const data = await response.json();
+      if (!data.ok) {
+        throw new Error(data.error);
+      }
+      onSaved(mode, {
+        displayName: data.settings.displayName,
+        promptSuffix: data.settings.promptSuffix,
+        typicalRequests: data.settings.typicalRequests,
+      });
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
+        <h2 className="mb-4 text-lg font-semibold text-black dark:text-zinc-50">
+          Настройки режима «{meta.label}»
+        </h2>
+
+        <div className="flex flex-col gap-4">
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Отображаемое имя
+            </span>
+            <input
+              type="text"
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              placeholder={meta.label}
+              className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Дополнение к промпту
+            </span>
+            <textarea
+              value={promptSuffix}
+              onChange={(event) => setPromptSuffix(event.target.value)}
+              rows={4}
+              placeholder="Дополнительные инструкции для этого режима — добавляются к существующему промпту, не заменяют его."
+              className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Типовые запросы (по одному на строку)
+            </span>
+            <textarea
+              value={typicalRequestsText}
+              onChange={(event) => setTypicalRequestsText(event.target.value)}
+              rows={3}
+              placeholder={"Например:\nПродолжи сцену\nСделай диалог живее"}
+              className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            />
+          </label>
+
+          {status === "error" && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Не удалось сохранить настройки. Попробуйте ещё раз.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={onCancel}
+            className="rounded-full border border-zinc-300 px-4 py-1.5 text-sm font-medium text-black transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
+          >
+            Отмена
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={status === "saving"}
+            className="rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          >
+            {status === "saving" ? "Сохранение…" : "Сохранить"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Critic's assistant messages carry response.text verbatim, which is a JSON
 // string of reviews (aiBus.ts: `resultText = JSON.stringify(data.reviews)`,
 // unchanged by this step). Parsed at render time, not at receive time — the
@@ -116,6 +289,7 @@ function ReaderPanel({
   threads,
   scopedText,
   bookLanguage,
+  typicalRequests,
   onAppendMessage,
   onCreateThread,
   onRenameThread,
@@ -124,6 +298,10 @@ function ReaderPanel({
   threads: readonly AssistantThread[];
   scopedText: string;
   bookLanguage: string;
+  // Sprint-25-Step-03 (ADR-0013): optional preset "typical request" buttons
+  // for this mode's gear settings — absent/empty renders nothing, identical
+  // to this panel's behavior before this step.
+  typicalRequests?: string[];
   onAppendMessage: (message: ChatMessage, threadId: string) => void;
   onCreateThread: (options?: { name?: string; persona?: string }) => void;
   onRenameThread: (threadId: string, name: string) => void;
@@ -386,6 +564,19 @@ function ReaderPanel({
             ))}
           </div>
           <div className="flex flex-col gap-2">
+            {typicalRequests && typicalRequests.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {typicalRequests.map((request) => (
+                  <button
+                    key={request}
+                    onClick={() => setInput(request)}
+                    className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  >
+                    {request}
+                  </button>
+                ))}
+              </div>
+            )}
             <textarea
               value={input}
               onChange={(event) => setInput(event.target.value)}
@@ -517,11 +708,41 @@ export function AssistantPanel({
       scenes: Array<{ title: string; description: string }>;
     }>;
   } | null>(null);
-  const [selectedProposalKeys, setSelectedProposalKeys] =
-    useState<Set<string>>(new Set());
+  const [selectedProposalKeys, setSelectedProposalKeys] = useState<Set<string>>(
+    new Set(),
+  );
   const [proposalStatus, setProposalStatus] = useState<
     "idle" | "loading" | "error"
   >("idle");
+
+  // Sprint-25-Step-03 (ADR-0013): per-mode settings (gear dialog), loaded
+  // once on mount — instance-wide, not tied to the current book, so this
+  // does not depend on `book.id`.
+  const [settingsMap, setSettingsMap] =
+    useState<Record<AssistantMode, AssistantSettingsEntry | null>>(
+      EMPTY_SETTINGS_MAP,
+    );
+  const [settingsDialogMode, setSettingsDialogMode] =
+    useState<AssistantMode | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/assistant-settings")
+      .then((response) => response.json())
+      .then((data) => {
+        if (!cancelled && data.ok) {
+          setSettingsMap(data.settings);
+        }
+      })
+      .catch(() => {
+        // Same degrade-safely principle as the server side: if this fetch
+        // fails, every mode simply keeps its hardcoded default (no gear
+        // customization applied) — not a visible error.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (!book) {
     return (
@@ -534,6 +755,14 @@ export function AssistantPanel({
   }
 
   const meta = MODE_META[selectedMode];
+  // Sprint-25-Step-03: a customized displayName overrides MODE_META's
+  // hardcoded label everywhere it's shown — falls back to it whenever no
+  // customization exists yet (backward compatible, per the Step Card).
+  function displayNameFor(mode: AssistantMode): string {
+    return settingsMap[mode]?.displayName?.trim() || MODE_META[mode].label;
+  }
+  const selectedTypicalRequests =
+    settingsMap[selectedMode]?.typicalRequests ?? [];
   const thread = activeThreads?.[selectedMode];
   const messages = thread?.messages ?? [];
   // Editor/Co-author always work on the whole current scene; Critic/Reader
@@ -645,17 +874,12 @@ export function AssistantPanel({
       setStructureProposal(parsed);
       // Default all keys to selected.
       const allKeys = new Set<string>();
-      parsed.chapters.forEach(
-        (
-          ch: { scenes: Array<unknown> },
-          ci: number,
-        ) => {
-          allKeys.add(String(ci));
-          ch.scenes.forEach((_: unknown, si: number) => {
-            allKeys.add(`${ci}-${si}`);
-          });
-        },
-      );
+      parsed.chapters.forEach((ch: { scenes: Array<unknown> }, ci: number) => {
+        allKeys.add(String(ci));
+        ch.scenes.forEach((_: unknown, si: number) => {
+          allKeys.add(`${ci}-${si}`);
+        });
+      });
       setSelectedProposalKeys(allKeys);
       setProposalStatus("idle");
     } catch {
@@ -703,10 +927,7 @@ export function AssistantPanel({
       ? (() => {
           const allKeys = new Set<string>();
           structureProposal.chapters.forEach(
-            (
-              ch: { scenes: Array<unknown> },
-              ci: number,
-            ) => {
+            (ch: { scenes: Array<unknown> }, ci: number) => {
               allKeys.add(String(ci));
               ch.scenes.forEach((_: unknown, si: number) => {
                 allKeys.add(`${ci}-${si}`);
@@ -722,260 +943,289 @@ export function AssistantPanel({
   }
 
   return (
-    <aside className="flex max-h-96 w-full shrink-0 flex-col gap-3 overflow-y-auto border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:h-full lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-        Помощники
-      </h2>
-      {/* Sprint-25-Step-02: square icon buttons + hover tooltip, replacing
+    <>
+      <aside className="flex max-h-96 w-full shrink-0 flex-col gap-3 overflow-y-auto border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:h-full lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          Помощники
+        </h2>
+        {/* Sprint-25-Step-02: square icon buttons + hover tooltip, replacing
           the previous 2-column card grid with a description in every card —
           Product Owner decision (see this step's Step Card, "Часть 2"). The
           emoji glyph stays as the button's content on purpose — swapping it
           for a real icon set is Sprint-25-Step-05's job, not this step's
           (see Step Card's "Координация с содержимым иконки"). Native `title`
           supplies the hover tooltip — no new dependency for that alone. */}
-      <div className="flex gap-2">
-        {ASSISTANT_MODES.map((mode) => {
-          const info = MODE_META[mode];
-          const isActive = mode === selectedMode;
-          return (
-            <button
-              key={mode}
-              onClick={() => onSelectMode(mode)}
-              title={info.label}
-              aria-label={info.label}
-              aria-pressed={isActive}
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-lg transition-colors ${
-                isActive
-                  ? `${info.activeBorder} bg-white dark:bg-black`
-                  : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
-              }`}
-            >
-              {info.emoji}
-            </button>
-          );
-        })}
-      </div>
-      {/* Description now shown only for the currently active mode, moved
+        <div className="flex gap-2">
+          {ASSISTANT_MODES.map((mode) => {
+            const info = MODE_META[mode];
+            const isActive = mode === selectedMode;
+            const label = displayNameFor(mode);
+            return (
+              <div key={mode} className="relative">
+                <button
+                  onClick={() => onSelectMode(mode)}
+                  title={label}
+                  aria-label={label}
+                  aria-pressed={isActive}
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-lg transition-colors ${
+                    isActive
+                      ? `${info.activeBorder} bg-white dark:bg-black`
+                      : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
+                  }`}
+                >
+                  {info.emoji}
+                </button>
+                <GearButton
+                  label={label}
+                  onOpen={() => setSettingsDialogMode(mode)}
+                />
+              </div>
+            );
+          })}
+        </div>
+        {/* Description now shown only for the currently active mode, moved
           out from inside every card (Product Owner's stated goal: reclaim
           vertical space in the ~320px-wide panel). */}
-      <p className={`text-xs ${meta.accent}`}>{meta.description}</p>
+        <p className={`text-xs ${meta.accent}`}>{meta.description}</p>
 
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto border-t border-zinc-200 pt-3 dark:border-zinc-800">
-        <div className="flex items-center justify-between">
-          <p className={`text-xs font-medium ${meta.accent}`}>
-            {meta.emoji} {meta.label}
-          </p>
-          <div className="flex gap-1.5">
-            {selectedMode === "coauthor" && (
-              <button
-                onClick={handleProposeStructure}
-                disabled={proposalStatus === "loading"}
-                className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              >
-                {proposalStatus === "loading"
-                  ? "…"
-                  : "Предложить структуру"}
-              </button>
-            )}
-            {selectedMode === "critic" && (
-              <button
-                onClick={() => onCreateThread("critic")}
-                className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              >
-                Начать заново
-              </button>
-            )}
-          </div>
-        </div>
-
-        {selectedMode === "critic" && (
-          <div className="flex flex-wrap gap-1.5">
-            {CRITIC_SUBCATEGORIES.map((sub) => (
-              <button
-                key={sub.key ?? "all"}
-                onClick={() => setCriticSubcategory(sub.key)}
-                className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                  criticSubcategory === sub.key
-                    ? "border-red-400 bg-red-50 text-red-700 dark:border-red-600 dark:bg-red-950 dark:text-red-300"
-                    : "border-zinc-300 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                }`}
-              >
-                {sub.label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {selectedMode === "coauthor" && proposalStatus === "error" && (
-          <p className="text-sm text-red-600 dark:text-red-400">
-            Не удалось получить предложение. Попробуйте ещё раз.
-          </p>
-        )}
-
-        {selectedMode === "coauthor" && structureProposal && (
-          <div className="flex flex-col gap-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Предложенная структура
+        <div className="flex flex-1 flex-col gap-3 overflow-y-auto border-t border-zinc-200 pt-3 dark:border-zinc-800">
+          <div className="flex items-center justify-between">
+            <p className={`text-xs font-medium ${meta.accent}`}>
+              {meta.emoji} {displayNameFor(selectedMode)}
             </p>
-            <div className="flex flex-col gap-2">
-              {structureProposal.chapters.map((ch, ci) => {
-                const chapterKey = String(ci);
-                const isChapterChecked =
-                  selectedProposalKeys.has(chapterKey);
-                return (
-                  <div key={ci} className="flex flex-col gap-1">
-                    <label className="flex items-center gap-2 text-sm font-medium text-black dark:text-zinc-50">
-                      <input
-                        type="checkbox"
-                        checked={isChapterChecked}
-                        onChange={() =>
-                          toggleChapterKeys(ci, ch.scenes.length)
-                        }
-                        className="h-3.5 w-3.5 rounded border-zinc-300"
-                      />
-                      {ch.title}
-                      {ch.subtitle && (
-                        <span className="text-xs text-zinc-400 dark:text-zinc-600">
-                          — {ch.subtitle}
-                        </span>
-                      )}
-                    </label>
-                    <div className="flex flex-col gap-0.5 pl-5">
-                      {ch.scenes.map((scene, si) => {
-                        const sceneKey = `${ci}-${si}`;
-                        return (
-                          <label
-                            key={si}
-                            className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-400"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedProposalKeys.has(
-                                sceneKey,
-                              )}
-                              onChange={() =>
-                                toggleProposalKey(sceneKey)
-                              }
-                              className="mt-0.5 h-3 w-3 rounded border-zinc-300"
-                            />
-                            <span>
-                              <span className="font-medium">
-                                {scene.title}
-                              </span>{" "}
-                              — {scene.description}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleAcceptProposal(false)}
-                disabled={selectedProposalKeys.size === 0}
-                className="rounded-full bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-              >
-                Добавить выбранное
-              </button>
-              <button
-                onClick={() => handleAcceptProposal(true)}
-                className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              >
-                Добавить всё
-              </button>
+            <div className="flex gap-1.5">
+              {selectedMode === "coauthor" && (
+                <button
+                  onClick={handleProposeStructure}
+                  disabled={proposalStatus === "loading"}
+                  className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                >
+                  {proposalStatus === "loading" ? "…" : "Предложить структуру"}
+                </button>
+              )}
+              {selectedMode === "critic" && (
+                <button
+                  onClick={() => onCreateThread("critic")}
+                  className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                >
+                  Начать заново
+                </button>
+              )}
             </div>
           </div>
-        )}
 
-        {selectedMode === "reader" ? (
-          <ReaderPanel
-            threads={book.assistantThreads.reader}
-            scopedText={scopedText}
-            bookLanguage={book.language}
-            onAppendMessage={(message, threadId) =>
-              onAppendMessage("reader", message, threadId)
-            }
-            onCreateThread={(options) => onCreateThread("reader", options)}
-            onRenameThread={(threadId, name) =>
-              onRenameThread("reader", threadId, name)
-            }
-            onDeleteThread={(threadId) => onDeleteThread("reader", threadId)}
-          />
-        ) : (
-          <>
-            <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
-              {messages.length === 0 && (
-                <p className="text-xs text-zinc-400 dark:text-zinc-600">
-                  {meta.description}
-                </p>
-              )}
-              {messages.map((message, index) => {
-                if (message.role === "user") {
+          {selectedMode === "critic" && (
+            <div className="flex flex-wrap gap-1.5">
+              {CRITIC_SUBCATEGORIES.map((sub) => (
+                <button
+                  key={sub.key ?? "all"}
+                  onClick={() => setCriticSubcategory(sub.key)}
+                  className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                    criticSubcategory === sub.key
+                      ? "border-red-400 bg-red-50 text-red-700 dark:border-red-600 dark:bg-red-950 dark:text-red-300"
+                      : "border-zinc-300 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  }`}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {selectedMode === "coauthor" && proposalStatus === "error" && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Не удалось получить предложение. Попробуйте ещё раз.
+            </p>
+          )}
+
+          {selectedMode === "coauthor" && structureProposal && (
+            <div className="flex flex-col gap-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Предложенная структура
+              </p>
+              <div className="flex flex-col gap-2">
+                {structureProposal.chapters.map((ch, ci) => {
+                  const chapterKey = String(ci);
+                  const isChapterChecked = selectedProposalKeys.has(chapterKey);
                   return (
-                    <p
-                      key={index}
-                      className="whitespace-pre-wrap rounded-lg bg-zinc-200 p-2.5 text-sm text-black dark:bg-zinc-800 dark:text-zinc-50"
-                    >
-                      {message.content}
-                    </p>
+                    <div key={ci} className="flex flex-col gap-1">
+                      <label className="flex items-center gap-2 text-sm font-medium text-black dark:text-zinc-50">
+                        <input
+                          type="checkbox"
+                          checked={isChapterChecked}
+                          onChange={() =>
+                            toggleChapterKeys(ci, ch.scenes.length)
+                          }
+                          className="h-3.5 w-3.5 rounded border-zinc-300"
+                        />
+                        {ch.title}
+                        {ch.subtitle && (
+                          <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                            — {ch.subtitle}
+                          </span>
+                        )}
+                      </label>
+                      <div className="flex flex-col gap-0.5 pl-5">
+                        {ch.scenes.map((scene, si) => {
+                          const sceneKey = `${ci}-${si}`;
+                          return (
+                            <label
+                              key={si}
+                              className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-400"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedProposalKeys.has(sceneKey)}
+                                onChange={() => toggleProposalKey(sceneKey)}
+                                className="mt-0.5 h-3 w-3 rounded border-zinc-300"
+                              />
+                              <span>
+                                <span className="font-medium">
+                                  {scene.title}
+                                </span>{" "}
+                                — {scene.description}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
-                }
-                const reviews =
-                  selectedMode === "critic"
-                    ? parseReviews(message.content)
-                    : null;
-                return (
-                  <div key={index} className="flex flex-col gap-2">
-                    {reviews ? (
-                      <ReviewList reviews={reviews} />
-                    ) : (
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-black dark:text-zinc-50">
+                })}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleAcceptProposal(false)}
+                  disabled={selectedProposalKeys.size === 0}
+                  className="rounded-full bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                >
+                  Добавить выбранное
+                </button>
+                <button
+                  onClick={() => handleAcceptProposal(true)}
+                  className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                >
+                  Добавить всё
+                </button>
+              </div>
+            </div>
+          )}
+
+          {selectedMode === "reader" ? (
+            <ReaderPanel
+              threads={book.assistantThreads.reader}
+              scopedText={scopedText}
+              bookLanguage={book.language}
+              typicalRequests={selectedTypicalRequests}
+              onAppendMessage={(message, threadId) =>
+                onAppendMessage("reader", message, threadId)
+              }
+              onCreateThread={(options) => onCreateThread("reader", options)}
+              onRenameThread={(threadId, name) =>
+                onRenameThread("reader", threadId, name)
+              }
+              onDeleteThread={(threadId) => onDeleteThread("reader", threadId)}
+            />
+          ) : (
+            <>
+              <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
+                {messages.length === 0 && (
+                  <p className="text-xs text-zinc-400 dark:text-zinc-600">
+                    {meta.description}
+                  </p>
+                )}
+                {messages.map((message, index) => {
+                  if (message.role === "user") {
+                    return (
+                      <p
+                        key={index}
+                        className="whitespace-pre-wrap rounded-lg bg-zinc-200 p-2.5 text-sm text-black dark:bg-zinc-800 dark:text-zinc-50"
+                      >
                         {message.content}
                       </p>
-                    )}
-                    {(selectedMode === "coauthor" ||
-                      selectedMode === "editor") &&
-                      onReplaceSceneText && (
-                        <button
-                          onClick={() => onReplaceSceneText(message.content)}
-                          className="self-start rounded-full bg-black px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                        >
-                          Вставить в сцену
-                        </button>
+                    );
+                  }
+                  const reviews =
+                    selectedMode === "critic"
+                      ? parseReviews(message.content)
+                      : null;
+                  return (
+                    <div key={index} className="flex flex-col gap-2">
+                      {reviews ? (
+                        <ReviewList reviews={reviews} />
+                      ) : (
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-black dark:text-zinc-50">
+                          {message.content}
+                        </p>
                       )}
-                  </div>
-                );
-              })}
-            </div>
+                      {(selectedMode === "coauthor" ||
+                        selectedMode === "editor") &&
+                        onReplaceSceneText && (
+                          <button
+                            onClick={() => onReplaceSceneText(message.content)}
+                            className="self-start rounded-full bg-black px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                          >
+                            Вставить в сцену
+                          </button>
+                        )}
+                    </div>
+                  );
+                })}
+              </div>
 
-            <div className="flex flex-col gap-2">
-              <textarea
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder={meta.placeholder}
-                rows={2}
-                disabled={status === "loading"}
-                className="w-full resize-none rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-              />
-              <button
-                onClick={handleSend}
-                disabled={status === "loading" || !canSend}
-                className="self-start rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-              >
-                {status === "loading" ? "…" : "Спросить"}
-              </button>
-              {status === "error" && (
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  Помощник недоступен. Попробуйте ещё раз.
-                </p>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-    </aside>
+              <div className="flex flex-col gap-2">
+                {/* Sprint-25-Step-03 (ADR-0013): "typical request" preset
+                  buttons — pre-fill the chat input, same UX pattern as
+                  CRITIC_SUBCATEGORIES above; not a new AI Bus operation. */}
+                {selectedTypicalRequests.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedTypicalRequests.map((request) => (
+                      <button
+                        key={request}
+                        onClick={() => setInput(request)}
+                        className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                      >
+                        {request}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <textarea
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  placeholder={meta.placeholder}
+                  rows={2}
+                  disabled={status === "loading"}
+                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={status === "loading" || !canSend}
+                  className="self-start rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                >
+                  {status === "loading" ? "…" : "Спросить"}
+                </button>
+                {status === "error" && (
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    Помощник недоступен. Попробуйте ещё раз.
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </aside>
+      {settingsDialogMode && (
+        <AssistantSettingsDialog
+          mode={settingsDialogMode}
+          initial={settingsMap[settingsDialogMode]}
+          onCancel={() => setSettingsDialogMode(null)}
+          onSaved={(mode, settings) => {
+            setSettingsMap((previous) => ({ ...previous, [mode]: settings }));
+            setSettingsDialogMode(null);
+          }}
+        />
+      )}
+    </>
   );
 }

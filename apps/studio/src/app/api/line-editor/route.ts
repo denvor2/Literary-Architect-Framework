@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/ai/anthropic";
+import { getAssistantSettings } from "@/repositories";
+import { AssistantRole } from "@/generated/prisma/client";
 
 // Discovery implementation (Sprint-04-Step-05). Disposable — not a designed contract.
 // Deliberately minimal: no shared types, no validation library, no reuse beyond the
@@ -63,6 +65,20 @@ export async function POST(request: Request) {
       ? bookContext.language
       : "Russian";
 
+  // Sprint-25-Step-03 (ADR-0013): optional Admin-authored `promptSuffix` for
+  // the "editor" mode, appended after the base prompt below, never
+  // replacing it. A DB outage degrades to "no custom suffix" rather than a
+  // 500 — same reasoning as critic/route.ts and reader/route.ts.
+  let customPromptSuffix = "";
+  try {
+    const settings = await getAssistantSettings(AssistantRole.editor);
+    if (settings?.promptSuffix) {
+      customPromptSuffix = `\n\n${settings.promptSuffix}`;
+    }
+  } catch {
+    customPromptSuffix = "";
+  }
+
   try {
     const client = getAnthropicClient();
     const contextMessage = {
@@ -72,10 +88,11 @@ export async function POST(request: Request) {
         : sceneText,
     };
     const anthropicMessages = [contextMessage, ...messages];
+    const system = `You are a line editor. Fix grammar, punctuation, and word choice in the text the user gives you. Preserve the author's voice and meaning. Do not restructure the content. Return only the edited text, nothing else, unless the author asks a follow-up question about the edit in the conversation — then answer that question directly instead. If book context is provided, use it only to keep character names and established facts consistent — never use it to rewrite, extend, or add new content beyond the given text. The messages that follow may be an ongoing conversation about this same text, not just a single one-off request — take the prior exchange into account. When you answer a follow-up question directly (not when returning edited text), respond in ${bookLanguage}, regardless of the language of the conversation, unless the user explicitly asks for another language. The edited text itself must always stay in the same language as the original — never translate it, regardless of the book's declared language or the conversation's language.${customPromptSuffix}`;
     const message = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1024,
-      system: `You are a line editor. Fix grammar, punctuation, and word choice in the text the user gives you. Preserve the author's voice and meaning. Do not restructure the content. Return only the edited text, nothing else, unless the author asks a follow-up question about the edit in the conversation — then answer that question directly instead. If book context is provided, use it only to keep character names and established facts consistent — never use it to rewrite, extend, or add new content beyond the given text. The messages that follow may be an ongoing conversation about this same text, not just a single one-off request — take the prior exchange into account. When you answer a follow-up question directly (not when returning edited text), respond in ${bookLanguage}, regardless of the language of the conversation, unless the user explicitly asks for another language. The edited text itself must always stay in the same language as the original — never translate it, regardless of the book's declared language or the conversation's language.`,
+      system,
       messages: anthropicMessages,
     });
     const block = message.content.find((item) => item.type === "text");

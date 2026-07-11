@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/ai/anthropic";
+import { getAssistantSettings } from "@/repositories";
+import { AssistantRole } from "@/generated/prisma/client";
 
 // Discovery implementation (Sprint-09-Step-01). Disposable — not a designed contract.
 // Deliberately minimal: no shared types, no validation library, mirrors
@@ -59,14 +61,29 @@ export async function POST(request: Request) {
     }
   }
 
+  // Sprint-25-Step-03 (ADR-0013): optional Admin-authored `promptSuffix`,
+  // appended after everything else (base prompt + persona), never replacing
+  // it. A DB outage degrades to "no custom suffix" rather than a 500 — same
+  // reasoning as critic/route.ts.
+  let customPromptSuffix = "";
+  try {
+    const settings = await getAssistantSettings(AssistantRole.reader);
+    if (settings?.promptSuffix) {
+      customPromptSuffix = `\n\n${settings.promptSuffix}`;
+    }
+  } catch {
+    customPromptSuffix = "";
+  }
+
   try {
     const client = getAnthropicClient();
     const contextMessage = { role: "user" as const, content: sceneText };
     const anthropicMessages = [contextMessage, ...messages];
     const baseSystem = `You are a reader reacting to the text the user gives you — not an editor and not a literary critic. Do not comment on grammar, punctuation, or wording. Do not produce a structured, categorized assessment. Instead, share your subjective impressions as an engaged reader: what caught your attention, what confused or surprised you, how the pacing felt, what you expect or hope happens next. Write your reaction as flowing prose, in your own voice, not as a list. The messages that follow may be a continuing conversation about your reaction, not just the initial text — if the author asks a follow-up question about what you already said, answer it directly, still as the same engaged reader, not as an editor or critic. Respond in ${bookLanguage}, regardless of the language of the text you are given, unless the user explicitly asks for another language.`;
-    const system = persona
-      ? `You are reading and reacting as: ${persona}. Stay in this persona throughout.\n\n${baseSystem}`
-      : baseSystem;
+    const system =
+      (persona
+        ? `You are reading and reacting as: ${persona}. Stay in this persona throughout.\n\n${baseSystem}`
+        : baseSystem) + customPromptSuffix;
     const message = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1024,

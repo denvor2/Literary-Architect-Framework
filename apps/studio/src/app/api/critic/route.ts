@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/ai/anthropic";
+import { getAssistantSettings } from "@/repositories";
+import { AssistantRole } from "@/generated/prisma/client";
 
 // Discovery implementation (Sprint-08-Step-01). Disposable — not a designed contract.
 // Deliberately minimal: no shared types, no validation library, mirrors
@@ -17,6 +19,12 @@ import { getAnthropicClient } from "@/lib/ai/anthropic";
 // comments follow the book's declared language without widening that scope.
 // Sprint-19-Step-02: optional `subcategory` — a thematic lens that narrows
 // Critic's focus via a system prompt suffix. See ADR-0009.
+// Sprint-25-Step-03: optional Admin-authored `promptSuffix` (ADR-0013) —
+// appended after everything else below (base prompt, subcategory lens,
+// language instruction), never replacing any of it. This is deliberately
+// last: the base prompt + language instruction are what keep this route's
+// machine-readable `reviews[]` contract intact, and must always apply
+// regardless of what a free-text custom suffix asks for.
 
 const CRITIC_BASE_PROMPT = `You are a literary critic. Analyze the text the user gives you and identify concrete issues across these categories: Plot, Characters, Pacing, Style, Dialogue, General. For each issue found, produce one entry with exactly these fields: "category" (one of "Plot", "Characters", "Pacing", "Style", "Dialogue", "General"), "severity" (one of "low", "medium", "high"), and "comment" (a short explanation of the issue). If you find no issues, return an empty array. The messages that follow may include a continuing conversation about your review, not just the initial text — if the author asks a follow-up question about a previous review, still respond with an entry in this same schema (use category "General" and a severity that reflects how important your answer is) so your answer stays inside the array structure. Respond with ONLY a raw JSON array of such entries — no markdown code fences, no explanation, no text before or after the array.`;
 
@@ -26,7 +34,8 @@ const CRITIC_SUBCATEGORY_PROMPTS: Record<string, string> = {
   fact: "Focus your review specifically on factual accuracy and worldbuilding consistency: check whether the text's internal logic holds, whether described actions are physically plausible, whether setting details are consistent, and whether any real-world facts mentioned are correct. Only report issues in this domain.",
   developmental:
     "Focus your review specifically on developmental aspects: character arc progression, emotional depth and authenticity, structural pacing (too fast/too slow), thematic coherence, and whether the story delivers on its premise. Only report issues in this domain.",
-  style: "Focus your review specifically on prose style: sentence structure variety, word choice precision, dialogue voice distinctiveness, rhythm and flow, show-vs-tell balance, and overuse of cliches or filler words. Only report issues in this domain.",
+  style:
+    "Focus your review specifically on prose style: sentence structure variety, word choice precision, dialogue voice distinctiveness, rhythm and flow, show-vs-tell balance, and overuse of cliches or filler words. Only report issues in this domain.",
 };
 
 export async function POST(request: Request) {
@@ -78,6 +87,19 @@ export async function POST(request: Request) {
 
   const languageInstruction = ` Write the "comment" field of each entry in ${bookLanguage}, regardless of the language of the text you are given, unless the user explicitly asks for another language. The "category" and "severity" values themselves must stay exactly as specified above (the English enum values) — never translate them.`;
 
+  // Sprint-25-Step-03 (ADR-0013): a DB outage here must not break Critic
+  // entirely — it degrades to "no custom suffix", the same behavior as
+  // before this step, not a 500.
+  let customPromptSuffix = "";
+  try {
+    const settings = await getAssistantSettings(AssistantRole.critic);
+    if (settings?.promptSuffix) {
+      customPromptSuffix = `\n\n${settings.promptSuffix}`;
+    }
+  } catch {
+    customPromptSuffix = "";
+  }
+
   try {
     const client = getAnthropicClient();
     const contextMessage = { role: "user" as const, content: sceneText };
@@ -85,7 +107,7 @@ export async function POST(request: Request) {
     const message = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1024,
-      system: `${CRITIC_BASE_PROMPT}${subcategorySuffix}${languageInstruction}`,
+      system: `${CRITIC_BASE_PROMPT}${subcategorySuffix}${languageInstruction}${customPromptSuffix}`,
       messages: anthropicMessages,
     });
     const block = message.content.find((item) => item.type === "text");

@@ -73,7 +73,17 @@
       "Bash(curl -s http://localhost:3000/)",
       "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")",
       "Bash(cat > *)",
-      "Bash(python3)"
+      "Bash(python3)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes, сбросить development БД\" npx prisma migrate reset --force)",
+      "Bash(node scripts/set-admin-password.js)",
+      "Bash(npx tsx -e ' *)",
+      "Bash(tasklist /FI \"IMAGENAME eq node.exe\")",
+      "Bash(pkill -9 node)",
+      "Bash(psql -U postgres -d literary_studio -c \"SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename;\")",
+      "Bash(grep -v \"^$\")",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(git restore *)",
+      "Bash(git rm *)"
     ],
     "additionalDirectories": [
       "\\tmp"

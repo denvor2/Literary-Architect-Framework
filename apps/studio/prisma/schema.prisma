@@ -28,6 +28,7 @@ model User {
   series          Series[]
   subscriptions   UserSubscription[]
   payments        Payment[]
+  events          Event[]
 
   @@index([email])
 }
@@ -155,6 +156,33 @@ enum PaymentStatus {
   failed
 }
 
+enum EventType {
+  login_success
+  login_failure
+  logout
+  register_success
+  book_created
+  book_updated
+  book_deleted
+  chapter_created
+  chapter_updated
+  chapter_deleted
+  scene_created
+  scene_updated
+  scene_deleted
+  ai_request_line_editor
+  ai_request_critic
+  ai_request_reader
+  ai_request_coauthor
+  subscription_created
+  subscription_updated
+  subscription_expired
+  subscription_cancelled
+  payment_created
+  payment_completed
+  payment_failed
+}
+
 // Sprint-25-Step-03 (ADR-0013): one record per AssistantMode (coauthor/
 // editor/critic/reader), instance-wide — NOT per Book, NOT per User (no
 // real Users exist yet, ADR-0012 Decision 1). This is the Admin-default
@@ -238,4 +266,35 @@ model Payment {
 
   @@index([userId, status])
   @@index([userSubscriptionId])
+}
+
+// Sprint-32-Step-02 (ADR-0017): Event logging schema — audit trail for all user actions.
+// Two-table approach: hot (Event) and archive (EventArchive) with 730-day retention.
+model Event {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType       EventType
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([userId, eventType, createdAt])
+}
+
+model EventArchive {
+  id              String    @id @default(cuid())
+  userId          String
+  eventType       EventType
+  metadata        Json?
+  createdAt       DateTime
+  archivedAt      DateTime  @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([archivedAt])
 }

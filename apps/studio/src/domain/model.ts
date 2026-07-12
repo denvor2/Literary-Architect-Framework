@@ -42,6 +42,7 @@ export type Book = {
   readonly assistantThreads: AssistantThreads;
   readonly ideas: readonly Idea[];
   readonly seriesId?: string; // Sprint-29-Step-05: optional reference to Series
+  readonly deletedAt?: Date; // Sprint-33-Step-01: soft delete timestamp
 };
 
 export type Character = {

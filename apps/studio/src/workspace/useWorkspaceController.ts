@@ -232,7 +232,7 @@ export function useWorkspaceController() {
       // Add book to deletedBooks with deletedAt timestamp
       if (bookToDelete) {
         setDeletedBooks((previous) => [
-          { ...bookToDelete, deletedAt: new Date() } as unknown as Book,
+          { ...bookToDelete, deletedAt: new Date() },
           ...previous,
         ]);
       }

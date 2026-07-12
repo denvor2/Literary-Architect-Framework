@@ -63,9 +63,14 @@
 ### 1. Статическая верификация
 ```
 ✓ npx eslint — БЕЗ ОШИБОК (все файлы)
-✓ TypeScript: no errors on modified files
+✓ TypeScript: исправлены (добавлено deletedAt в domain Book)
 ✓ Prettier: format correct
 ```
+
+### Исправления после первичной проверки:
+- ✓ Добавлен deletedAt?: Date в src/domain/model.ts Book type
+- ✓ Исправлена деструктуризация в page.tsx (добавлены deletedBooks, restoreBook, permanentlyDeleteBook)
+- ✓ Удалён типовой лаж (as unknown as Book) в useWorkspaceController.ts
 
 ### 2. Загрузка deletedBooks
 ```typescript

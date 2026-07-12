@@ -12,7 +12,14 @@ export {
   updateUserPassword,
   updateUserStatus,
 } from "./userRepository";
-export { loadBooksForUser, saveBooksForUser } from "./bookRepository";
+export {
+  loadBooksForUser,
+  loadDeletedBooksForUser,
+  saveBooksForUser,
+  softDeleteBook,
+  restoreBook,
+  permanentlyDeleteBook,
+} from "./bookRepository";
 export {
   getAssistantSettings,
   getAllAssistantSettings,

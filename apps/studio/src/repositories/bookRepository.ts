@@ -139,8 +139,24 @@ export async function loadBooksForUser(userId: string): Promise<DomainBook[]> {
     throw new Error("Database connection unavailable. Cannot load books.");
   }
   const books = await prisma.book.findMany({
-    where: { userId },
+    where: { userId, deletedAt: null },
     orderBy: { createdAt: "asc" },
+    include: bookInclude,
+  });
+  return books.map(toDomainBook);
+}
+
+export async function loadDeletedBooksForUser(
+  userId: string,
+): Promise<DomainBook[]> {
+  if (!prisma) {
+    throw new Error(
+      "Database connection unavailable. Cannot load deleted books.",
+    );
+  }
+  const books = await prisma.book.findMany({
+    where: { userId, deletedAt: { not: null } },
+    orderBy: { deletedAt: "desc" },
     include: bookInclude,
   });
   return books.map(toDomainBook);
@@ -336,4 +352,37 @@ export async function saveBooksForUser(
     },
     { maxWait: 10_000, timeout: 30_000 },
   );
+}
+
+export async function softDeleteBook(bookId: string): Promise<void> {
+  if (!prisma) {
+    throw new Error(
+      "Database connection unavailable. Cannot soft delete book.",
+    );
+  }
+  await prisma.book.update({
+    where: { id: bookId },
+    data: { deletedAt: new Date() },
+  });
+}
+
+export async function restoreBook(bookId: string): Promise<void> {
+  if (!prisma) {
+    throw new Error("Database connection unavailable. Cannot restore book.");
+  }
+  await prisma.book.update({
+    where: { id: bookId },
+    data: { deletedAt: null },
+  });
+}
+
+export async function permanentlyDeleteBook(bookId: string): Promise<void> {
+  if (!prisma) {
+    throw new Error(
+      "Database connection unavailable. Cannot permanently delete book.",
+    );
+  }
+  await prisma.book.delete({
+    where: { id: bookId },
+  });
 }

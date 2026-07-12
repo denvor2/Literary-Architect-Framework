@@ -1,38 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getOrCreateDefaultUser,
   loadBooksForUser,
   saveBooksForUser,
+  softDeleteBook,
+  restoreBook,
+  permanentlyDeleteBook,
 } from "@/repositories";
 import { extractToken, verifyJWT } from "@/lib/auth";
 import { safeLogEvent } from "@/lib/auditLogger";
 
-// Sprint-30-Step-04: Authentication added. JWT auth via middleware.
-// Per middleware.ts, this endpoint is protected — JWT already validated.
-// If middleware allowed the request through, JWT is valid.
-// userId extracted from token payload.
-
-async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
-  const token = extractToken(request);
-  if (!token) return null;
-
-  const payload = await verifyJWT(token);
-  if (!payload) return null;
-
-  return payload.sub;
-}
-
 export async function GET(request: NextRequest) {
   try {
     // Get userId from JWT (Sprint-30-Step-04 auth)
-    let userId = await getUserIdFromAuth(request);
-
-    // Fallback to default user if auth not present (backwards compatibility during transition)
-    if (!userId) {
-      const user = await getOrCreateDefaultUser();
-      userId = user.id;
+    const token = extractToken(request);
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized" },
+        { status: 401 },
+      );
     }
 
+    const payload = await verifyJWT(token);
+    if (!payload || !payload.sub) {
+      return NextResponse.json(
+        { ok: false, error: "Invalid token" },
+        { status: 401 },
+      );
+    }
+
+    const userId = payload.sub;
     const books = await loadBooksForUser(userId);
     return NextResponse.json({ ok: true, books });
   } catch (error) {
@@ -58,13 +54,23 @@ export async function PUT(request: NextRequest) {
 
   try {
     // Get userId from JWT (Sprint-30-Step-04 auth)
-    let userId = await getUserIdFromAuth(request);
-
-    // Fallback to default user if auth not present (backwards compatibility)
-    if (!userId) {
-      const user = await getOrCreateDefaultUser();
-      userId = user.id;
+    const token = extractToken(request);
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized" },
+        { status: 401 },
+      );
     }
+
+    const payload = await verifyJWT(token);
+    if (!payload || !payload.sub) {
+      return NextResponse.json(
+        { ok: false, error: "Invalid token" },
+        { status: 401 },
+      );
+    }
+
+    const userId = payload.sub;
 
     // Count chapters and scenes for logging
     let chaptersCount = 0;
@@ -88,6 +94,67 @@ export async function PUT(request: NextRequest) {
       chaptersCount,
       scenesCount,
     });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json(
+      { ok: false, error: errorMessage },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const bookId = searchParams.get("id");
+  const action = searchParams.get("action") || "soft-delete";
+
+  if (!bookId) {
+    return NextResponse.json(
+      { ok: false, error: "Book id is required" },
+      { status: 400 },
+    );
+  }
+
+  try {
+    // Get userId from JWT (Sprint-30-Step-04 auth)
+    const token = extractToken(request);
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized" },
+        { status: 401 },
+      );
+    }
+
+    const payload = await verifyJWT(token);
+    if (!payload || !payload.sub) {
+      return NextResponse.json(
+        { ok: false, error: "Invalid token" },
+        { status: 401 },
+      );
+    }
+
+    const userId = payload.sub;
+
+    if (action === "restore") {
+      await restoreBook(bookId);
+      // Logging disabled (EventType not defined in schema)
+    } else if (action === "permanent") {
+      await permanentlyDeleteBook(bookId);
+      // Logging disabled (EventType not defined in schema)
+    } else {
+      // Default: soft delete
+      // First load the book to get its title for logging
+      const books = await loadBooksForUser(userId);
+      const book = books.find((b) => b.id === bookId);
+      const bookTitle = book?.title || "Unknown";
+
+      await softDeleteBook(bookId);
+      // Log book deleted event
+      await safeLogEvent(userId, "book_deleted", { bookId, title: bookTitle });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

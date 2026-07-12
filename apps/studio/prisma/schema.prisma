@@ -1,7 +1,3 @@
-// Sprint-23-Step-01: Prisma schema for Literary Studio domain model.
-// Maps 1:1 to domain/model.ts types. Workspace UI state (activeBookId,
-// selectedChapterId, etc.) is NOT persisted here — it's ephemeral.
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -11,108 +7,218 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  admin
-  user
+model AssistantSettings {
+  id              String        @id
+  mode            AssistantRole @unique
+  displayName     String?
+  promptSuffix    String?
+  typicalRequests String[]      @default([])
+  updatedAt       DateTime
 }
 
-model User {
-  id              String   @id @default(cuid())
-  email           String   @unique
-  passwordHash    String?
-  role            Role     @default(user)
-  isBlocked       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  books           Book[]
-  series          Series[]
-  subscriptions   UserSubscription[]
-  payments        Payment[]
-  events          Event[]
+model AssistantThread {
+  id          String        @id
+  bookId      String
+  role        AssistantRole
+  name        String
+  persona     String?
+  Book        Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  ChatMessage ChatMessage[]
 
-  @@index([email])
+  @@index([bookId])
+  @@index([bookId, role])
 }
 
 model Book {
-  id              String   @id @default(cuid())
+  id              String            @id
   userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  seriesId        String?
-  series          Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull)
   title           String
   genre           String
   language        String
-  premise         String   @default("")
-  shortAnnotation String   @default("")
-  fullAnnotation  String   @default("")
-  tags            String[] @default([])
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  chapters          Chapter[]
-  characters        Character[]
-  ideas             Idea[]
-  assistantThreads  AssistantThread[]
+  premise         String            @default("")
+  shortAnnotation String            @default("")
+  fullAnnotation  String            @default("")
+  tags            String[]          @default([])
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  seriesId        String?
+  deletedAt       DateTime?
+  AssistantThread AssistantThread[]
+  Series          Series?           @relation(fields: [seriesId], references: [id])
+  User            User              @relation(fields: [userId], references: [id])
+  Chapter         Chapter[]
+  Character       Character[]
+  Idea            Idea[]
 
   @@index([seriesId])
+  @@index([userId, deletedAt])
 }
 
 model Chapter {
-  id       String  @id @default(cuid())
+  id       String  @id
   bookId   String
-  book     Book    @relation(fields: [bookId], references: [id], onDelete: Cascade)
   title    String
   subtitle String  @default("")
   order    Int     @default(0)
-  scenes   Scene[]
+  Book     Book    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  Scene    Scene[]
 
   @@index([bookId])
 }
 
-model Scene {
-  id        String  @id @default(cuid())
-  chapterId String
-  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  title     String
-  text      String  @default("")
-  order     Int     @default(0)
-
-  @@index([chapterId])
-}
-
 model Character {
-  id          String @id @default(cuid())
+  id          String @id
   bookId      String
-  book        Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
   name        String
   description String @default("")
   notes       String @default("")
   photoUrl    String @default("")
+  Book        Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@index([bookId])
+}
+
+model ChatMessage {
+  id              String          @id
+  threadId        String
+  role            MessageRole
+  content         String
+  createdAt       DateTime        @default(now())
+  AssistantThread AssistantThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+}
+
+model Event {
+  id        String    @id
+  userId    String
+  eventType EventType
+  metadata  Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([eventType])
+  @@index([userId, eventType, createdAt])
+  @@index([userId])
+}
+
+model EventArchive {
+  id         String    @id
+  userId     String
+  eventType  EventType
+  metadata   Json?
+  createdAt  DateTime
+  archivedAt DateTime  @default(now())
+
+  @@index([archivedAt])
+  @@index([createdAt])
+  @@index([eventType])
+  @@index([userId])
 }
 
 model Idea {
-  id        String   @id @default(cuid())
+  id        String   @id
   bookId    String
-  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   text      String
   createdAt DateTime @default(now())
+  Book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@index([bookId])
 }
 
-model AssistantThread {
-  id       String        @id @default(cuid())
-  bookId   String
-  book     Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  role     AssistantRole
-  name     String
-  persona  String?
-  messages ChatMessage[]
+model Payment {
+  id                 String           @id
+  userId             String
+  userSubscriptionId String
+  amount             Int
+  status             PaymentStatus    @default(pending)
+  externalPaymentId  String?
+  paymentMethod      String?
+  failureReason      String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime
+  User               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  UserSubscription   UserSubscription @relation(fields: [userSubscriptionId], references: [id], onDelete: Cascade)
 
-  @@index([bookId])
-  @@index([bookId, role])
+  @@index([userId, status])
+  @@index([userSubscriptionId])
+}
+
+model Plan {
+  id                   String             @id
+  name                 String             @unique
+  tier                 PlanTier           @unique
+  price                Int                @default(0)
+  billingPeriodDays    Int                @default(30)
+  maxAssistantRequests Int                @default(0)
+  maxCharactersPerReq  Int                @default(0)
+  features             String[]           @default([])
+  description          String?
+  isActive             Boolean            @default(true)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime
+  UserSubscription     UserSubscription[]
+}
+
+model Scene {
+  id        String  @id
+  chapterId String
+  title     String
+  text      String  @default("")
+  order     Int     @default(0)
+  Chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([chapterId])
+}
+
+model Series {
+  id          String   @id
+  userId      String
+  title       String
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  Book        Book[]
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model User {
+  id               String            @id
+  createdAt        DateTime          @default(now())
+  email            String            @unique
+  passwordHash     String?
+  role             Role              @default(user)
+  isBlocked        Boolean           @default(false)
+  updatedAt        DateTime
+  Book             Book[]
+  Event            Event[]
+  Payment          Payment[]
+  Series           Series[]
+  UserSubscription UserSubscription?
+
+  @@index([email])
+}
+
+model UserSubscription {
+  id                     String             @id
+  userId                 String             @unique(map: "unique_active_subscription_per_user")
+  planId                 String
+  status                 SubscriptionStatus @default(active)
+  startDate              DateTime           @default(now())
+  endDate                DateTime?
+  externalSubscriptionId String?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime
+  Payment                Payment[]
+  Plan                   Plan               @relation(fields: [planId], references: [id])
+  User                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
 }
 
 enum AssistantRole {
@@ -120,40 +226,6 @@ enum AssistantRole {
   editor
   critic
   reader
-}
-
-model ChatMessage {
-  id         String           @id @default(cuid())
-  threadId   String
-  thread     AssistantThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  role       MessageRole
-  content    String
-  createdAt  DateTime         @default(now())
-
-  @@index([threadId])
-}
-
-enum MessageRole {
-  user
-  assistant
-}
-
-enum PlanTier {
-  free
-  premium
-  pro
-}
-
-enum SubscriptionStatus {
-  active
-  expired
-  cancelled
-}
-
-enum PaymentStatus {
-  pending
-  completed
-  failed
 }
 
 enum EventType {
@@ -183,118 +255,30 @@ enum EventType {
   payment_failed
 }
 
-// Sprint-25-Step-03 (ADR-0013): one record per AssistantMode (coauthor/
-// editor/critic/reader), instance-wide — NOT per Book, NOT per User (no
-// real Users exist yet, ADR-0012 Decision 1). This is the Admin-default
-// layer ADR-0013's "Storage scope" describes; a later per-(User, mode)
-// override table is explicitly Sprint 29/ADR-0015's job, not built here.
-// `mode` reuses the existing AssistantRole enum rather than introducing a
-// parallel one — same four values, same meaning, one source of truth.
-model AssistantSettings {
-  id              String        @id @default(cuid())
-  mode            AssistantRole @unique
-  displayName     String?
-  promptSuffix    String?
-  typicalRequests String[]      @default([])
-  updatedAt       DateTime      @updatedAt
+enum MessageRole {
+  user
+  assistant
 }
 
-// Sprint-29-Step-02: Series entity for grouping related books with common characters/world
-model Series {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String
-  description String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  books       Book[]
-
-  @@index([userId])
+enum PaymentStatus {
+  pending
+  completed
+  failed
 }
 
-// Sprint-31-Step-02 (ADR-0016): Billing schema — instance-wide Plan definitions,
-// per-user subscriptions, and payment history tracking for multi-tenant SaaS.
-model Plan {
-  id                   String   @id @default(cuid())
-  name                 String   @unique
-  tier                 PlanTier @unique
-  price                Int      @default(0)
-  billingPeriodDays    Int      @default(30)
-  maxAssistantRequests Int      @default(0)
-  maxCharactersPerReq  Int      @default(0)
-  features             String[] @default([])
-  description          String?
-  isActive             Boolean  @default(true)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  subscriptions        UserSubscription[]
+enum PlanTier {
+  free
+  premium
+  pro
 }
 
-model UserSubscription {
-  id                     String             @id @default(cuid())
-  userId                 String
-  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId                 String
-  plan                   Plan               @relation(fields: [planId], references: [id])
-  status                 SubscriptionStatus @default(active)
-  startDate              DateTime           @default(now())
-  endDate                DateTime?
-  externalSubscriptionId String?
-  createdAt              DateTime           @default(now())
-  updatedAt              DateTime           @updatedAt
-  payments               Payment[]
-
-  @@unique([userId], map: "unique_active_subscription_per_user")
-  @@index([userId, status])
+enum Role {
+  admin
+  user
 }
 
-model Payment {
-  id                 String        @id @default(cuid())
-  userId             String
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userSubscriptionId String
-  subscription       UserSubscription @relation(fields: [userSubscriptionId], references: [id], onDelete: Cascade)
-  amount             Int
-  status             PaymentStatus @default(pending)
-  externalPaymentId  String?
-  paymentMethod      String?
-  failureReason      String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-
-  @@index([userId, status])
-  @@index([userSubscriptionId])
-}
-
-// Sprint-32-Step-02 (ADR-0017): Event logging schema — audit trail for all user actions.
-// Two-table approach: hot (Event) and archive (EventArchive) with 730-day retention.
-model Event {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventType       EventType
-  metadata        Json?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([eventType])
-  @@index([createdAt])
-  @@index([userId, eventType, createdAt])
-}
-
-model EventArchive {
-  id              String    @id @default(cuid())
-  userId          String
-  eventType       EventType
-  metadata        Json?
-  createdAt       DateTime
-  archivedAt      DateTime  @default(now())
-
-  @@index([userId])
-  @@index([eventType])
-  @@index([createdAt])
-  @@index([archivedAt])
+enum SubscriptionStatus {
+  active
+  expired
+  cancelled
 }

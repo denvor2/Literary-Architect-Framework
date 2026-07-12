@@ -180,13 +180,33 @@ export function useWorkspaceController() {
   }
 
   function deleteBook(bookId: string) {
+    // Soft delete: call API to mark book as deleted, then update local state
+    void (async () => {
+      try {
+        const response = await fetch(
+          `/api/workspace?id=${encodeURIComponent(bookId)}`,
+          { method: "DELETE" },
+        );
+        if (!response.ok) {
+          throw new Error(
+            `Failed to soft delete book: ${response.status} ${response.statusText}`,
+          );
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to soft delete book";
+        console.error("deleteBook API error:", message);
+        throw error;
+      }
+    })();
+
     setWorkspace((previous) => {
       const remainingBooks = previous.books.filter(
         (book) => book.id !== bookId,
       );
       const newActiveBookId =
         previous.activeBookId === bookId
-          ? remainingBooks[0]?.id ?? null
+          ? (remainingBooks[0]?.id ?? null)
           : previous.activeBookId;
       return {
         ...previous,
@@ -197,6 +217,50 @@ export function useWorkspaceController() {
         selectedCharacterId: null,
       };
     });
+  }
+
+  function restoreBook(bookId: string): void {
+    void (async () => {
+      try {
+        const response = await fetch(
+          `/api/workspace?id=${encodeURIComponent(bookId)}&action=restore`,
+          { method: "DELETE" },
+        );
+        if (!response.ok) {
+          throw new Error(
+            `Failed to restore book: ${response.status} ${response.statusText}`,
+          );
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to restore book";
+        console.error("restoreBook API error:", message);
+        throw error;
+      }
+    })();
+  }
+
+  function permanentlyDeleteBook(bookId: string): void {
+    void (async () => {
+      try {
+        const response = await fetch(
+          `/api/workspace?id=${encodeURIComponent(bookId)}&action=permanent`,
+          { method: "DELETE" },
+        );
+        if (!response.ok) {
+          throw new Error(
+            `Failed to permanently delete book: ${response.status} ${response.statusText}`,
+          );
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to permanently delete book";
+        console.error("permanentlyDeleteBook API error:", message);
+        throw error;
+      }
+    })();
   }
 
   function updateBook(
@@ -1041,6 +1105,8 @@ export function useWorkspaceController() {
     createBook,
     updateBook,
     deleteBook,
+    restoreBook,
+    permanentlyDeleteBook,
     createChapter,
     updateChapter,
     createScene,

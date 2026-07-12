@@ -65,7 +65,13 @@
       "Bash(curl -s http://localhost:3000/api/billing/plan -H \"Cookie: token=test\")",
       "Bash(curl -s -X POST http://localhost:3000/api/billing/subscribe -H 'Cookie: token=test' -H 'Content-Type: application/json' -d '{\"planId\":\"test\"}')",
       "Bash(curl -s http://localhost:3000/api/auth/status)",
-      "Bash(curl -s http://localhost:3000/api/workspace -H \"Cookie: token=invalid\")"
+      "Bash(curl -s http://localhost:3000/api/workspace -H \"Cookie: token=invalid\")",
+      "Bash(findstr node *)",
+      "Bash(curl -s http://localhost:3003)",
+      "Bash(curl -v http://localhost:3003/)",
+      "Bash(curl http://localhost:3003/)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")"
     ]
   }
 }

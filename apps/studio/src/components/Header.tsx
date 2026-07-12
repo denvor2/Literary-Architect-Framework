@@ -7,6 +7,9 @@ import {
   searchWorkspace,
   type ChapterOrSceneSearchMatch,
 } from "@/domain/search";
+import { useBillingController } from "@/billing";
+import { CurrentPlanDisplay } from "./CurrentPlanDisplay";
+import { PlanSelectionDialog } from "./PlanSelectionDialog";
 
 // Sprint-25-Step-01: chrome-only app menu bar — Product Owner explicitly
 // confirmed (twice) this is a placeholder for a future full menu (see
@@ -113,6 +116,10 @@ export function Header({
 }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
+
+  // Billing state
+  const billingController = useBillingController();
+  const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -339,7 +346,7 @@ export function Header({
         </label>
       </div>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-4">
         <button
           disabled
           title="Переключение языка интерфейса — скоро"
@@ -348,7 +355,16 @@ export function Header({
           RU
         </button>
         {currentUser ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            {billingController.currentPlan && (
+              <CurrentPlanDisplay
+                planName={billingController.currentPlan.name}
+                daysUntilExpiry={billingController.daysUntilExpiry}
+                isExpired={billingController.isExpired}
+                tier={billingController.currentPlan.tier}
+                onUpgradeClick={() => setIsPlanDialogOpen(true)}
+              />
+            )}
             <div className="flex flex-col items-end">
               <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
                 {currentUser.email}
@@ -376,6 +392,13 @@ export function Header({
           </button>
         )}
       </div>
+
+      <PlanSelectionDialog
+        isOpen={isPlanDialogOpen}
+        onClose={() => setIsPlanDialogOpen(false)}
+        currentPlanId={billingController.currentPlan?.id}
+        onSelectPlan={billingController.selectPlan}
+      />
     </header>
   );
 }

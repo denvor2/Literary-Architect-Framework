@@ -5,6 +5,7 @@
 
 import { NextResponse } from "next/server";
 import { createUser } from "@/repositories/userRepository";
+import { safeLogEvent } from "@/lib/auditLogger";
 
 // Validation limits
 const EMAIL_MAX_LENGTH = 254; // RFC 5321
@@ -149,6 +150,12 @@ export async function POST(request: Request) {
 
     // Create user
     const user = await createUser(email, password, "user");
+
+    // Log successful registration
+    await safeLogEvent(user.id, "register_success", {
+      email: user.email,
+      role: user.role,
+    });
 
     return NextResponse.json(
       {

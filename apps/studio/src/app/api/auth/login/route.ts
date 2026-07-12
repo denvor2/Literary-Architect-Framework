@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { findUserByEmail, checkPassword } from "@/repositories/userRepository";
 import { generateJWT, setAuthCookie } from "@/lib/auth";
+import { safeLogEvent } from "@/lib/auditLogger";
 
 export async function POST(request: Request) {
   try {
@@ -34,6 +35,12 @@ export async function POST(request: Request) {
     // Find user by email
     const user = await findUserByEmail(email);
     if (!user) {
+      await safeLogEvent(email, "login_failure", {
+        email,
+        failureReason: "invalid_credentials",
+        ipAddress: request.headers.get("x-forwarded-for") || "unknown",
+        userAgent: request.headers.get("user-agent"),
+      });
       return NextResponse.json(
         { ok: false, error: "Invalid credentials" },
         { status: 401 },
@@ -42,6 +49,12 @@ export async function POST(request: Request) {
 
     // Check if user is blocked
     if (user.isBlocked) {
+      await safeLogEvent(user.id, "login_failure", {
+        email: user.email,
+        failureReason: "user_blocked",
+        ipAddress: request.headers.get("x-forwarded-for") || "unknown",
+        userAgent: request.headers.get("user-agent"),
+      });
       return NextResponse.json(
         { ok: false, error: "Account is blocked" },
         { status: 403 },
@@ -51,6 +64,12 @@ export async function POST(request: Request) {
     // Verify password
     const passwordValid = await checkPassword(password, user.passwordHash);
     if (!passwordValid) {
+      await safeLogEvent(user.id, "login_failure", {
+        email: user.email,
+        failureReason: "invalid_credentials",
+        ipAddress: request.headers.get("x-forwarded-for") || "unknown",
+        userAgent: request.headers.get("user-agent"),
+      });
       return NextResponse.json(
         { ok: false, error: "Invalid credentials" },
         { status: 401 },
@@ -59,6 +78,13 @@ export async function POST(request: Request) {
 
     // Generate JWT token (async with jose for Edge Runtime compatibility)
     const token = await generateJWT(user);
+
+    // Log successful login
+    await safeLogEvent(user.id, "login_success", {
+      email: user.email,
+      ipAddress: request.headers.get("x-forwarded-for") || "unknown",
+      userAgent: request.headers.get("user-agent"),
+    });
 
     // Create response with user data
     const response = NextResponse.json(

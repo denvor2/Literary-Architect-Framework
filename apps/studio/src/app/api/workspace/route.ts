@@ -5,15 +5,14 @@ import {
   saveBooksForUser,
 } from "@/repositories";
 import { extractToken, verifyJWT } from "@/lib/auth";
+import { safeLogEvent } from "@/lib/auditLogger";
 
 // Sprint-30-Step-04: Authentication added. JWT auth via middleware.
 // Per middleware.ts, this endpoint is protected — JWT already validated.
 // If middleware allowed the request through, JWT is valid.
 // userId extracted from token payload.
 
-async function getUserIdFromAuth(
-  request: NextRequest,
-): Promise<string | null> {
+async function getUserIdFromAuth(request: NextRequest): Promise<string | null> {
   const token = extractToken(request);
   if (!token) return null;
 
@@ -67,7 +66,29 @@ export async function PUT(request: NextRequest) {
       userId = user.id;
     }
 
+    // Count chapters and scenes for logging
+    let chaptersCount = 0;
+    let scenesCount = 0;
+    for (const book of books) {
+      if (book.chapters && Array.isArray(book.chapters)) {
+        chaptersCount += book.chapters.length;
+        for (const chapter of book.chapters) {
+          if (chapter.scenes && Array.isArray(chapter.scenes)) {
+            scenesCount += chapter.scenes.length;
+          }
+        }
+      }
+    }
+
     await saveBooksForUser(userId, books);
+
+    // Log workspace update
+    await safeLogEvent(userId, "workspace_updated", {
+      booksCount: books.length,
+      chaptersCount,
+      scenesCount,
+    });
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     const errorMessage =

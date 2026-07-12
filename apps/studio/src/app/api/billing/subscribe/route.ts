@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractToken, verifyJWT } from "@/lib/auth";
 import { loadPlan, createSubscription } from "@/repositories/billingRepository";
+import { safeLogEvent } from "@/lib/auditLogger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,6 +85,14 @@ export async function POST(request: NextRequest) {
         { status: 503 },
       );
     }
+
+    // Log subscription creation
+    await safeLogEvent(payload.sub, "subscription_created", {
+      subscriptionId: subscription.id,
+      planId: subscription.planId,
+      startDate: subscription.startDate.toISOString(),
+      endDate: subscription.endDate?.toISOString() || null,
+    });
 
     // Generate mock Stripe Payment Intent (Phase 1 placeholder)
     const mockClientSecret = `pi_mock_${subscription.id}_${Date.now()}`;

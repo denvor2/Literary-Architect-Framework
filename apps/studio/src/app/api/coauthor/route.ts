@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { getAnthropicClient } from "@/lib/ai/anthropic";
 import { getAssistantSettings } from "@/repositories";
 import { AssistantRole } from "@/generated/prisma/client";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { extractToken, verifyJWT } from "@/lib/auth";
+import { safeLogEvent } from "@/lib/auditLogger";
+import { performance } from "perf_hooks";
 
 // Discovery implementation (Sprint-12-Step-01). Disposable — not a designed contract.
 // Deliberately minimal: no shared types, no validation library. Unlike every prior Expert
@@ -19,7 +22,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 const STRUCTURE_SYSTEM_PROMPT = `You are a literary co-author helping plan a book's structure. Given the book's full context (metadata, existing chapters/scenes, characters), propose a chapter-and-scene structure as a raw JSON object with this exact shape:\n\n{ "chapters": [ { "title": "...", "subtitle": "...", "scenes": [ { "title": "...", "description": "1-2 sentence summary of what happens" } ] } ] }\n\nRules:\n- Propose a complete structure that fits the book's premise, genre, and existing content.\n- If chapters already exist, build on them — propose new chapters/scenes that continue the story.\n- Each scene description should be concise (1-2 sentences).\n- Respond with ONLY the raw JSON object — no markdown code fences, no explanation, no text before or after.\n- The structure must be valid JSON.`;
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   // Rate limiting check (Sprint 27)
   const clientIp = getClientIp(request);
   const rateLimitResult = checkRateLimit(clientIp);
@@ -30,10 +33,26 @@ export async function POST(request: Request) {
     );
   }
 
+  // Extract userId from JWT if available (for logging)
+  let userId: string | null = null;
+  try {
+    const token = extractToken(request);
+    if (token) {
+      const payload = await verifyJWT(token);
+      if (payload) {
+        userId = payload.sub;
+      }
+    }
+  } catch {
+    // If JWT extraction fails, continue without userId
+    userId = null;
+  }
+
   const body = await request.json();
   const bookContext = body?.bookContext;
   const messages = body?.messages;
   const mode = typeof body?.mode === "string" ? body.mode : "draft";
+  const sceneId = typeof body?.sceneId === "string" ? body.sceneId : undefined;
 
   if (typeof bookContext !== "object" || bookContext === null) {
     return NextResponse.json(
@@ -87,7 +106,9 @@ export async function POST(request: Request) {
     customPromptSuffix = "";
   }
 
+  let startTime = 0;
   try {
+    startTime = performance.now();
     const client = getAnthropicClient();
 
     if (mode === "structure") {
@@ -102,6 +123,8 @@ export async function POST(request: Request) {
         system: `${STRUCTURE_SYSTEM_PROMPT} Write the response in ${bookLanguage} for all title/description fields, unless the user explicitly asks for another language.${customPromptSuffix}`,
         messages: anthropicMessages,
       });
+      const durationMs = Math.round(performance.now() - startTime);
+
       const block = message.content.find((item) => item.type === "text");
       const raw = block && block.type === "text" ? block.text : "";
 
@@ -114,10 +137,31 @@ export async function POST(request: Request) {
           .trim();
         proposal = JSON.parse(cleaned);
       } catch {
+        // Log failure before returning error
+        if (userId) {
+          await safeLogEvent(userId, "ai_request_coauthor", {
+            sceneId,
+            mode: "structure",
+            durationMs,
+            status: "failed",
+            errorMessage: "Invalid JSON response",
+          });
+        }
         return NextResponse.json(
           { ok: false, error: "Co-author response was not valid JSON." },
           { status: 500 },
         );
+      }
+
+      // Log successful request
+      if (userId) {
+        await safeLogEvent(userId, "ai_request_coauthor", {
+          sceneId,
+          mode: "structure",
+          durationMs,
+          tokenCount: message.usage.output_tokens + message.usage.input_tokens,
+          status: "success",
+        });
       }
 
       return NextResponse.json({ ok: true, proposal });
@@ -135,12 +179,39 @@ export async function POST(request: Request) {
       system: `You are a co-author — a generative writer, not a critic and not an editor. You will be given the entire book's context (metadata, all chapters and scenes written so far, all characters) and the current scene's text, followed by the ongoing conversation with the author about this scene. Use the full book context — plot, characters, established style and voice — when writing. If the current scene's text is non-empty, continue it directly, matching its style and picking up where it leaves off; if it is empty, write a new scene draft that fits the book's premise, characters, and what has already been written. This is a continuing dialogue, not a one-shot request: take the prior conversation into account, and if the author has not asked anything specific yet (no conversation so far), proceed directly to drafting or continuing the scene. Respond in ${bookLanguage}, regardless of the language of the input, unless the user explicitly asks for another language.${customPromptSuffix}`,
       messages: anthropicMessages,
     });
+    const durationMs = Math.round(performance.now() - startTime);
+
     const block = message.content.find((item) => item.type === "text");
     const result = block && block.type === "text" ? block.text : "";
+
+    // Log successful request
+    if (userId) {
+      await safeLogEvent(userId, "ai_request_coauthor", {
+        sceneId,
+        mode: "draft",
+        durationMs,
+        tokenCount: message.usage.output_tokens + message.usage.input_tokens,
+        status: "success",
+      });
+    }
+
     return NextResponse.json({ ok: true, result });
   } catch (error) {
+    const durationMs = Math.round(performance.now() - startTime);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
+
+    // Log failed request
+    if (userId) {
+      await safeLogEvent(userId, "ai_request_coauthor", {
+        sceneId,
+        mode,
+        durationMs,
+        status: "failed",
+        errorMessage,
+      });
+    }
+
     return NextResponse.json(
       { ok: false, error: errorMessage },
       { status: 500 },

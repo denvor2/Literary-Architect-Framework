@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { getAnthropicClient } from "@/lib/ai/anthropic";
 import { getAssistantSettings } from "@/repositories";
 import { AssistantRole } from "@/generated/prisma/client";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { extractToken, verifyJWT } from "@/lib/auth";
+import { safeLogEvent } from "@/lib/auditLogger";
+import { performance } from "perf_hooks";
 
 // Discovery implementation (Sprint-04-Step-05). Disposable — not a designed contract.
 // Deliberately minimal: no shared types, no validation library, no reuse beyond the
@@ -18,7 +21,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 // history is sent by the client on every call, in `messages`, and nothing is kept between
 // calls. `text` is renamed `sceneText` to match the shared schema across all four Experts;
 // it remains required — Editor always works on a specific piece of text, never from scratch.
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   // Rate limiting check (Sprint 27)
   const clientIp = getClientIp(request);
   const rateLimitResult = checkRateLimit(clientIp);
@@ -29,10 +32,26 @@ export async function POST(request: Request) {
     );
   }
 
+  // Extract userId from JWT if available (for logging)
+  let userId: string | null = null;
+  try {
+    const token = extractToken(request);
+    if (token) {
+      const payload = await verifyJWT(token);
+      if (payload) {
+        userId = payload.sub;
+      }
+    }
+  } catch {
+    // If JWT extraction fails, continue without userId
+    userId = null;
+  }
+
   const body = await request.json();
   const sceneText = body?.sceneText;
   const bookContext = body?.bookContext;
   const messages = body?.messages;
+  const sceneId = typeof body?.sceneId === "string" ? body.sceneId : undefined;
 
   if (!sceneText || typeof sceneText !== "string") {
     return NextResponse.json(
@@ -90,7 +109,9 @@ export async function POST(request: Request) {
     customPromptSuffix = "";
   }
 
+  let startTime = 0;
   try {
+    startTime = performance.now();
     const client = getAnthropicClient();
     const contextMessage = {
       role: "user" as const,
@@ -106,12 +127,37 @@ export async function POST(request: Request) {
       system,
       messages: anthropicMessages,
     });
+    const durationMs = Math.round(performance.now() - startTime);
+
     const block = message.content.find((item) => item.type === "text");
     const result = block && block.type === "text" ? block.text : "";
+
+    // Log successful request
+    if (userId) {
+      await safeLogEvent(userId, "ai_request_line_editor", {
+        sceneId,
+        durationMs,
+        tokenCount: message.usage.output_tokens + message.usage.input_tokens,
+        status: "success",
+      });
+    }
+
     return NextResponse.json({ ok: true, result });
   } catch (error) {
+    const durationMs = Math.round(performance.now() - startTime);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
+
+    // Log failed request
+    if (userId) {
+      await safeLogEvent(userId, "ai_request_line_editor", {
+        sceneId,
+        durationMs,
+        status: "failed",
+        errorMessage,
+      });
+    }
+
     return NextResponse.json(
       { ok: false, error: errorMessage },
       { status: 500 },

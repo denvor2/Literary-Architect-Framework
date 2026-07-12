@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updatePaymentStatus } from "@/repositories/billingRepository";
 import { prisma } from "@/lib/db";
+import { safeLogEvent } from "@/lib/auditLogger";
 
 // Main handler wrapped in defensive error boundary
 export async function PUT(
@@ -140,6 +141,19 @@ async function handlePutRequest(
         data: {
           externalPaymentId: externalPaymentId as string,
         },
+      });
+    }
+
+    // Log payment status update
+    if (updated.status === "completed") {
+      await safeLogEvent(payment.userId, "payment_completed", {
+        paymentId: updated.id,
+        amount: updated.amount,
+      });
+    } else if (updated.status === "failed") {
+      await safeLogEvent(payment.userId, "payment_failed", {
+        paymentId: updated.id,
+        failureReason: updated.failureReason,
       });
     }
 

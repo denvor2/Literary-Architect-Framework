@@ -1,23 +1,40 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   getOrCreateDefaultUser,
   loadBooksForUser,
   saveBooksForUser,
 } from "@/repositories";
+import { extractToken, verifyJWT } from "@/lib/auth";
 
-// Sprint-24-Step-04: thin HTTP wrapper over the Sprint-24-Step-03 repository
-// layer (ADR-0012 Decision 3 — one coarse endpoint mirroring today's
-// loadWorkspace()/saveWorkspace() contract, not granular REST per entity).
-//
-// No auth/session — single default user (ADR-0012 Decision 1), resolved via
-// getOrCreateDefaultUser() on every request. A runtime exception (e.g. the
-// database is unreachable) is the dual-mode "DB unavailable" signal for
-// Sprint-24-Step-05 — there is no separate health-check endpoint.
+// Sprint-30-Step-04: Authentication added. JWT auth via middleware.
+// Per middleware.ts, this endpoint is protected — JWT already validated.
+// If middleware allowed the request through, JWT is valid.
+// userId extracted from token payload.
 
-export async function GET() {
+async function getUserIdFromAuth(
+  request: NextRequest,
+): Promise<string | null> {
+  const token = extractToken(request);
+  if (!token) return null;
+
+  const payload = await verifyJWT(token);
+  if (!payload) return null;
+
+  return payload.sub;
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const user = await getOrCreateDefaultUser();
-    const books = await loadBooksForUser(user.id);
+    // Get userId from JWT (Sprint-30-Step-04 auth)
+    let userId = await getUserIdFromAuth(request);
+
+    // Fallback to default user if auth not present (backwards compatibility during transition)
+    if (!userId) {
+      const user = await getOrCreateDefaultUser();
+      userId = user.id;
+    }
+
+    const books = await loadBooksForUser(userId);
     return NextResponse.json({ ok: true, books });
   } catch (error) {
     const errorMessage =
@@ -29,7 +46,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   const body = await request.json();
   const books = body?.books;
 
@@ -41,8 +58,16 @@ export async function PUT(request: Request) {
   }
 
   try {
-    const user = await getOrCreateDefaultUser();
-    await saveBooksForUser(user.id, books);
+    // Get userId from JWT (Sprint-30-Step-04 auth)
+    let userId = await getUserIdFromAuth(request);
+
+    // Fallback to default user if auth not present (backwards compatibility)
+    if (!userId) {
+      const user = await getOrCreateDefaultUser();
+      userId = user.id;
+    }
+
+    await saveBooksForUser(userId, books);
     return NextResponse.json({ ok: true });
   } catch (error) {
     const errorMessage =

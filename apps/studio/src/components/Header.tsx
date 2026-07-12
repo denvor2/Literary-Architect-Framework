@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Search } from "lucide-react";
+import { Search, LogOut } from "lucide-react";
 import type { Book, Chapter, Character, Idea } from "@/domain/model";
+import type { User } from "@/hooks/useAuthController";
 import {
   SEARCH_MIN_QUERY_LENGTH,
   searchWorkspace,
@@ -38,6 +39,9 @@ type HeaderProps = {
   onSelectCharacter?: (characterId: string) => void;
   onSelectSearchMatch?: (chapterId: string, sceneId?: string) => void;
   onSelectIdeaMatch?: (ideaId: string) => void;
+  currentUser?: User | null;
+  onLogout?: () => void;
+  onOpenLogin?: () => void;
 };
 
 function SearchResultsSection({
@@ -103,6 +107,9 @@ export function Header({
   onSelectCharacter,
   onSelectSearchMatch,
   onSelectIdeaMatch,
+  currentUser,
+  onLogout,
+  onOpenLogin,
 }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
@@ -340,13 +347,34 @@ export function Header({
         >
           RU
         </button>
-        <button
-          disabled
-          title="Вход — скоро"
-          className="cursor-not-allowed rounded-md border border-zinc-300 px-3 py-1 text-sm font-medium text-zinc-400 dark:border-zinc-700 dark:text-zinc-600"
-        >
-          Войти
-        </button>
+        {currentUser ? (
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end">
+              <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                {currentUser.email}
+              </span>
+              {currentUser.role === "admin" && (
+                <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                  Admin
+                </span>
+              )}
+            </div>
+            <button
+              onClick={onLogout}
+              title="Выход"
+              className="rounded-md border border-zinc-300 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onOpenLogin}
+            className="rounded-md border border-zinc-300 px-3 py-1 text-sm font-medium text-black transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
+          >
+            Войти
+          </button>
+        )}
       </div>
     </header>
   );

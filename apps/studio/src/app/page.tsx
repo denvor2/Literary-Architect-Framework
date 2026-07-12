@@ -12,7 +12,10 @@ import { DeveloperTools } from "@/components/DeveloperTools";
 import { NewBookDialog } from "@/components/NewBookDialog";
 import { NewSeriesDialog } from "@/components/NewSeriesDialog";
 import { SeriesEditDialog } from "@/components/SeriesEditDialog";
+import { LoginDialog } from "@/components/LoginDialog";
+import { RegisterDialog } from "@/components/RegisterDialog";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
+import { useAuthController } from "@/hooks/useAuthController";
 import { execute as aiBusExecute } from "@/ai/aiBus";
 import type { BookFieldName } from "@/ai/operations";
 
@@ -47,6 +50,15 @@ function useIsDesktopLayout(): boolean {
 }
 
 export default function Home() {
+  // Sprint-30-Step-05: Authentication controller
+  const { auth, login, register, logout } = useAuthController();
+
+  // Sprint-30-Step-05: Auth dialog state
+  const [authDialogMode, setAuthDialogMode] = useState<
+    "login" | "register" | null
+  >(null);
+
+  // All workspace hooks must be called unconditionally, even if not logged in
   const {
     workspace,
     activeBook,
@@ -324,6 +336,43 @@ export default function Home() {
     });
   }
 
+  // Sprint-30-Step-05: Show login dialog if not logged in (on mount only)
+  const hasShownAuthDialog = useRef(false);
+  useEffect(() => {
+    if (!auth.isLoading && !auth.isLoggedIn && !hasShownAuthDialog.current) {
+      hasShownAuthDialog.current = true;
+      setAuthDialogMode("login");
+    }
+  }, [auth.isLoading, auth.isLoggedIn]);
+
+  // Sprint-30-Step-05: If not logged in, show only auth screen
+  if (!auth.isLoading && !auth.isLoggedIn) {
+    return (
+      <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
+        <Header
+          currentUser={null}
+          onOpenLogin={() => setAuthDialogMode("login")}
+        />
+        {authDialogMode === "login" && (
+          <LoginDialog
+            error={auth.error}
+            isLoading={false}
+            onLogin={login}
+            onSwitchToRegister={() => setAuthDialogMode("register")}
+          />
+        )}
+        {authDialogMode === "register" && (
+          <RegisterDialog
+            error={auth.error}
+            isLoading={false}
+            onRegister={register}
+            onSwitchToLogin={() => setAuthDialogMode("login")}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
       <Header
@@ -336,6 +385,9 @@ export default function Home() {
         onSelectCharacter={selectCharacter}
         onSelectSearchMatch={handleSelectSearchMatch}
         onSelectIdeaMatch={handleSelectIdeaMatch}
+        currentUser={auth.user}
+        onLogout={logout}
+        onOpenLogin={() => setAuthDialogMode("login")}
       />
       <SyncWarningBanner warning={syncWarning} />
       <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">

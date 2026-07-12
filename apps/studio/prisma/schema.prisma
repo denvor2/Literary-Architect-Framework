@@ -11,11 +11,23 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  admin
+  user
+}
+
 model User {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  books     Book[]
-  series    Series[]
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String?
+  role          Role     @default(user)
+  isBlocked     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  books         Book[]
+  series        Series[]
+
+  @@index([email])
 }
 
 model Book {

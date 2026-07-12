@@ -35,11 +35,17 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 24 (Миграция localStorage → Database) is closed — `Workspace.books` now round-trips
-through PostgreSQL (Sprint 23's schema), `localStorage` remains fallback + sole owner of
-ephemeral UI state, ADR-0012 accepted (see `docs/adr/ADR-0012-persistence-migration.md`).
-Sprints 06 through 24 are all closed. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the
-full step-by-step breakdown and the next sprint goal (Sprint 25, not yet scoped).
+Sprint 29 (Series Entity — grouping related books in multi-book cycles) is closed (2026-07-12,
+commit `93be13e`). Six steps shipped: ADR-0014 (architectural decision), Prisma schema migration,
+Domain Model + Repository, API routes, Workspace Controller, and UI hierarchy. Discovered critical
+architectural lesson: Prisma `schema.prisma` must be writable at scope-check time (Step 02 found
+it read-only and required `prisma migrate reset --force`). Sprints 06 through 29 are all closed.
+
+Sprint 30 (Мультипользовательская система: Админ + Пользователи) is in progress. Scope pending
+step decomposition — requires reading ADR-0012 (Sprint 24, single-user context) and ADR-0013
+(Sprint 25, AI Expert settings gating) for full context. Hard deadline, no buffer remaining —
+critical-path item. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the full breakdown and
+[ROADMAP_18-27.md](ROADMAP_18-27.md) (Sprint 30 section, lines 303-356) for requirements.
 
 **Process note:** this project is currently working without a separate Architect session — the
 Product Owner reviews Step Cards directly instead (see "Architecture Review before commit"
@@ -78,12 +84,13 @@ accumulated context, per that same rule.
 ## Current Status
 
 - `apps/studio/` is a working Literary Studio MVP: multi-book Workspace (`books: Book[]` +
-  `activeBookId`, Sprint 11), Book → Chapter → Scene structure, Characters, Ideas/Notes
-  (Sprint 18), a unified scrollable book editor with collapse/expand at every level (Sprint
-  16-17, replacing the old three-screen book/chapter/scene split), Focus Mode, `localStorage`
-  persistence, Docker containerization (Sprint 22: `Dockerfile`, `docker-compose.yml`,
-  `.dockerignore`, standalone output) — layered on a domain-driven architecture (Sprint 06)
-  with four live AI Experts plus a Book field suggestion utility.
+  `activeBookId`, Sprint 11), Book Series (grouping related books in multi-book cycles, Sprint 29),
+  Book → Chapter → Scene structure, Characters, Ideas/Notes (Sprint 18), a unified scrollable
+  book editor with collapse/expand at every level (Sprint 16-17, replacing the old three-screen
+  book/chapter/scene split), Focus Mode, `localStorage` persistence, Docker containerization
+  (Sprint 22: `Dockerfile`, `docker-compose.yml`, `.dockerignore`, standalone output) — layered
+  on a domain-driven architecture (Sprint 06) with four live AI Experts plus a Book field
+  suggestion utility.
 - **AI Experts (all live-validated with real Claude responses):** Line Editor (`/api/line-editor`,
   Sprint 04), Critic (`/api/critic`, Sprint 08, gained thematic subcategories Sprint 19),
   Reader (`/api/reader`, Sprint 09, gained an optional `persona` field Sprint 14), Co-author
@@ -100,12 +107,15 @@ accumulated context, per that same rule.
   Operation → Context Envelope → Response → Applied Response → /api/line-editor | /api/critic |
   /api/reader | /api/coauthor`.
   - `apps/studio/src/domain/` — single source of truth for
-    `Book`/`Chapter`/`Scene`/`Character`/`Workspace`/`Idea`. `Book` also holds `assistantThreads`
-    (Sprint 13) — one or more named dialogs per Product Role (Co-author/Editor: always one
-    continuous thread; Critic: may hold several, but the UI still only shows the last/active
-    one; Reader (Sprint 14): surfaces all of them as named, comparable instances, each
-    optionally carrying a `persona` — `AssistantThread`'s one new optional field). `Book` also
-    holds `ideas: Idea[]` (Sprint 18) — free-form notes with auto-timestamped creation.
+    `Book`/`Chapter`/`Scene`/`Character`/`Workspace`/`Idea`/`Series` (Sprint 29). Workspace holds
+    both `books: Book[]` and `series: Series[]` (Series as top-level container for grouping
+    related books, not nested inside Book). `Book` also holds `assistantThreads` (Sprint 13) — one
+    or more named dialogs per Product Role (Co-author/Editor: always one continuous thread;
+    Critic: may hold several, but the UI still only shows the last/active one; Reader (Sprint 14):
+    surfaces all of them as named, comparable instances, each optionally carrying a `persona` —
+    `AssistantThread`'s one new optional field). `Book` also holds `ideas: Idea[]` (Sprint 18) —
+    free-form notes with auto-timestamped creation, and optional `seriesId` (nullable FK to
+    Series, Sprint 29).
   - `apps/studio/src/ai/` — AI Bus v5 contracts (`operations.ts`, `context.ts`, `response.ts`,
     `applier.ts`, `aiBus.ts`). Since Sprint 13, `AIOperation` payloads use `sceneText` (not
     `text`/`currentText`) plus a required `messages` array, uniformly across all four variants.
@@ -117,9 +127,10 @@ accumulated context, per that same rule.
     state and the fallback for `books` when the database is unreachable — checked on every call,
     not just at session start. Also exports `getSyncWarning()` (`"db-unavailable"` |
     `"recovered-local-wins"` | `null`), the signal `SyncWarningBanner.tsx` renders.
-  - `apps/studio/src/repositories/` (Sprint 24) — server-only Prisma repository layer
-    (`getOrCreateDefaultUser`/`loadBooksForUser`/`saveBooksForUser`), consumed only by
-    `/api/workspace` — not imported directly by any other code.
+  - `apps/studio/src/repositories/` (Sprint 24, extended Sprint 29) — server-only Prisma
+    repository layer. `bookRepository.ts` and `seriesRepository.ts` (Sprint 29) handle CRUD for
+    their respective entities; consumed by `/api/workspace` and `/api/series` routes — not imported
+    directly by any other code. Patterns: `loadXXXForUser`/`saveXXXForUser`/`deleteXXX`.
   - `apps/studio/src/workspace/useWorkspaceController.ts` — owns all `Workspace` state and
     mutation logic, including `appendMessage`/`createThread`/`activeThreads` for
     `assistantThreads` (Sprint 13). Since Sprint 24, its restore/persist effects `await` the
@@ -170,6 +181,8 @@ accumulated context, per that same rule.
 | [ADR-0010](../adr/ADR-0010-coauthor-structure-proposal.md) | Co-author Structure Proposal | Accepted |
 | [ADR-0011](../adr/ADR-0011-book-field-operations.md) | Book Field AI Suggestions | Accepted |
 | [ADR-0012](../adr/ADR-0012-persistence-migration.md) | Persistence Migration (Dual-Mode) | Accepted |
+| [ADR-0013](../adr/ADR-0013-ai-expert-settings.md) | AI Expert Settings & Gating | Accepted |
+| [ADR-0014](../adr/ADR-0014-series-entity.md) | Series Entity (Group of Books) | Accepted |
 
 ## Current Tech Stack
 
@@ -189,25 +202,24 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Scope Sprint 25 (Environment + HTTPS + Production hardening) — see CURRENT_SPRINT.md and
-ROADMAP_18-27.md. Sprint 24 (Миграция localStorage → Database) is closed. Playwright E2E smoke
-tests (`apps/studio/e2e/smoke.spec.ts`, 12 tests) have **not** been re-run since Sprint 24's
-dual-mode storage change landed — `playwright.config.ts` reuses `localhost:3000`
-(`webServer.reuseExistingServer`), and every Sprint 24 Step Card deliberately avoided touching
-the Product Owner's active dev-server session, so this is a real, not just theoretical, gap.
-Run `npm run test:e2e` from `apps/studio/` once that session is free, before trusting the suite
-green against the new storage layer.
+Decompose Sprint 30 (Мультипользовательская система: Админ + Пользователи) into Step Cards —
+**requires context:** read ADR-0012 (Sprint 24, single-user stopgap and hard deadline context)
+and ADR-0013 (Sprint 25, AI Expert settings per-assistant gating model) before starting decomposition.
+See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) and ROADMAP_18-27.md (Sprint 30 section, lines 303-356)
+for requirements. This is a hard-deadline, critical-path item — no buffer remaining. Sprint 29
+(Series entity) is closed.
 
 ## Current Priorities
 
-1. Sprint 25 (Environment + HTTPS + Production hardening) — not yet scoped, see
-   CURRENT_SPRINT.md.
-2. Sprint 28 (multi-user Admin/User system) has a hard deadline — no later than Sprint 29
-   (Product Owner, 2026-07-10) — see ROADMAP_18-27.md's Sprint 28 entry and
-   ADR-0012 Decision 1.
-3. Backfill remaining Sprint 02 context (pricing, security) — see
+1. **Sprint 30 (Мультипользовательская система: Админ + Пользователи)** — hard deadline, no buffer
+   remaining, critical-path item for roadmap continuity. Scope decomposition pending. Read ADR-0012
+   (Sprint 24) and ADR-0013 (Sprint 25) before starting. See ROADMAP_18-27.md (Sprint 30, lines
+   303-356) for full requirements.
+2. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both still placeholders.
+3. Future: Sprint 31 (Tariffs, subscriptions, feature gating by tier) — depends on Sprint 30
+   (roles) and ADR-0013 (gating model).
 
 ## Working Style
 

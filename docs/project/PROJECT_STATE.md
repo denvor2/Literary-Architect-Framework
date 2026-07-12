@@ -4,14 +4,14 @@ A current snapshot. Updated at the end of each sprint (see
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)) — if you're reading this later than the
 date below, check the latest `docs/reports/SPRINT-*.md` for anything more recent.
 
-**Last updated:** 2026-07-11 (Sprint 24 closing)
-**Project Health:** Healthy — on track. Sprint 05 through Sprint 24 are all complete and
+**Last updated:** 2026-07-12 (Sprint 29 closing)
+**Project Health:** Healthy — on track. Sprint 05 through Sprint 29 are all complete and
 committed; no blocking issues. Playwright E2E smoke tests (12 tests, all green) are in place
-(not re-run against the dual-mode storage yet — `playwright.config.ts` reuses
-`localhost:3000`, deliberately not exercised against the Product Owner's active session during
-Sprint 24; recommended before Sprint 25 closes). This project is currently working without a
-separate Architect session — the Product Owner reviews directly instead (see
-[HANDOVER.md](HANDOVER.md)).
+and were re-run post-Sprint 24's dual-mode storage to confirm no regressions (still green).
+Sprint 29 (Series entity) discovered and documented a critical-path architectural lesson:
+Prisma `schema.prisma` must be writable by the implementing step, verified at scope-check time.
+This project is currently working without a separate Architect session — the Product Owner
+reviews directly instead (see [HANDOVER.md](HANDOVER.md)).
 **Current Phase:** Phase 1 (MVP).
 
 ## Source of Truth
@@ -22,10 +22,12 @@ here, it's not decided.
 
 ## Current Sprint
 
-Sprint 26 — Быстрые UI-фиксы: 5 пунктов из Product Owner feedback (скрыть Focus, баг-фикс
-типового запроса, Ideas списком, Requisites с фоном, Search с чекбоксом под полем).
-Step Card уже в `docs/task-bus/queue/pending/` (Sprint-26-Step-01..05.md), готовы к
-исполнению. See `docs/project/ROADMAP_18-27.md` Sprint 26 для деталей.
+Sprint 30 — Мультипользовательская система: Админ + Пользователи (in progress). Replaces
+temporary single-user stopgap (Sprint 24, ADR-0012) with role-based authentication and
+authorization. Scope pending step decomposition — requires reading ADR-0012 (Sprint 24 context)
+and ADR-0013 (Sprint 25 AI Expert settings gating model) before scope is finalized.
+See `docs/project/ROADMAP_18-27.md` Sprint 30 (lines 303-356) for full requirements and hard
+deadline context (no buffer remaining — critical-path item for roadmap continuity).
 
 **Sprint 24 — Миграция localStorage → Database (closed).** `Workspace.books` now round-trips
 through PostgreSQL (Sprint 23's schema), with `localStorage` as fallback and sole owner of
@@ -213,6 +215,13 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
 - **Sprint 23** — PostgreSQL + Prisma (closed). Prisma schema (8 models), `docker-compose.yml`
   `postgres` service, `src/lib/db.ts` client singleton. `prisma migrate dev` applied and
   live-verified 2026-07-10.
+- **Sprint 29** — Series Entity (closed). Book Series implementation for grouping related books
+  in multi-book cycles (e.g., multi-volume novels, character-universe collections). Six steps:
+  ADR-0014 (architectural decision), Prisma schema migration (`20260712_add_series`, with
+  critical-path discovery that `schema.prisma` must be writable at scope-check), Domain Model
+  + Repository, API routes, Workspace Controller, and UI hierarchy (Sidebar tree + SeriesEditDialog).
+  Discovered architectural lesson: for multi-layer changes, verify schema file editability before
+  starting. Committed `38b4984` through `93be13e` (archive complete, 2026-07-12).
 - **Sprint 24** — Миграция localStorage → Database (closed). `Workspace.books` now round-trips
   through PostgreSQL, `localStorage` remains fallback + sole owner of ephemeral UI state.
   ADR-0012 accepted. Eight steps (see `CURRENT_SPRINT.md` for the full breakdown) — including
@@ -298,13 +307,14 @@ change. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md)'s git history for the full cl
 | [ADR-0010](../adr/ADR-0010-coauthor-structure-proposal.md) | Co-author Structure Proposal | Accepted |
 | [ADR-0011](../adr/ADR-0011-book-field-operations.md) | Book Field AI Suggestions | Accepted |
 | [ADR-0012](../adr/ADR-0012-persistence-migration.md) | Persistence Migration (Dual-Mode) | Accepted |
+| [ADR-0013](../adr/ADR-0013-ai-expert-settings.md) | AI Expert Settings & Gating | Accepted |
+| [ADR-0014](../adr/ADR-0014-series-entity.md) | Series Entity (Group of Books) | Accepted |
 
-**Note (2026-07-11):** this table and the "Current Architecture"/"Completed Milestones"
-sections above it had drifted — Sprint 18-22 shipped without their ADRs/architecture notes being
-folded back in here. Not fully backfilled in this pass (out of scope for a Sprint 24 close); the
-Accepted ADRs table above is now current, but treat the prose sections above at face value only
-where they explicitly mention a specific sprint — cross-check `docs/adr/` directly for anything
-not mentioned here.
+**Note (2026-07-12):** Accepted ADRs table is now current through Sprint 29 (Series entity,
+ADR-0014). The "Current Architecture"/"Completed Milestones" prose sections remain partially
+undocumented for Sprints 25-28; treat those sections at face value only where they explicitly
+mention a specific sprint — cross-check `docs/adr/` directly and ROADMAP_18-27.md for anything
+not fully expanded here.
 
 ## Technology Stack
 
@@ -324,12 +334,15 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Current Priorities
 
-1. Sprint 26 (Быстрые UI-фиксы) — 5 Step Card уже в `pending/`, готовы к исполнению.
-2. Sprint 30 (Multi-user Admin/User system) has a hard deadline — no later than Sprint 30
-   (Product Owner, 2026-07-11, сдвинут с исходного Sprint 29) — do not let it slip past
-   that regardless of ordering. Жёсткий срок без запаса.
-3. Backfill remaining Sprint 02 context (pricing, security) — see
+1. **Sprint 30 (Мультипользовательская система: Админ + Пользователи)** — hard deadline (Product
+   Owner, 2026-07-11), no buffer remaining, critical-path for roadmap continuity. Scope
+   decomposition pending — requires reading ADR-0012 (Sprint 24, single-user context) and
+   ADR-0013 (Sprint 25, AI Expert gating model) before starting. See ROADMAP_18-27.md
+   (Sprint 30 section, lines 303-356) for full requirements.
+2. Backfill remaining Sprint 02 context (pricing, security) — see
    `docs/vision/pricing.md` and `docs/vision/security.md`, both still placeholders.
+3. Future: Sprint 31 (Tariffs, subscriptions, tier-based feature gating) — depends on Sprint 30
+   role system and ADR-0013 gating model.
 
 ## Open Decisions
 
@@ -355,6 +368,7 @@ Approved by [ADR-0003](../adr/ADR-0003-technology-stack-strategy.md):
 
 ## Next Milestone
 
-Sprint 26 (Быстрые UI-фиксы) — 5 Step Card в очереди, затем Sprint 27 (Production hardening)
-и остальные спринты согласно новой нумерации в `docs/project/ROADMAP_18-27.md` (перенумерован
-2026-07-11 по решению Product Owner — см. примечание в начале roadmap).
+Sprint 30 (Мультипользовательская система: Админ + Пользователи) — scope decomposition pending,
+requires ADR-0012/ADR-0013 context before starting. Hard deadline, no buffer remaining (Product
+Owner, 2026-07-11). Then Sprint 31 (Tariffs) and remaining milestones per ROADMAP_18-27.md
+(numbering finalized 2026-07-12).

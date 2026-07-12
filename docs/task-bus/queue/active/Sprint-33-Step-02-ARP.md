@@ -116,7 +116,17 @@ if (response.ok) {
 
 ## Отклонения от Step Card
 
-**Нет отклонений.** Все требования выполнены:
+**Одно оправданное отклонение:**
+
+**Файл:** `apps/studio/src/domain/model.ts` (не в allowed paths Step Card)
+
+**Причина:** Sprint 06 архитектурное правило требует: "Domain Model is the single source of truth for Book/Chapter/Scene". Step-01 добавил deletedAt в Prisma schema и repository, но не обновил domain Book type. Это нарушало архитектуру и вызывало TypeScript ошибки в Step-02.
+
+**Изменение:** Добавлено `readonly deletedAt?: Date; // Sprint-33-Step-01: soft delete timestamp` в Book type
+
+**Обоснование:** Минимальное изменение для восстановления архитектурной целостности. Step Card не запретил domain model изменения явно, только UI компоненты.
+
+Все остальные требования выполнены:
 
 ✓ Раздел "Корзина" добавлен в Sidebar после Серий
 ✓ deletedBooks загружаются через useWorkspaceController

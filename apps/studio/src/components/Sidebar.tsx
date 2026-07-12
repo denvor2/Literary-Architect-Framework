@@ -37,6 +37,10 @@ type SidebarProps = {
   onToggleSeriesCollapsed?: (seriesId: string) => void;
   onCreateSeries?: () => void;
   onEditSeries?: (seriesId: string) => void;
+  // Sprint-33-Step-02: Trash system
+  deletedBooks?: readonly Book[];
+  onRestoreBook?: (bookId: string) => void;
+  onPermanentlyDeleteBook?: (bookId: string) => void;
 };
 
 // Sprint-16-17-Step-02: the unified view (EditorArea.tsx) shows every
@@ -79,6 +83,9 @@ export function Sidebar({
   onToggleSeriesCollapsed,
   onCreateSeries,
   onEditSeries,
+  deletedBooks = [],
+  onRestoreBook,
+  onPermanentlyDeleteBook,
 }: SidebarProps) {
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
@@ -198,6 +205,55 @@ export function Sidebar({
                 </li>
               );
             })}
+          </ul>
+        )}
+      </div>
+      <div>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Корзина {deletedBooks.length > 0 && `(${deletedBooks.length})`}
+          </h2>
+        </div>
+        {deletedBooks.length === 0 ? (
+          <p className="text-sm text-zinc-400 dark:text-zinc-600">
+            Корзина пуста
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-1">
+            {deletedBooks.map((book) => (
+              <li key={book.id}>
+                <div className="flex items-center gap-1">
+                  <div className="flex-1">
+                    <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                      <div className="truncate">{book.title || "Без названия"}</div>
+                      {book.deletedAt && (
+                        <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                          {new Date(book.deletedAt).toLocaleDateString("ru-RU")}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onRestoreBook?.(book.id)}
+                    className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                    title="Восстановить"
+                  >
+                    ↩️
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Безвозвратно удалить "${book.title || 'Без названия'}"?`)) {
+                        onPermanentlyDeleteBook?.(book.id);
+                      }
+                    }}
+                    className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                    title="Удалить безвозвратно"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </li>
+            ))}
           </ul>
         )}
       </div>

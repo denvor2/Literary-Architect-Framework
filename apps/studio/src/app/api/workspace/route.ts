@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   loadBooksForUser,
+  loadDeletedBooksForUser,
   saveBooksForUser,
   softDeleteBook,
   restoreBook,
@@ -9,27 +10,36 @@ import {
 import { extractToken, verifyJWT } from "@/lib/auth";
 import { safeLogEvent } from "@/lib/auditLogger";
 
+async function extractUserId(request: NextRequest): Promise<string | null> {
+  const token = extractToken(request);
+  if (!token) return null;
+
+  const payload = await verifyJWT(token);
+  if (!payload || !payload.sub) return null;
+
+  return payload.sub;
+}
+
 export async function GET(request: NextRequest) {
   try {
-    // Get userId from JWT (Sprint-30-Step-04 auth)
-    const token = extractToken(request);
-    if (!token) {
+    const { searchParams } = new URL(request.url);
+    const includeDeleted = searchParams.get("deleted") === "true";
+
+    const userId = await extractUserId(request);
+    if (!userId) {
       return NextResponse.json(
         { ok: false, error: "Unauthorized" },
         { status: 401 },
       );
     }
 
-    const payload = await verifyJWT(token);
-    if (!payload || !payload.sub) {
-      return NextResponse.json(
-        { ok: false, error: "Invalid token" },
-        { status: 401 },
-      );
+    const books = await loadBooksForUser(userId);
+
+    if (includeDeleted) {
+      const deletedBooks = await loadDeletedBooksForUser(userId);
+      return NextResponse.json({ ok: true, books, deletedBooks });
     }
 
-    const userId = payload.sub;
-    const books = await loadBooksForUser(userId);
     return NextResponse.json({ ok: true, books });
   } catch (error) {
     const errorMessage =

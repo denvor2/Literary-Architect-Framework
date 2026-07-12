@@ -408,6 +408,9 @@ export default function Home() {
             onSelectBook={handleSelectBook}
             onNewBook={() => setIsDialogOpen(true)}
             onDeleteBook={deleteBook}
+            deletedBooks={deletedBooks}
+            onRestoreBook={restoreBook}
+            onPermanentlyDeleteBook={permanentlyDeleteBook}
             onCreateChapter={createChapter}
             onCreateScene={createScene}
             collapsedChapterIds={collapsedChapterIds}

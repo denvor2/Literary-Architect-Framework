@@ -50,6 +50,7 @@ export function useWorkspaceController() {
   // render it — refreshed after every loadWorkspace()/saveWorkspace() call
   // below, the same two places that already touch the module-level signal.
   const [syncWarning, setSyncWarning] = useState<SyncWarning | null>(null);
+  const [deletedBooks, setDeletedBooks] = useState<readonly Book[]>([]);
   const {
     books,
     series,
@@ -83,6 +84,24 @@ export function useWorkspaceController() {
       setWorkspace(restored);
       setIsLoaded(true);
       setSyncWarning(getSyncWarning());
+
+      // Load deleted books for trash section (Sprint-33-Step-02)
+      try {
+        const response = await fetch("/api/workspace?deleted=true", {
+          method: "GET",
+        });
+        if (response.ok) {
+          const data = (await response.json()) as {
+            ok: boolean;
+            deletedBooks?: Book[];
+          };
+          if (data.deletedBooks) {
+            setDeletedBooks(data.deletedBooks);
+          }
+        }
+      } catch {
+        // Silently fail — deleted books are optional for display
+      }
     })();
     return () => {
       cancelled = true;
@@ -201,6 +220,7 @@ export function useWorkspaceController() {
     })();
 
     setWorkspace((previous) => {
+      const bookToDelete = previous.books.find((book) => book.id === bookId);
       const remainingBooks = previous.books.filter(
         (book) => book.id !== bookId,
       );
@@ -208,6 +228,15 @@ export function useWorkspaceController() {
         previous.activeBookId === bookId
           ? (remainingBooks[0]?.id ?? null)
           : previous.activeBookId;
+
+      // Add book to deletedBooks with deletedAt timestamp
+      if (bookToDelete) {
+        setDeletedBooks((previous) => [
+          { ...bookToDelete, deletedAt: new Date() } as unknown as Book,
+          ...previous,
+        ]);
+      }
+
       return {
         ...previous,
         books: remainingBooks,
@@ -231,6 +260,15 @@ export function useWorkspaceController() {
             `Failed to restore book: ${response.status} ${response.statusText}`,
           );
         }
+
+        // Remove from deletedBooks and reload active books
+        setDeletedBooks((previous) =>
+          previous.filter((book) => book.id !== bookId),
+        );
+
+        // Reload workspace to reflect restored book
+        const restored = await loadWorkspace();
+        setWorkspace(restored);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to restore book";
@@ -252,6 +290,11 @@ export function useWorkspaceController() {
             `Failed to permanently delete book: ${response.status} ${response.statusText}`,
           );
         }
+
+        // Remove from deletedBooks
+        setDeletedBooks((previous) =>
+          previous.filter((book) => book.id !== bookId),
+        );
       } catch (error) {
         const message =
           error instanceof Error
@@ -1091,6 +1134,7 @@ export function useWorkspaceController() {
     workspace,
     activeBook,
     books,
+    deletedBooks,
     series,
     activeBookId,
     chapters,

@@ -9,10 +9,26 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-26-Step-01/02/03/04/05
+id: Sprint-32-Step-06
 status: done
-next: [Sprint-27]
+next: [Sprint-32-Step-07]
 ```
+
+## Sprint 32 — Логирование и аудит (в работе — 6 из 7 Step Card завершены) ⏳
+
+**Step 03-06 завершены** (2026-07-12):
+- Step 03: Repository слой (7 функций аудита) ✅
+- Step 04: Интеграция логирования в маршруты ✅
+- Step 05: API endpoints для просмотра логов + rate limiting ✅
+- Step 06: Cron job для архивирования событий ✅
+
+**Статус**: Все 4 шага прошли review pipeline (Architect OK, Tester PASS). Архивированы в `done/`.
+
+**Step 07 — Admin UI** (в work): отложена на Sprint 33 (низкий приоритет после логирования).
+
+**Техдолг**: Windows .next/standalone file-lock блокирует `npm run build` в dev-окружении (не дефект кода).
+
+---
 
 ## Sprint 26 — Быстрые UI-фиксы (завершён — все 5 Step Card закрыты) ✅
 

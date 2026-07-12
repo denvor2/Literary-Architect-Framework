@@ -83,7 +83,14 @@
       "Bash(grep -v \"^$\")",
       "Bash(echo \"Exit code: $?\")",
       "Bash(git restore *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s http://localhost:3000/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"admin@localhost\",\"password\":\"127273\"}')",
+      "Bash(curl -s http://localhost:3003/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"admin@localhost\",\"password\":\"127273\"}')",
+      "Bash(curl -s http://localhost:3000/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"admin@localhost\",\"password\":\"127273\"}' -w '\\\\nStatus: %{http_code}\\\\n')",
+      "Bash(psql -h 127.0.0.1 -U literary -d literary_studio -c \"SELECT 1;\")",
+      "Bash(node)",
+      "Bash(npm ls *)"
     ],
     "additionalDirectories": [
       "\\tmp"

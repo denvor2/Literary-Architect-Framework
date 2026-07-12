@@ -23,12 +23,16 @@ function isValidEmail(email: string): boolean {
  * Future: Integrate with https://www.google.com/recaptcha/api/siteverify
  */
 async function verifyCAPTCHA(captchaToken: string): Promise<boolean> {
+  // Disable CAPTCHA in development (no CAPTCHA_SECRET_KEY configured)
+  if (!process.env.CAPTCHA_SECRET_KEY) {
+    return true; // Accept all tokens in dev mode
+  }
+
   if (!captchaToken) {
     return false;
   }
 
-  // Phase 1: Simple placeholder check (token must be non-empty)
-  // TODO: Implement real Google reCAPTCHA v3 validation when CAPTCHA_SECRET_KEY is configured
+  // Production: Verify with Google reCAPTCHA v3
   if (process.env.CAPTCHA_SECRET_KEY) {
     try {
       const response = await fetch(

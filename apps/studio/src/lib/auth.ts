@@ -101,7 +101,7 @@ export function setAuthCookie(
   response.cookies.set("auth_token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // HTTPS only in production
-    sameSite: "strict",
+    sameSite: "lax",
     maxAge,
     path: "/",
   });

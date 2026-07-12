@@ -179,6 +179,26 @@ export function useWorkspaceController() {
     });
   }
 
+  function deleteBook(bookId: string) {
+    setWorkspace((previous) => {
+      const remainingBooks = previous.books.filter(
+        (book) => book.id !== bookId,
+      );
+      const newActiveBookId =
+        previous.activeBookId === bookId
+          ? remainingBooks[0]?.id ?? null
+          : previous.activeBookId;
+      return {
+        ...previous,
+        books: remainingBooks,
+        activeBookId: newActiveBookId,
+        selectedChapterId: null,
+        selectedSceneId: null,
+        selectedCharacterId: null,
+      };
+    });
+  }
+
   function updateBook(
     bookId: string,
     fields: Partial<
@@ -1020,6 +1040,7 @@ export function useWorkspaceController() {
     ideas: activeBook?.ideas ?? [],
     createBook,
     updateBook,
+    deleteBook,
     createChapter,
     updateChapter,
     createScene,

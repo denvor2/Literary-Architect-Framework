@@ -72,6 +72,7 @@ export default function Home() {
     selectedScene,
     createBook,
     updateBook,
+    deleteBook,
     createChapter,
     updateChapter,
     createScene,
@@ -406,6 +407,7 @@ export default function Home() {
             onCreateCharacter={createCharacter}
             onSelectBook={handleSelectBook}
             onNewBook={() => setIsDialogOpen(true)}
+            onDeleteBook={deleteBook}
             onCreateChapter={createChapter}
             onCreateScene={createScene}
             collapsedChapterIds={collapsedChapterIds}

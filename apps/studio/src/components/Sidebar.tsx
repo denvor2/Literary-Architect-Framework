@@ -1,5 +1,6 @@
 import type { Book, Chapter, Character, Idea, Series } from "@/domain/model";
 import { IdeasPanel } from "@/components/IdeasPanel";
+import { Trash2 } from "lucide-react";
 
 type SidebarProps = {
   books?: readonly Book[];
@@ -15,6 +16,7 @@ type SidebarProps = {
   onCreateCharacter?: () => void;
   onSelectBook?: (bookId: string) => void;
   onNewBook?: () => void;
+  onDeleteBook?: (bookId: string) => void;
   onCreateChapter?: () => void;
   onCreateScene?: (chapterId: string) => void;
   // Sprint-16-17-Step-03: same collapse state as EditorArea.tsx's chapter
@@ -63,6 +65,7 @@ export function Sidebar({
   onCreateCharacter,
   onSelectBook,
   onNewBook,
+  onDeleteBook,
   onCreateChapter,
   onCreateScene,
   collapsedChapterIds,
@@ -99,16 +102,30 @@ export function Sidebar({
           <ul className="flex flex-col gap-1">
             {books.map((book) => (
               <li key={book.id}>
-                <button
-                  onClick={() => onSelectBook?.(book.id)}
-                  className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                    book.id === activeBookId
-                      ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                      : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
-                  }`}
-                >
-                  {book.title || "Без названия"}
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => onSelectBook?.(book.id)}
+                    className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                      book.id === activeBookId
+                        ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                        : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
+                    }`}
+                  >
+                    {book.title || "Без названия"}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Удалить книгу "${book.title || 'Без названия'}"?`)) {
+                        onDeleteBook?.(book.id);
+                      }
+                    }}
+                    className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                    title="Удалить книгу"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

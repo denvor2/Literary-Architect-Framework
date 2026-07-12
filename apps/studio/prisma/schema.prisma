@@ -17,15 +17,17 @@ enum Role {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String?
-  role          Role     @default(user)
-  isBlocked     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  books         Book[]
-  series        Series[]
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String?
+  role            Role     @default(user)
+  isBlocked       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  books           Book[]
+  series          Series[]
+  subscriptions   UserSubscription[]
+  payments        Payment[]
 
   @@index([email])
 }
@@ -135,6 +137,24 @@ enum MessageRole {
   assistant
 }
 
+enum PlanTier {
+  free
+  premium
+  pro
+}
+
+enum SubscriptionStatus {
+  active
+  expired
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+}
+
 // Sprint-25-Step-03 (ADR-0013): one record per AssistantMode (coauthor/
 // editor/critic/reader), instance-wide — NOT per Book, NOT per User (no
 // real Users exist yet, ADR-0012 Decision 1). This is the Admin-default
@@ -164,4 +184,58 @@ model Series {
   books       Book[]
 
   @@index([userId])
+}
+
+// Sprint-31-Step-02 (ADR-0016): Billing schema — instance-wide Plan definitions,
+// per-user subscriptions, and payment history tracking for multi-tenant SaaS.
+model Plan {
+  id                   String   @id @default(cuid())
+  name                 String   @unique
+  tier                 PlanTier @unique
+  price                Int      @default(0)
+  billingPeriodDays    Int      @default(30)
+  maxAssistantRequests Int      @default(0)
+  maxCharactersPerReq  Int      @default(0)
+  features             String[] @default([])
+  description          String?
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  subscriptions        UserSubscription[]
+}
+
+model UserSubscription {
+  id                     String             @id @default(cuid())
+  userId                 String
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId                 String
+  plan                   Plan               @relation(fields: [planId], references: [id])
+  status                 SubscriptionStatus @default(active)
+  startDate              DateTime           @default(now())
+  endDate                DateTime?
+  externalSubscriptionId String?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  payments               Payment[]
+
+  @@unique([userId], map: "unique_active_subscription_per_user")
+  @@index([userId, status])
+}
+
+model Payment {
+  id                 String        @id @default(cuid())
+  userId             String
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userSubscriptionId String
+  subscription       UserSubscription @relation(fields: [userSubscriptionId], references: [id], onDelete: Cascade)
+  amount             Int
+  status             PaymentStatus @default(pending)
+  externalPaymentId  String?
+  paymentMethod      String?
+  failureReason      String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([userSubscriptionId])
 }

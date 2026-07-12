@@ -35,17 +35,17 @@ screenplays, non-fiction, articles, and technical documentation. Full context:
 
 ## Current Sprint
 
-Sprint 29 (Series Entity — grouping related books in multi-book cycles) is closed (2026-07-12,
-commit `93be13e`). Six steps shipped: ADR-0014 (architectural decision), Prisma schema migration,
-Domain Model + Repository, API routes, Workspace Controller, and UI hierarchy. Discovered critical
-architectural lesson: Prisma `schema.prisma` must be writable at scope-check time (Step 02 found
-it read-only and required `prisma migrate reset --force`). Sprints 06 through 29 are all closed.
+Sprint 30 (Мультипользовательская система: Админ + Пользователи) is closed (2026-07-12,
+commit `e9e2d63`). Five steps shipped: ADR-0015 (role-based access model), Prisma schema
+(User fields + Role enum), Repository layer (user CRUD + bcrypt), API endpoints (auth routes
++ middleware), and UI layer (login/logout + workspace integration). Sprints 06 through 30 are
+all closed.
 
-Sprint 30 (Мультипользовательская система: Админ + Пользователи) is in progress. Scope pending
-step decomposition — requires reading ADR-0012 (Sprint 24, single-user context) and ADR-0013
-(Sprint 25, AI Expert settings gating) for full context. Hard deadline, no buffer remaining —
-critical-path item. See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the full breakdown and
-[ROADMAP_18-27.md](ROADMAP_18-27.md) (Sprint 30 section, lines 303-356) for requirements.
+Sprint 31 (Тарифные планы, оплата и права доступа) is in progress. Scope pending step
+decomposition — requires selection of payment provider at sprint start (evolutionary architecture).
+Low confidence (new surface, payments). See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) for the full
+breakdown and [ROADMAP_18-27.md](ROADMAP_18-27.md) (Sprint 31 section, lines 358-385) for
+requirements.
 
 **Process note:** this project is currently working without a separate Architect session — the
 Product Owner reviews Step Cards directly instead (see "Architecture Review before commit"
@@ -183,6 +183,7 @@ accumulated context, per that same rule.
 | [ADR-0012](../adr/ADR-0012-persistence-migration.md) | Persistence Migration (Dual-Mode) | Accepted |
 | [ADR-0013](../adr/ADR-0013-ai-expert-settings.md) | AI Expert Settings & Gating | Accepted |
 | [ADR-0014](../adr/ADR-0014-series-entity.md) | Series Entity (Group of Books) | Accepted |
+| [ADR-0015](../adr/ADR-0015-multi-user-auth-system.md) | Multi-User Auth System (Roles, Authentication) | Accepted |
 
 ## Current Tech Stack
 
@@ -202,24 +203,21 @@ See [PROJECT_STATE.md](PROJECT_STATE.md) for current phase status and
 
 ## Immediate Next Task
 
-Decompose Sprint 30 (Мультипользовательская система: Админ + Пользователи) into Step Cards —
-**requires context:** read ADR-0012 (Sprint 24, single-user stopgap and hard deadline context)
-and ADR-0013 (Sprint 25, AI Expert settings per-assistant gating model) before starting decomposition.
-See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) and ROADMAP_18-27.md (Sprint 30 section, lines 303-356)
-for requirements. This is a hard-deadline, critical-path item — no buffer remaining. Sprint 29
-(Series entity) is closed.
+Decompose Sprint 31 (Тарифные планы, оплата и права доступа) into Step Cards — **requires
+context:** select a payment provider at sprint start (evolutionary architecture principle — defer
+decision until implementation context is clear). See [CURRENT_SPRINT.md](CURRENT_SPRINT.md) and
+ROADMAP_18-27.md (Sprint 31 section, lines 358-385) for requirements and Definition of Done.
+Sprint 30 (Multi-user auth system) is closed.
 
 ## Current Priorities
 
-1. **Sprint 30 (Мультипользовательская система: Админ + Пользователи)** — hard deadline, no buffer
-   remaining, critical-path item for roadmap continuity. Scope decomposition pending. Read ADR-0012
-   (Sprint 24) and ADR-0013 (Sprint 25) before starting. See ROADMAP_18-27.md (Sprint 30, lines
-   303-356) for full requirements.
+1. **Sprint 31 (Тарифные планы, оплата и права доступа)** — low confidence (new surface,
+   payments). Scope decomposition pending. Select payment provider at sprint start. See
+   ROADMAP_18-27.md (Sprint 31, lines 358-385) for full requirements and Definition of Done.
 2. Backfill remaining Sprint 02 context (pricing, security) — see
    [docs/vision/pricing.md](../vision/pricing.md) and
    [docs/vision/security.md](../vision/security.md), both still placeholders.
-3. Future: Sprint 31 (Tariffs, subscriptions, feature gating by tier) — depends on Sprint 30
-   (roles) and ADR-0013 (gating model).
+3. Future: Sprint 32 (Logging & Audit), Sprint 33 (Custom Assistants CRUD) — per ROADMAP_18-27.md.
 
 ## Working Style
 

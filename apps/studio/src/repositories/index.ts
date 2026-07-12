@@ -44,3 +44,14 @@ export {
   loadPaymentHistory,
 } from "./billingRepository";
 export type { ActiveSubscription } from "./billingRepository";
+// Sprint-32-Step-03: audit repository layer for event logging, querying, and archiving.
+// Used by Step-04 (API endpoints), Step-06 (cron jobs), and expert routes (audit trail).
+export {
+  logEvent,
+  getUserEventLog,
+  getSystemEventLog,
+  getEventStats,
+  archiveOldEvents,
+  deleteArchivedEvents,
+  getHotEventCount,
+} from "./auditRepository";

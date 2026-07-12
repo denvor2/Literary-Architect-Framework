@@ -24,3 +24,23 @@ export type { AssistantSettingsRecord } from "./assistantSettingsRepository";
 // internal-split principle as books.
 export { loadSeriesForUser, saveSeriesToUser } from "./seriesRepository";
 export type { Series } from "./seriesRepository";
+// Sprint-31-Step-03: billing repository layer for subscription management,
+// feature gating, and payment tracking. Used by Step-04 (API endpoints),
+// Step-05 (controller), and expert routes (rate limiting).
+export {
+  loadActivePlans,
+  loadPlan,
+  getFreePlan,
+  loadActiveSubscription,
+  createSubscription,
+  updateSubscription,
+  cancelSubscription,
+  downgradeToFreeIfExpired,
+  hasFeatureAccess,
+  canMakeAssistantRequest,
+  getUserPlanInfo,
+  createPayment,
+  updatePaymentStatus,
+  loadPaymentHistory,
+} from "./billingRepository";
+export type { ActiveSubscription } from "./billingRepository";

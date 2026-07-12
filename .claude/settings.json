@@ -58,7 +58,14 @@
       "Bash(curl -s -I -X PUT http://localhost:3001/api/billing/payment/test -H 'Content-Type: application/json' -d '{\"status\":\"completed\"}')",
       "Bash(curl -s -X PUT http://localhost:3001/api/billing/payment/test -H 'Content-Type: application/json' -d '{\"status\":\"completed\"}' -w '\\\\nContent-Type header in response:\\\\n')",
       "Bash(curl -s -X PUT http://localhost:3001/api/billing/payment/test -H 'Content-Type: application/json' -d '{\"status\":\"completed\"}' -v)",
-      "Bash(curl -s \"http://localhost:3001/api/workspace\")"
+      "Bash(curl -s \"http://localhost:3001/api/workspace\")",
+      "Bash(git commit -m ' *)",
+      "Bash(tasklist)",
+      "Bash(echo \"Dev server started in background, PID: $!\")",
+      "Bash(curl -s http://localhost:3000/api/billing/plan -H \"Cookie: token=test\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/billing/subscribe -H 'Cookie: token=test' -H 'Content-Type: application/json' -d '{\"planId\":\"test\"}')",
+      "Bash(curl -s http://localhost:3000/api/auth/status)",
+      "Bash(curl -s http://localhost:3000/api/workspace -H \"Cookie: token=invalid\")"
     ]
   }
 }

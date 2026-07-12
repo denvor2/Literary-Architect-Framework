@@ -71,7 +71,12 @@
       "Bash(curl -v http://localhost:3003/)",
       "Bash(curl http://localhost:3003/)",
       "Bash(curl -s http://localhost:3000/)",
-      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")"
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")",
+      "Bash(cat > *)",
+      "Bash(python3)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

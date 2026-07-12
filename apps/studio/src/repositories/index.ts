@@ -3,7 +3,15 @@
 // here, not reach into `userRepository`/`bookRepository` directly — those
 // are an internal split, not part of the contract.
 
-export { getOrCreateDefaultUser } from "./userRepository";
+export {
+  getOrCreateDefaultUser,
+  findUserByEmail,
+  checkPassword,
+  createUser,
+  getUserById,
+  updateUserPassword,
+  updateUserStatus,
+} from "./userRepository";
 export { loadBooksForUser, saveBooksForUser } from "./bookRepository";
 export {
   getAssistantSettings,

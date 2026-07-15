@@ -454,6 +454,9 @@ export default function Home() {
             /* Auto-saved by useWorkspaceController */
           }}
           onExportBook={handleExportBook}
+          onOpenSearch={() => {
+            /* Opens search bar — keyboard shortcut handler in Header.tsx */
+          }}
         />
         <SyncWarningBanner warning={syncWarning} />
 
@@ -650,6 +653,9 @@ export default function Home() {
           /* Auto-saved by useWorkspaceController */
         }}
         onExportBook={handleExportBook}
+        onOpenSearch={() => {
+          /* Opens search bar — keyboard shortcut handler in Header.tsx */
+        }}
       />
       <SyncWarningBanner warning={syncWarning} />
       {/* Sprint-34-Design-Step-03: Tablet layout (768-1024px) with hamburger menu */}

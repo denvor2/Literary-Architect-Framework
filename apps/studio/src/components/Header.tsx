@@ -48,6 +48,7 @@ type HeaderProps = {
   onCreateBook?: () => void;
   onSaveWorkspace?: () => void;
   onExportBook?: (bookId: string) => void;
+  onOpenSearch?: () => void;
 };
 
 function SearchResultsSection({
@@ -119,6 +120,7 @@ export function Header({
   onCreateBook,
   onSaveWorkspace,
   onExportBook,
+  onOpenSearch,
 }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
@@ -185,11 +187,11 @@ export function Header({
       document.removeEventListener("mousedown", handleClickOutsideSearch);
   }, []);
 
-  // Keyboard shortcuts: Ctrl+K (search), Ctrl+N (new book), Ctrl+S (save), Ctrl+E (export)
+  // Keyboard shortcuts: Ctrl+K/F (search), Ctrl+N (new book), Ctrl+S (save), Ctrl+E (export)
   // Escape closes menu/search
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === "k" || event.key.toLowerCase() === "f")) {
         event.preventDefault();
         searchInputRef.current?.focus();
         setIsResultsOpen(true);
@@ -211,7 +213,7 @@ export function Header({
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onCreateBook, onSaveWorkspace, onExportBook, activeBookId]);
+  }, [onCreateBook, onSaveWorkspace, onExportBook, activeBookId, onOpenSearch]);
 
   function closeResults() {
     setIsResultsOpen(false);
@@ -298,6 +300,40 @@ export function Header({
                       aria-label="Выход"
                     >
                       Выход
+                    </button>
+                  </>
+                ) : menu.key === "edit" ? (
+                  <>
+                    <button
+                      disabled
+                      className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
+                      aria-label="Отменить (Ctrl+Z, скоро)"
+                    >
+                      Отменить (скоро)
+                    </button>
+                    <button
+                      disabled
+                      className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
+                      aria-label="Повторить (Ctrl+Y, скоро)"
+                    >
+                      Повторить (скоро)
+                    </button>
+                    <button
+                      onClick={() => {
+                        onOpenSearch?.();
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                      aria-label="Поиск (Ctrl+F)"
+                    >
+                      Поиск
+                    </button>
+                    <button
+                      disabled
+                      className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
+                      aria-label="Заменить (Ctrl+H, скоро)"
+                    >
+                      Заменить (скоро)
                     </button>
                   </>
                 ) : (

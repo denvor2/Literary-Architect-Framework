@@ -88,11 +88,16 @@ export function useWorkspaceController() {
       setSyncWarning(getSyncWarning());
 
       // Load deleted books for trash section (Sprint-33-Step-02)
+      console.log("[TRASH] === STARTUP: Loading deletedBooks ===");
+
       // First check localStorage (for client-only deletions), then API
       const ephemeralState = readLocalEphemeralState();
+      console.log("[TRASH] Ephemeral state deletedBooks count:", ephemeralState.deletedBooks?.length ?? 0);
       if (ephemeralState.deletedBooks && ephemeralState.deletedBooks.length > 0) {
-        console.log("[DEBUG] Loaded deletedBooks from localStorage:", ephemeralState.deletedBooks.length);
+        console.log("[TRASH] Setting deletedBooks from localStorage:", ephemeralState.deletedBooks.map(b => b.title));
         setDeletedBooks(ephemeralState.deletedBooks);
+      } else {
+        console.log("[TRASH] No deletedBooks in localStorage, fetching from API");
       }
 
       try {
@@ -105,15 +110,16 @@ export function useWorkspaceController() {
             ok: boolean;
             deletedBooks?: Book[];
           };
-          console.log("[DEBUG] Loaded deletedBooks from API:", data.deletedBooks?.length ?? 0);
+          console.log("[TRASH] API deletedBooks count:", data.deletedBooks?.length ?? 0);
           if (data.deletedBooks && data.deletedBooks.length > 0) {
+            console.log("[TRASH] Setting deletedBooks from API:", data.deletedBooks.map(b => b.title));
             setDeletedBooks(data.deletedBooks);
           }
         } else {
-          console.warn("[DEBUG] Trash API returned non-OK:", response.status);
+          console.warn("[TRASH] Trash API returned non-OK:", response.status);
         }
       } catch (err) {
-        console.warn("[DEBUG] Failed to load deletedBooks:", err);
+        console.warn("[TRASH] Failed to load deletedBooks:", err);
       }
     })();
     return () => {
@@ -218,7 +224,8 @@ export function useWorkspaceController() {
     const bookToDelete = workspace.books.find((book) => book.id === bookId);
 
     if (bookToDelete) {
-      console.log("[DEBUG] Deleting book:", bookId, bookToDelete.title);
+      console.log("[TRASH] === deleteBook START ===");
+      console.log("[TRASH] Deleting book:", bookId, bookToDelete.title);
     }
 
     // Soft delete: call API to mark book as deleted
@@ -233,11 +240,11 @@ export function useWorkspaceController() {
             `Failed to soft delete book: ${response.status} ${response.statusText}`,
           );
         }
-        console.log("[DEBUG] Book deleted successfully on server:", bookId);
+        console.log("[TRASH] Book deleted successfully on server:", bookId);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to soft delete book";
-        console.error("deleteBook API error:", message);
+        console.error("[TRASH] deleteBook API error:", message);
         throw error;
       }
     })();
@@ -257,11 +264,15 @@ export function useWorkspaceController() {
 
     // Add to trash (separate from workspace state)
     if (bookToDelete) {
-      console.log("[DEBUG] Adding to local deletedBooks:", bookToDelete.title);
-      setDeletedBooks((previous) => [
-        { ...bookToDelete, deletedAt: new Date() },
-        ...previous,
-      ]);
+      console.log("[TRASH] Adding to local deletedBooks:", bookToDelete.title);
+      setDeletedBooks((previous) => {
+        const updated = [
+          { ...bookToDelete, deletedAt: new Date() },
+          ...previous,
+        ];
+        console.log("[TRASH] deletedBooks after add:", updated.map(b => b.title));
+        return updated;
+      });
     }
   }
 

@@ -228,12 +228,16 @@ export function writeLocalEphemeralState(
       selectedAssistantMode: workspace.selectedAssistantMode,
       deletedBooks: deletedBooks ?? [],
     };
+    console.log("[TRASH] writeLocalEphemeralState - saving deletedBooks count:", deletedBooks?.length ?? 0);
+    if (deletedBooks && deletedBooks.length > 0) {
+      console.log("[TRASH] Saving to localStorage:", deletedBooks.map(b => b.title));
+    }
     window.localStorage.setItem(
       EPHEMERAL_STATE_KEY,
       JSON.stringify(ephemeralState),
     );
-  } catch {
-    // Best-effort, same tolerance for a broken/unavailable localStorage.
+  } catch (err) {
+    console.error("[TRASH] Failed to write ephemeral state:", err);
   }
 }
 

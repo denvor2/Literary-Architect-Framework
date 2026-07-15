@@ -38,6 +38,7 @@ type SidebarProps = {
   onToggleSeriesCollapsed?: (seriesId: string) => void;
   onCreateSeries?: () => void;
   onEditSeries?: (seriesId: string) => void;
+  onDeleteSeries?: (seriesId: string) => void;
   // Sprint-33-Step-02: Trash system
   deletedBooks?: readonly Book[];
   onRestoreBook?: (bookId: string) => void;
@@ -86,6 +87,7 @@ export function Sidebar({
   onToggleSeriesCollapsed,
   onCreateSeries,
   onEditSeries,
+  onDeleteSeries,
   deletedBooks = [],
   onRestoreBook,
   onPermanentlyDeleteBook,
@@ -231,11 +233,28 @@ export function Sidebar({
                     {booksInSeries.length === 0 && <div className="w-6" />}
                     <button
                       onClick={() => onEditSeries?.(s.id)}
-                      className="w-full rounded-md px-2 py-1 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                      className="flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900"
                       title={s.description || ""}
                       aria-label={`Редактировать серию ${s.title || "Без названия"}`}
                     >
                       {s.title || "Без названия"}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (
+                          confirm(
+                            `Удалить серию "${s.title || "Без названия"}"?`,
+                          )
+                        ) {
+                          onDeleteSeries?.(s.id);
+                        }
+                      }}
+                      className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                      title="Удалить серию"
+                      aria-label={`Удалить серию ${s.title || "Без названия"}`}
+                    >
+                      <Trash2 size={16} />
                     </button>
                   </div>
                   {!isSeriesCollapsed && booksInSeries.length > 0 && (

@@ -82,11 +82,15 @@ export async function createUser(
   // Hash password
   const passwordHash = await bcrypt.hash(plainPassword, PASSWORD_HASH_ROUNDS);
 
+  const { customAlphabet } = await import("nanoid");
+  const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
   return prisma.user.create({
     data: {
+      id: nanoid(),
       email,
       passwordHash,
       role,
+      updatedAt: new Date(),
     },
   });
 }
@@ -169,10 +173,14 @@ export async function getOrCreateDefaultUser(): Promise<User> {
     return existingUser;
   }
   // Create a default admin user with placeholder email
+  const { customAlphabet } = await import("nanoid");
+  const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
   return prisma.user.create({
     data: {
+      id: nanoid(),
       email: `default-admin-${Date.now()}@localhost`,
       role: "admin",
+      updatedAt: new Date(),
     },
   });
 }

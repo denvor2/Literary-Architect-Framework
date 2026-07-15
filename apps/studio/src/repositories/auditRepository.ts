@@ -34,10 +34,14 @@ export async function logEvent(
     }
 
     // Create the event
+    const { customAlphabet } = await import("nanoid");
+    const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
     const event = await prisma.event.create({
       data: {
+        id: nanoid(),
         userId,
         eventType: eventType as EventType,
+        updatedAt: new Date(),
         ...(metadata ? { metadata: metadata as Prisma.InputJsonValue } : {}),
       },
     });

@@ -933,10 +933,12 @@ export function useWorkspaceController() {
 
     const newSeries: Series = {
       id: crypto.randomUUID(),
+      userId: "local-user", // Placeholder for local state (will be replaced with auth user ID)
       title: title.trim(),
       description: description?.trim() ?? "",
       order: workspace.series.length, // order = next index
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     // Call API asynchronously — fire and persist locally first, then sync

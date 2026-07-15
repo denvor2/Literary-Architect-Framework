@@ -75,10 +75,12 @@ export async function upsertAssistantSettings(
       "Database connection unavailable. Cannot save assistant settings.",
     );
   }
+  const { customAlphabet } = await import("nanoid");
+  const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
   const row = await prisma.assistantSettings.upsert({
     where: { mode },
-    create: { mode, ...data },
-    update: data,
+    create: { id: nanoid(), mode, ...data, updatedAt: new Date() },
+    update: { ...data, updatedAt: new Date() },
   });
   return toRecord(row);
 }

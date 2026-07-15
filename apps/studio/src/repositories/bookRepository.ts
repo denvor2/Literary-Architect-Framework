@@ -5,6 +5,7 @@
 // Only `books` moves to the database (ADR-0012 Decision 2) — this module
 // knows nothing about `Workspace`'s ephemeral UI-state fields
 // (`activeBookId` etc.), and nothing about HTTP.
+// Sprint-34-Step-03: Extended with Story Bible functions for book planning.
 
 import { prisma } from "@/lib/db";
 import { AssistantRole } from "@/generated/prisma/client";
@@ -14,6 +15,8 @@ import type {
   AssistantThreads as DomainAssistantThreads,
   Book as DomainBook,
   ChatMessage as DomainChatMessage,
+  BookStatus,
+  Series as DomainSeries,
 } from "@/domain/model";
 
 // The four `AssistantThreads` role keys, in a fixed iteration order — used
@@ -102,7 +105,7 @@ function toDomainBook(book: BookWithRelations): DomainBook {
   return {
     id: book.id,
     title: book.title,
-    genre: book.genre,
+    genre: book.genre as string,
     language: book.language,
     premise: book.premise,
     shortAnnotation: book.shortAnnotation,
@@ -131,6 +134,30 @@ function toDomainBook(book: BookWithRelations): DomainBook {
       text: idea.text,
       createdAt: idea.createdAt.toISOString(),
     })),
+    // Sprint-34-Step-03: Story Bible fields
+    seriesId: book.seriesId ?? undefined,
+    deletedAt: book.deletedAt ?? undefined,
+    workingTitle: book.workingTitle ?? undefined,
+    targetAudience: book.targetAudience ?? undefined,
+    genreArray:
+      book.genre && Array.isArray(book.genre)
+        ? (book.genre as string[])
+        : undefined,
+    estimatedWordCount: book.estimatedWordCount ?? undefined,
+    estimatedChapters: book.estimatedChapters ?? undefined,
+    storyBibleStatus: book.status ?? undefined,
+    mainPlotlines: book.mainPlotlines
+      ? (book.mainPlotlines as string[])
+      : undefined,
+    principle: book.principle ?? undefined,
+    escalation: book.escalation ?? undefined,
+    themes: book.themes ? (book.themes as string[]) : undefined,
+    bookConstraints: book.bookConstraints
+      ? (book.bookConstraints as string[])
+      : undefined,
+    notes: book.notes ?? undefined,
+    publishedDate: book.publishedDate ?? undefined,
+    isbn: book.isbn ?? undefined,
   };
 }
 
@@ -195,6 +222,7 @@ export async function saveBooksForUser(
             shortAnnotation: book.shortAnnotation,
             fullAnnotation: book.fullAnnotation,
             tags: [...book.tags],
+            updatedAt: new Date(),
           },
           update: {
             title: book.title,
@@ -207,12 +235,12 @@ export async function saveBooksForUser(
           },
         });
 
-        const incomingChapterIds = book.Chapter.map((chapter) => chapter.id);
+        const incomingChapterIds = book.chapters.map((chapter) => chapter.id);
         await tx.chapter.deleteMany({
           where: { bookId: book.id, id: { notIn: incomingChapterIds } },
         });
 
-        for (const [chapterIndex, chapter] of book.Chapter.entries()) {
+        for (const [chapterIndex, chapter] of book.chapters.entries()) {
           await tx.chapter.upsert({
             where: { id: chapter.id },
             create: {
@@ -253,14 +281,14 @@ export async function saveBooksForUser(
           }
         }
 
-        const incomingCharacterIds = book.Character.map(
+        const incomingCharacterIds = book.characters.map(
           (character) => character.id,
         );
         await tx.character.deleteMany({
           where: { bookId: book.id, id: { notIn: incomingCharacterIds } },
         });
 
-        for (const character of book.Character) {
+        for (const character of book.characters) {
           await tx.character.upsert({
             where: { id: character.id },
             create: {
@@ -280,12 +308,12 @@ export async function saveBooksForUser(
           });
         }
 
-        const incomingIdeaIds = book.Idea.map((idea) => idea.id);
+        const incomingIdeaIds = book.ideas.map((idea) => idea.id);
         await tx.idea.deleteMany({
           where: { bookId: book.id, id: { notIn: incomingIdeaIds } },
         });
 
-        for (const idea of book.Idea) {
+        for (const idea of book.ideas) {
           await tx.idea.upsert({
             where: { id: idea.id },
             create: {
@@ -305,7 +333,7 @@ export async function saveBooksForUser(
         // Prisma model stores `role` as a plain field per row (Step Card
         // field-mapping note).
         const incomingThreads = ASSISTANT_ROLES.flatMap((role) =>
-          book.AssistantThread[role].map((thread) => ({ role, thread })),
+          book.assistantThreads[role].map((thread) => ({ role, thread })),
         );
         const incomingThreadIds = incomingThreads.map(
           ({ thread }) => thread.id,
@@ -339,8 +367,11 @@ export async function saveBooksForUser(
           // on write).
           await tx.chatMessage.deleteMany({ where: { threadId: thread.id } });
           for (const message of thread.messages) {
+            const { customAlphabet } = await import("nanoid");
+            const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
             await tx.chatMessage.create({
               data: {
+                id: nanoid(),
                 threadId: thread.id,
                 role: message.role,
                 content: message.content,
@@ -385,4 +416,174 @@ export async function permanentlyDeleteBook(bookId: string): Promise<void> {
   await prisma.book.delete({
     where: { id: bookId },
   });
+}
+
+// Sprint-34-Step-03: Story Bible functions for Book
+
+type BookStoryBibleInput = {
+  workingTitle?: string;
+  targetAudience?: string;
+  genre?: string[];
+  estimatedWordCount?: number;
+  estimatedChapters?: number;
+  status?: BookStatus;
+  mainPlotlines?: string[];
+  principle?: string;
+  escalation?: string;
+  themes?: string[];
+  bookConstraints?: string[];
+  notes?: string;
+  publishedDate?: Date;
+  isbn?: string;
+};
+
+/**
+ * Update Book Story Bible fields
+ * Sprint-34-Step-03: Persist Story Bible metadata for book-level planning
+ */
+export async function updateBookStoryBible(
+  bookId: string,
+  data: BookStoryBibleInput,
+): Promise<DomainBook> {
+  if (!prisma) {
+    throw new Error(
+      "Database connection unavailable. Cannot update book story bible.",
+    );
+  }
+
+  const updated = await prisma.book.update({
+    where: { id: bookId },
+    data: {
+      workingTitle: data.workingTitle ?? undefined,
+      targetAudience: data.targetAudience ?? undefined,
+      genre: data.genre ?? undefined,
+      estimatedWordCount: data.estimatedWordCount,
+      estimatedChapters: data.estimatedChapters,
+      status: data.status,
+      mainPlotlines: data.mainPlotlines ?? undefined,
+      principle: data.principle,
+      escalation: data.escalation,
+      themes: data.themes ?? undefined,
+      bookConstraints: data.bookConstraints ?? undefined,
+      notes: data.notes,
+      publishedDate: data.publishedDate,
+      isbn: data.isbn,
+      updatedAt: new Date(),
+    },
+    include: bookInclude,
+  });
+
+  return toDomainBook(updated);
+}
+
+/**
+ * Get Book with all Story Bible fields
+ * Sprint-34-Step-03: Retrieve complete book metadata for planning and display
+ */
+export async function getBookWithStoryBible(bookId: string): Promise<DomainBook> {
+  if (!prisma) {
+    throw new Error(
+      "Database connection unavailable. Cannot get book story bible.",
+    );
+  }
+
+  const book = await prisma.book.findUnique({
+    where: { id: bookId },
+    include: bookInclude,
+  });
+
+  if (!book) {
+    throw new Error(`Book not found: ${bookId}`);
+  }
+
+  return toDomainBook(book);
+}
+
+/**
+ * Get Book with inherited Series Story Bible context
+ * Sprint-34-Step-03: Retrieve book with inherited fields from series for hierarchical planning
+ *
+ * Returns book data with inherited series fields (targetAudience, genre)
+ * if the book-level fields are empty. Enables series-level defaults while
+ * allowing per-book overrides.
+ */
+export async function getBookWithSeriesContext(
+  bookId: string,
+): Promise<{
+  book: DomainBook;
+  inherited: {
+    targetAudience?: string;
+    genre?: string[];
+  };
+}> {
+  if (!prisma) {
+    throw new Error(
+      "Database connection unavailable. Cannot get book with series context.",
+    );
+  }
+
+  const book = await prisma.book.findUnique({
+    where: { id: bookId },
+    include: {
+      ...bookInclude,
+      Series: true,
+    },
+  });
+
+  if (!book) {
+    throw new Error(`Book not found: ${bookId}`);
+  }
+
+  const domainBook = toDomainBook(book);
+  const seriesData = book.Series;
+
+  // Compute inherited fields: use series values if book values are empty
+  const inherited: {
+    targetAudience?: string;
+    genre?: string[];
+  } = {};
+
+  if (!domainBook.targetAudience && seriesData?.targetAudience) {
+    inherited.targetAudience = seriesData.targetAudience;
+  }
+
+  if (
+    (!domainBook.genreArray || domainBook.genreArray.length === 0) &&
+    seriesData?.genre
+  ) {
+    inherited.genre = seriesData.genre as string[];
+  }
+
+  return {
+    book: domainBook,
+    inherited,
+  };
+}
+
+/**
+ * Helper function to get effective audience
+ * Sprint-34-Step-03: Resolve target audience with series fallback
+ * Returns book audience if set, otherwise series audience
+ */
+export function getEffectiveAudience(
+  book: DomainBook,
+  series?: DomainSeries,
+): string | undefined {
+  return book.targetAudience ?? series?.targetAudience;
+}
+
+/**
+ * Helper function to get effective genre
+ * Sprint-34-Step-03: Resolve genre array with series fallback
+ * Returns book genres if set, otherwise series genres
+ */
+export function getEffectiveGenre(
+  book: DomainBook,
+  series?: DomainSeries,
+): string[] {
+  return book.genreArray && book.genreArray.length > 0
+    ? (book.genreArray as string[])
+    : series?.genre
+      ? (series.genre as string[])
+      : [];
 }

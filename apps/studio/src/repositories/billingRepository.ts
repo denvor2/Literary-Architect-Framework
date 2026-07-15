@@ -132,14 +132,18 @@ export async function createSubscription(
     );
   }
 
+  const { customAlphabet } = await import("nanoid");
+  const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
   return prisma.userSubscription.create({
     data: {
+      id: nanoid(),
       userId,
       planId,
       status: "active",
       startDate: now,
       endDate,
       externalSubscriptionId,
+      updatedAt: now,
     },
   });
 }
@@ -422,13 +426,17 @@ export async function createPayment(
     throw new Error("Subscription not found");
   }
 
+  const { customAlphabet } = await import("nanoid");
+  const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
   return prisma.payment.create({
     data: {
+      id: nanoid(),
       userId,
       userSubscriptionId: subscriptionId,
       amount,
       status: "pending",
       externalPaymentId,
+      updatedAt: new Date(),
     },
   });
 }

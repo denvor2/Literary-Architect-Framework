@@ -649,7 +649,14 @@ function ReaderPanel({
                 {typicalRequests.map((request) => (
                   <button
                     key={request}
-                    onClick={() => setInput(request)}
+                    onClick={() => {
+                      setInput((prev) => {
+                        if (!prev.trim()) {
+                          return request;
+                        }
+                        return `${prev} ${request}`;
+                      });
+                    }}
                     className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                   >
                     {request}
@@ -1106,6 +1113,30 @@ export function AssistantPanel({
             </div>
           </div>
 
+          {/* Sprint-33-Step-06: Display typicalRequests as clickable pills below mode name.
+            For Critic, typicalRequests typically match CRITIC_SUBCATEGORIES labels
+            but serve a different purpose: prepopulating input, not filtering results. */}
+          {selectedTypicalRequests.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {selectedTypicalRequests.map((request) => (
+                <button
+                  key={request}
+                  onClick={() => {
+                    setInput((prev) => {
+                      if (!prev.trim()) {
+                        return request;
+                      }
+                      return `${prev} ${request}`;
+                    });
+                  }}
+                  className="rounded-full border border-zinc-300 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                >
+                  {request}
+                </button>
+              ))}
+            </div>
+          )}
+
           {selectedMode === "critic" && (
             <div className="flex flex-wrap gap-1.5">
               {CRITIC_SUBCATEGORIES.map((sub) => (
@@ -1268,13 +1299,21 @@ export function AssistantPanel({
               <div className="flex flex-col gap-2">
                 {/* Sprint-25-Step-03 (ADR-0013): "typical request" preset
                   buttons — pre-fill the chat input, same UX pattern as
-                  CRITIC_SUBCATEGORIES above; not a new AI Bus operation. */}
+                  CRITIC_SUBCATEGORIES above; not a new AI Bus operation.
+                  Sprint-33-Step-06: Updated to append instead of replace. */}
                 {selectedTypicalRequests.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {selectedTypicalRequests.map((request) => (
                       <button
                         key={request}
-                        onClick={() => setInput(request)}
+                        onClick={() => {
+                          setInput((prev) => {
+                            if (!prev.trim()) {
+                              return request;
+                            }
+                            return `${prev} ${request}`;
+                          });
+                        }}
                         className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                       >
                         {request}

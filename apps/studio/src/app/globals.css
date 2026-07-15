@@ -37,3 +37,36 @@ main[class*="overflow-y"] {
 main {
   scrollbar-gutter: stable !important;
 }
+
+/* Sprint-34-Design-Step-04: Mobile layout styles (<768px) */
+@media (max-width: 767px) {
+  header {
+    padding: 0.5rem 1rem;
+  }
+
+  main {
+    height: calc(100vh - 3.5rem - 4rem);
+    overflow-y: auto;
+  }
+
+  aside {
+    width: 100%;
+  }
+
+  /* iOS textarea fix: prevent zoom on input focus */
+  textarea,
+  input[type="text"],
+  input[type="email"],
+  input[type="search"] {
+    font-size: 16px !important;
+  }
+
+  /* Mobile bottom nav tabs styling */
+  nav[class*="bottom-nav"] {
+    height: 4rem;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+}

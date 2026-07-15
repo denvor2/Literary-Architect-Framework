@@ -49,6 +49,11 @@ type HeaderProps = {
   onSaveWorkspace?: () => void;
   onExportBook?: (bookId: string) => void;
   onOpenSearch?: () => void;
+  onThemeChange?: (theme: "light" | "dark" | "auto") => void;
+  onFontSizeChange?: (size: number) => void;
+  onToggleSidebar?: () => void;
+  currentTheme?: "light" | "dark" | "auto";
+  currentFontSize?: number;
 };
 
 function SearchResultsSection({
@@ -121,6 +126,11 @@ export function Header({
   onSaveWorkspace,
   onExportBook,
   onOpenSearch,
+  onThemeChange,
+  onFontSizeChange,
+  onToggleSidebar,
+  currentTheme = "auto",
+  currentFontSize = 14,
 }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
@@ -334,6 +344,86 @@ export function Header({
                       aria-label="Заменить (Ctrl+H, скоро)"
                     >
                       Заменить (скоро)
+                    </button>
+                  </>
+                ) : menu.key === "view" ? (
+                  <>
+                    <div className="px-3 py-1.5 text-sm font-semibold text-black dark:text-white">
+                      Тема
+                    </div>
+                    <button
+                      onClick={() => {
+                        onThemeChange?.("light");
+                        setOpenMenu(null);
+                      }}
+                      className={`w-full px-6 py-1.5 text-left text-sm ${
+                        currentTheme === "light"
+                          ? "bg-zinc-100 text-black dark:bg-zinc-900 dark:text-white"
+                          : "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                      }`}
+                    >
+                      ☀️ Светлая
+                    </button>
+                    <button
+                      onClick={() => {
+                        onThemeChange?.("dark");
+                        setOpenMenu(null);
+                      }}
+                      className={`w-full px-6 py-1.5 text-left text-sm ${
+                        currentTheme === "dark"
+                          ? "bg-zinc-100 text-black dark:bg-zinc-900 dark:text-white"
+                          : "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                      }`}
+                    >
+                      🌙 Тёмная
+                    </button>
+                    <button
+                      onClick={() => {
+                        onThemeChange?.("auto");
+                        setOpenMenu(null);
+                      }}
+                      className={`w-full px-6 py-1.5 text-left text-sm ${
+                        currentTheme === "auto"
+                          ? "bg-zinc-100 text-black dark:bg-zinc-900 dark:text-white"
+                          : "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                      }`}
+                    >
+                      🔄 Авто
+                    </button>
+                    <div className="border-t border-zinc-200 dark:border-zinc-800" />
+                    <div className="px-3 py-1.5 text-sm font-semibold text-black dark:text-white">
+                      Размер текста
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5">
+                      <button
+                        onClick={() => onFontSizeChange?.(Math.max(10, currentFontSize - 1))}
+                        className="rounded px-2 py-1 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                      >
+                        −
+                      </button>
+                      <span className="min-w-8 text-center text-sm">{currentFontSize}px</span>
+                      <button
+                        onClick={() => onFontSizeChange?.(Math.min(18, currentFontSize + 1))}
+                        className="rounded px-2 py-1 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <div className="border-t border-zinc-200 dark:border-zinc-800" />
+                    <button
+                      onClick={() => {
+                        onToggleSidebar?.();
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                    >
+                      Боковая панель
+                    </button>
+                    <button
+                      disabled
+                      className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
+                    >
+                      Режим фокуса (скоро)
                     </button>
                   </>
                 ) : (

@@ -82,6 +82,10 @@ export default function Home() {
   const isMobileLayout = useIsMobileLayout();
   const [activeMobileTab, setActiveMobileTab] = useState<MobileTab>("editor");
 
+  // Sprint-35-Menu-Step-03: Theme and font size state
+  const [currentTheme, setCurrentTheme] = useState<"light" | "dark" | "auto">("auto");
+  const [currentFontSize, setCurrentFontSize] = useState(14);
+
   // All workspace hooks must be called unconditionally, even if not logged in
   const {
     workspace,
@@ -404,6 +408,43 @@ export default function Home() {
     }
   }, [auth.isLoading, auth.isLoggedIn]);
 
+  // Sprint-35-Menu-Step-03: Load and apply theme/font size from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | "auto" | null;
+    const savedFontSize = localStorage.getItem("fontSize");
+    if (savedTheme) setCurrentTheme(savedTheme);
+    if (savedFontSize) setCurrentFontSize(parseInt(savedFontSize, 10));
+    applyTheme(savedTheme || "auto");
+  }, []);
+
+  function applyTheme(theme: "light" | "dark" | "auto") {
+    const html = document.documentElement;
+    if (theme === "light") {
+      html.classList.remove("dark");
+    } else if (theme === "dark") {
+      html.classList.add("dark");
+    } else {
+      // auto: use system preference
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        html.classList.add("dark");
+      } else {
+        html.classList.remove("dark");
+      }
+    }
+  }
+
+  function handleThemeChange(theme: "light" | "dark" | "auto") {
+    setCurrentTheme(theme);
+    localStorage.setItem("theme", theme);
+    applyTheme(theme);
+  }
+
+  function handleFontSizeChange(size: number) {
+    setCurrentFontSize(size);
+    localStorage.setItem("fontSize", size.toString());
+    document.documentElement.style.fontSize = `${size}px`;
+  }
+
   // Sprint-30-Step-05: If not logged in, show only auth screen
   if (!auth.isLoading && !auth.isLoggedIn) {
     return (
@@ -457,6 +498,11 @@ export default function Home() {
           onOpenSearch={() => {
             /* Opens search bar — keyboard shortcut handler in Header.tsx */
           }}
+          onThemeChange={handleThemeChange}
+          onFontSizeChange={handleFontSizeChange}
+          onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+          currentTheme={currentTheme}
+          currentFontSize={currentFontSize}
         />
         <SyncWarningBanner warning={syncWarning} />
 
@@ -656,6 +702,11 @@ export default function Home() {
         onOpenSearch={() => {
           /* Opens search bar — keyboard shortcut handler in Header.tsx */
         }}
+        onThemeChange={handleThemeChange}
+        onFontSizeChange={handleFontSizeChange}
+        onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+        currentTheme={currentTheme}
+        currentFontSize={currentFontSize}
       />
       <SyncWarningBanner warning={syncWarning} />
       {/* Sprint-34-Design-Step-03: Tablet layout (768-1024px) with hamburger menu */}

@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { EditorArea } from "@/components/EditorArea";
 import { CharacterPanel } from "@/components/CharacterPanel";
 import { AssistantPanel } from "@/components/AssistantPanel";
+import { MobileBottomNav, type MobileTab } from "@/components/MobileBottomNav";
 import { SyncWarningBanner } from "@/components/SyncWarningBanner";
 import { DeveloperTools } from "@/components/DeveloperTools";
 import { NewBookDialog } from "@/components/NewBookDialog";
@@ -33,6 +34,8 @@ import type { BookFieldName } from "@/ai/operations";
 // no hydration mismatch — then flips synchronously, before paint, on an
 // actual desktop viewport.
 const DESKTOP_BREAKPOINT_QUERY = "(min-width: 1024px)";
+// Sprint-34-Design-Step-04: Mobile layout breakpoint (<768px for small phones)
+const MOBILE_BREAKPOINT_QUERY = "(max-width: 767px)";
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
@@ -49,6 +52,23 @@ function useIsDesktopLayout(): boolean {
   return isDesktop;
 }
 
+// Sprint-34-Design-Step-04: Mobile layout detection (<768px).
+// Uses useEffect (not useLayoutEffect) to avoid hydration mismatch:
+// Server renders isMobile=false, client hydrates same, then effect updates to true.
+// This defers the state update until after hydration completes.
+function useIsMobileLayout(): boolean {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_BREAKPOINT_QUERY);
+    setIsMobile(mediaQuery.matches);
+    const handleChange = (event: MediaQueryListEvent) =>
+      setIsMobile(event.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+  return isMobile;
+}
+
 export default function Home() {
   // Sprint-30-Step-05: Authentication controller
   const { auth, login, register, logout } = useAuthController();
@@ -57,6 +77,10 @@ export default function Home() {
   const [authDialogMode, setAuthDialogMode] = useState<
     "login" | "register" | null
   >(null);
+
+  // Sprint-34-Design-Step-04: Mobile layout detection and tab state
+  const isMobileLayout = useIsMobileLayout();
+  const [activeMobileTab, setActiveMobileTab] = useState<MobileTab>("editor");
 
   // All workspace hooks must be called unconditionally, even if not logged in
   const {
@@ -248,6 +272,19 @@ export default function Home() {
     return value.slice(selectionStart, selectionEnd);
   }
 
+  // Sprint-34-Design-Step-04: Calculate word count for mobile status bar
+  function calculateWordCount(): number {
+    if (!activeBook) return 0;
+    let totalWords = 0;
+    for (const chapter of chapters) {
+      for (const scene of chapter.scenes) {
+        totalWords += scene.text.trim().split(/\s+/).filter(Boolean).length;
+      }
+    }
+    return totalWords;
+  }
+  const wordCount = calculateWordCount();
+
   // Sprint-21-Step-04: request AI suggestion for a Book field (ADR-0011).
   async function handleRequestFieldSuggestion(fieldName: BookFieldName) {
     if (!activeBook) return;
@@ -380,6 +417,199 @@ export default function Home() {
     );
   }
 
+  // Sprint-34-Design-Step-04: Mobile layout rendering
+  if (isMobileLayout) {
+    return (
+      <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
+        <Header
+          books={books}
+          activeBookId={activeBookId}
+          chapters={chapters}
+          characters={characters}
+          ideas={ideas}
+          onSelectBook={handleSelectBook}
+          onSelectCharacter={selectCharacter}
+          onSelectSearchMatch={handleSelectSearchMatch}
+          onSelectIdeaMatch={handleSelectIdeaMatch}
+          currentUser={auth.user}
+          onLogout={logout}
+          onOpenLogin={() => setAuthDialogMode("login")}
+        />
+        <SyncWarningBanner warning={syncWarning} />
+
+        {/* Mobile main content area */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Collection Tab */}
+          {activeMobileTab === "collection" && !isFocusMode && (
+            <div className="flex-1 overflow-y-auto">
+              <Sidebar
+                books={books}
+                activeBookId={activeBookId}
+                chapters={chapters}
+                selectedChapterId={selectedChapterId}
+                selectedSceneId={selectedSceneId}
+                onSelectChapter={selectChapter}
+                onSelectScene={selectScene}
+                characters={characters}
+                selectedCharacterId={selectedCharacterId}
+                onSelectCharacter={selectCharacter}
+                onCreateCharacter={createCharacter}
+                onSelectBook={handleSelectBook}
+                onNewBook={() => setIsDialogOpen(true)}
+                onDeleteBook={deleteBook}
+                deletedBooks={deletedBooks}
+                onRestoreBook={restoreBook}
+                onPermanentlyDeleteBook={permanentlyDeleteBook}
+                onCreateChapter={createChapter}
+                onCreateScene={createScene}
+                collapsedChapterIds={collapsedChapterIds}
+                onToggleChapterCollapsed={toggleChapterCollapsed}
+                ideas={ideas}
+                onCreateIdea={createIdea}
+                onUpdateIdea={updateIdea}
+                onDeleteIdea={deleteIdea}
+                series={series}
+                collapsedSeriesIds={collapsedSeriesIds}
+                onToggleSeriesCollapsed={(seriesId) =>
+                  setCollapsedSeriesIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(seriesId)) {
+                      next.delete(seriesId);
+                    } else {
+                      next.add(seriesId);
+                    }
+                    return next;
+                  })
+                }
+                onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
+                onEditSeries={setEditingSeriesId}
+              />
+            </div>
+          )}
+
+          {/* Editor Tab */}
+          {activeMobileTab === "editor" && !isFocusMode && (
+            <div className="flex-1 overflow-hidden">
+              {selectedCharacterId ? (
+                <CharacterPanel
+                  character={selectedCharacter}
+                  onUpdate={(fields) =>
+                    updateCharacter(selectedCharacterId, fields)
+                  }
+                  onDelete={() => deleteCharacter(selectedCharacterId)}
+                />
+              ) : (
+                <EditorArea
+                  book={activeBook}
+                  chapters={chapters}
+                  onNewScene={createScene}
+                  onChangeSceneText={updateSceneText}
+                  onUpdateChapter={updateChapter}
+                  onUpdateSceneTitle={updateSceneTitle}
+                  onUpdateBook={updateBook}
+                  isFocusMode={isFocusMode}
+                  onToggleFocusMode={() => setIsFocusMode((value) => !value)}
+                  onSceneFocus={handleSceneFocus}
+                  isChaptersCollapsed={isChaptersCollapsed}
+                  onToggleChaptersCollapsed={() =>
+                    setIsChaptersCollapsed((value) => !value)
+                  }
+                  collapsedChapterIds={collapsedChapterIds}
+                  onToggleChapterCollapsed={toggleChapterCollapsed}
+                  collapsedSceneIds={collapsedSceneIds}
+                  onToggleSceneCollapsed={toggleSceneCollapsed}
+                  onToggleAllScenesInChapter={toggleAllScenesInChapter}
+                  onRequestFieldSuggestion={handleRequestFieldSuggestion}
+                  fieldSuggestion={fieldSuggestion}
+                  onAcceptFieldSuggestion={handleAcceptFieldSuggestion}
+                  onDismissFieldSuggestion={() => setFieldSuggestion(null)}
+                  isFieldSuggestionLoading={isFieldSuggestionLoading}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Helpers Tab */}
+          {activeMobileTab === "helpers" && !isFocusMode && (
+            <div className="flex-1 overflow-y-auto">
+              <AssistantPanel
+                book={activeBook}
+                sceneText={activeScene?.text ?? ""}
+                getSelectedText={getSelectedText}
+                selectedMode={workspace.selectedAssistantMode}
+                onSelectMode={selectAssistantMode}
+                activeThreads={activeThreads}
+                onAppendMessage={appendMessage}
+                onCreateThread={createThread}
+                onRenameThread={renameThread}
+                onDeleteThread={deleteThread}
+                onReplaceSceneText={
+                  activeChapter && activeScene
+                    ? (text) =>
+                        updateSceneText(activeChapter.id, activeScene.id, text)
+                    : undefined
+                }
+                onAcceptStructureProposal={acceptStructureProposal}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Mobile bottom navigation */}
+        {!isFocusMode && (
+          <MobileBottomNav
+            activeTab={activeMobileTab}
+            onTabChange={setActiveMobileTab}
+            wordCount={wordCount}
+            progress={0}
+          />
+        )}
+
+        {!isFocusMode && <DeveloperTools />}
+
+        {isDialogOpen && (
+          <NewBookDialog
+            onCancel={() => setIsDialogOpen(false)}
+            onCreate={(newBook) => {
+              createBook(newBook);
+              setIsDialogOpen(false);
+            }}
+          />
+        )}
+
+        {isNewSeriesDialogOpen && (
+          <NewSeriesDialog
+            onCancel={() => setIsNewSeriesDialogOpen(false)}
+            onCreate={(title, description) => {
+              createSeries(title, description);
+              setIsNewSeriesDialogOpen(false);
+            }}
+          />
+        )}
+
+        {editingSeriesId &&
+          (() => {
+            const editingSeries = series.find((s) => s.id === editingSeriesId);
+            return editingSeries ? (
+              <SeriesEditDialog
+                series={editingSeries}
+                onCancel={() => setEditingSeriesId(null)}
+                onSave={(title, description) => {
+                  updateSeries(editingSeriesId, title, description);
+                  setEditingSeriesId(null);
+                }}
+                onDelete={() => {
+                  deleteSeries(editingSeriesId);
+                  setEditingSeriesId(null);
+                }}
+              />
+            ) : null;
+          })()}
+      </div>
+    );
+  }
+
+  // Desktop/Tablet layout (>=768px)
   return (
     <div className="flex h-screen flex-col bg-white font-sans dark:bg-black">
       <Header
@@ -404,7 +634,11 @@ export default function Home() {
           <button
             onClick={() => setIsSidebarCollapsed((prev) => !prev)}
             className="absolute left-4 top-4 z-40 hidden rounded-md border border-zinc-300 p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900 md:block lg:hidden"
-            aria-label={isSidebarCollapsed ? "Открыть боковую панель" : "Закрыть боковую панель"}
+            aria-label={
+              isSidebarCollapsed
+                ? "Открыть боковую панель"
+                : "Закрыть боковую панель"
+            }
             title="Навигация"
           >
             <svg
@@ -438,47 +672,47 @@ export default function Home() {
             } lg:static lg:block`}
           >
             <Sidebar
-            books={books}
-            activeBookId={activeBookId}
-            chapters={chapters}
-            selectedChapterId={selectedChapterId}
-            selectedSceneId={selectedSceneId}
-            onSelectChapter={selectChapter}
-            onSelectScene={selectScene}
-            characters={characters}
-            selectedCharacterId={selectedCharacterId}
-            onSelectCharacter={selectCharacter}
-            onCreateCharacter={createCharacter}
-            onSelectBook={handleSelectBook}
-            onNewBook={() => setIsDialogOpen(true)}
-            onDeleteBook={deleteBook}
-            deletedBooks={deletedBooks}
-            onRestoreBook={restoreBook}
-            onPermanentlyDeleteBook={permanentlyDeleteBook}
-            onCreateChapter={createChapter}
-            onCreateScene={createScene}
-            collapsedChapterIds={collapsedChapterIds}
-            onToggleChapterCollapsed={toggleChapterCollapsed}
-            ideas={ideas}
-            onCreateIdea={createIdea}
-            onUpdateIdea={updateIdea}
-            onDeleteIdea={deleteIdea}
-            // Sprint-29-Step-06: Series support
-            series={series}
-            collapsedSeriesIds={collapsedSeriesIds}
-            onToggleSeriesCollapsed={(seriesId) =>
-              setCollapsedSeriesIds((prev) => {
-                const next = new Set(prev);
-                if (next.has(seriesId)) {
-                  next.delete(seriesId);
-                } else {
-                  next.add(seriesId);
-                }
-                return next;
-              })
-            }
-            onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
-            onEditSeries={setEditingSeriesId}
+              books={books}
+              activeBookId={activeBookId}
+              chapters={chapters}
+              selectedChapterId={selectedChapterId}
+              selectedSceneId={selectedSceneId}
+              onSelectChapter={selectChapter}
+              onSelectScene={selectScene}
+              characters={characters}
+              selectedCharacterId={selectedCharacterId}
+              onSelectCharacter={selectCharacter}
+              onCreateCharacter={createCharacter}
+              onSelectBook={handleSelectBook}
+              onNewBook={() => setIsDialogOpen(true)}
+              onDeleteBook={deleteBook}
+              deletedBooks={deletedBooks}
+              onRestoreBook={restoreBook}
+              onPermanentlyDeleteBook={permanentlyDeleteBook}
+              onCreateChapter={createChapter}
+              onCreateScene={createScene}
+              collapsedChapterIds={collapsedChapterIds}
+              onToggleChapterCollapsed={toggleChapterCollapsed}
+              ideas={ideas}
+              onCreateIdea={createIdea}
+              onUpdateIdea={updateIdea}
+              onDeleteIdea={deleteIdea}
+              // Sprint-29-Step-06: Series support
+              series={series}
+              collapsedSeriesIds={collapsedSeriesIds}
+              onToggleSeriesCollapsed={(seriesId) =>
+                setCollapsedSeriesIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(seriesId)) {
+                    next.delete(seriesId);
+                  } else {
+                    next.add(seriesId);
+                  }
+                  return next;
+                })
+              }
+              onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
+              onEditSeries={setEditingSeriesId}
             />
           </div>
         )}

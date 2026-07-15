@@ -100,6 +100,8 @@ function normalizeBook(book: Partial<Book>): Book {
     characters: book.characters ?? [],
     assistantThreads: normalizeAssistantThreads(book.assistantThreads),
     ideas: book.ideas ?? [],
+    seriesId: book.seriesId,
+    deletedAt: book.deletedAt,
   };
 }
 

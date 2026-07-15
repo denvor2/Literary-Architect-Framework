@@ -56,6 +56,8 @@ type HeaderProps = {
   currentFontSize?: number;
   onShowKeyboardShortcuts?: () => void;
   appVersion?: string;
+  // Sprint-34-Step-05: Story Bible settings
+  onOpenBookSettings?: (bookId: string) => void;
 };
 
 function SearchResultsSection({
@@ -135,6 +137,7 @@ export function Header({
   currentFontSize = 14,
   onShowKeyboardShortcuts,
   appVersion = "0.1.0",
+  onOpenBookSettings,
 }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
@@ -205,17 +208,29 @@ export function Header({
   // Escape closes menu/search
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === "k" || event.key.toLowerCase() === "f")) {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        (event.key.toLowerCase() === "k" || event.key.toLowerCase() === "f")
+      ) {
         event.preventDefault();
         searchInputRef.current?.focus();
         setIsResultsOpen(true);
-      } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n") {
+      } else if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "n"
+      ) {
         event.preventDefault();
         onCreateBook?.();
-      } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+      } else if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "s"
+      ) {
         event.preventDefault();
         onSaveWorkspace?.();
-      } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "e") {
+      } else if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "e"
+      ) {
         event.preventDefault();
         if (activeBookId) {
           onExportBook?.(activeBookId);
@@ -233,12 +248,25 @@ export function Header({
     setIsResultsOpen(false);
   }
 
+  const activeBook = books.find((b) => b.id === activeBookId);
+
   return (
     <header className="flex h-14 shrink-0 items-center gap-4 border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-black">
       <div className="flex items-center gap-3">
         <span className="text-lg font-semibold tracking-tight text-black dark:text-zinc-50">
           Literary Studio
         </span>
+        {/* Sprint-34-Step-05: Gear button for active book settings */}
+        {activeBook && (
+          <button
+            onClick={() => onOpenBookSettings?.(activeBook.id)}
+            title="Настройки книги"
+            className="rounded-md border border-zinc-300 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            aria-label="Настройки книги"
+          >
+            ⚙️
+          </button>
+        )}
       </div>
 
       <nav ref={menuBarRef} className="flex items-center gap-1">
@@ -400,14 +428,20 @@ export function Header({
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1.5">
                       <button
-                        onClick={() => onFontSizeChange?.(Math.max(10, currentFontSize - 1))}
+                        onClick={() =>
+                          onFontSizeChange?.(Math.max(10, currentFontSize - 1))
+                        }
                         className="rounded px-2 py-1 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
                       >
                         −
                       </button>
-                      <span className="min-w-8 text-center text-sm">{currentFontSize}px</span>
+                      <span className="min-w-8 text-center text-sm">
+                        {currentFontSize}px
+                      </span>
                       <button
-                        onClick={() => onFontSizeChange?.(Math.min(18, currentFontSize + 1))}
+                        onClick={() =>
+                          onFontSizeChange?.(Math.min(18, currentFontSize + 1))
+                        }
                         className="rounded px-2 py-1 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
                       >
                         +
@@ -434,7 +468,10 @@ export function Header({
                   <>
                     <button
                       onClick={() => {
-                        window.open("https://github.com/Denys-Vorovyev/Literary-Studio", "_blank");
+                        window.open(
+                          "https://github.com/Denys-Vorovyev/Literary-Studio",
+                          "_blank",
+                        );
                         setOpenMenu(null);
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
@@ -452,7 +489,10 @@ export function Header({
                     </button>
                     <button
                       onClick={() => {
-                        window.open("https://github.com/Denys-Vorovyev/Literary-Studio/issues", "_blank");
+                        window.open(
+                          "https://github.com/Denys-Vorovyev/Literary-Studio/issues",
+                          "_blank",
+                        );
                         setOpenMenu(null);
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
@@ -463,13 +503,20 @@ export function Header({
                 ) : menu.key === "about" ? (
                   <>
                     <div className="px-3 py-2 text-sm">
-                      <div className="font-semibold text-black dark:text-white">Literary Studio</div>
-                      <div className="text-xs text-zinc-600 dark:text-zinc-400">v{appVersion}</div>
+                      <div className="font-semibold text-black dark:text-white">
+                        Literary Studio
+                      </div>
+                      <div className="text-xs text-zinc-600 dark:text-zinc-400">
+                        v{appVersion}
+                      </div>
                     </div>
                     <div className="border-t border-zinc-200 dark:border-zinc-800" />
                     <button
                       onClick={() => {
-                        window.open("https://github.com/Denys-Vorovyev", "_blank");
+                        window.open(
+                          "https://github.com/Denys-Vorovyev",
+                          "_blank",
+                        );
                         setOpenMenu(null);
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
@@ -478,7 +525,10 @@ export function Header({
                     </button>
                     <button
                       onClick={() => {
-                        window.open("https://github.com/Denys-Vorovyev/Literary-Studio/blob/main/LICENSE", "_blank");
+                        window.open(
+                          "https://github.com/Denys-Vorovyev/Literary-Studio/blob/main/LICENSE",
+                          "_blank",
+                        );
                         setOpenMenu(null);
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"

@@ -16,10 +16,13 @@ import { SeriesEditDialog } from "@/components/SeriesEditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
 import { RegisterDialog } from "@/components/RegisterDialog";
 import { ExportDialog, type ExportFormat } from "@/components/ExportDialog";
+import { SeriesSettingsDialog } from "@/components/SeriesSettingsDialog";
+import { BookSettingsDialog } from "@/components/BookSettingsDialog";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 import { useAuthController } from "@/hooks/useAuthController";
 import { execute as aiBusExecute } from "@/ai/aiBus";
 import type { BookFieldName } from "@/ai/operations";
+import type { Book, Series } from "@/domain/model";
 
 // Sprint-25-Step-02: `react-resizable-panels`'s `Group` renders its own
 // row/column flex layout via the `orientation` prop (JS-driven, not a CSS
@@ -161,6 +164,11 @@ export default function Home() {
   const [collapsedSeriesIds, setCollapsedSeriesIds] = useState<Set<string>>(
     new Set(),
   );
+  // Sprint-34-Step-05: Series/Book Settings dialog state
+  const [isSeriesSettingsOpen, setIsSeriesSettingsOpen] = useState(false);
+  const [isBookSettingsOpen, setIsBookSettingsOpen] = useState(false);
+  const [settingsSeriesId, setSettingsSeriesId] = useState<string | null>(null);
+  const [settingsBookId, setSettingsBookId] = useState<string | null>(null);
   // Ephemeral UI state only — not part of Workspace, not persisted.
   const [isFocusMode, setIsFocusMode] = useState(false);
   // Sprint-34-Design-Step-03: Sidebar collapse toggle for tablet layout
@@ -482,6 +490,55 @@ export default function Home() {
     URL.revokeObjectURL(url);
   }
 
+  // Sprint-34-Step-05: Save Series settings via API
+  async function handleSaveSeriesSettings(data: Partial<Series>) {
+    if (!data.id) return;
+    try {
+      const response = await fetch(`/api/series/${data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      const updatedSeries = await response.json();
+      // Update workspace state via updateSeries
+      updateSeries(
+        data.id,
+        data.title || updatedSeries.title,
+        data.description || updatedSeries.description,
+      );
+      setIsSeriesSettingsOpen(false);
+      setSettingsSeriesId(null);
+    } catch (err) {
+      console.error("Failed to save series settings:", err);
+      throw err;
+    }
+  }
+
+  // Sprint-34-Step-05: Save Book settings via API
+  async function handleSaveBookSettings(data: Partial<Book>) {
+    if (!data.id) return;
+    try {
+      const response = await fetch(`/api/book/${data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      // Update workspace state via updateBook
+      updateBook(data.id, data);
+      setIsBookSettingsOpen(false);
+      setSettingsBookId(null);
+    } catch (err) {
+      console.error("Failed to save book settings:", err);
+      throw err;
+    }
+  }
+
   // Sprint-30-Step-05: Show login dialog if not logged in (on mount only)
   const hasShownAuthDialog = useRef(false);
   useEffect(() => {
@@ -671,6 +728,10 @@ export default function Home() {
           currentFontSize={currentFontSize}
           onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
           appVersion="0.1.0"
+          onOpenBookSettings={(bookId) => {
+            setSettingsBookId(bookId);
+            setIsBookSettingsOpen(true);
+          }}
         />
         <SyncWarningBanner warning={syncWarning} />
 
@@ -1255,6 +1316,44 @@ export default function Home() {
           onCancel={() => setIsExportDialogOpen(false)}
         />
       )}
+
+      {/* Sprint-34-Step-05: Series Settings dialog */}
+      {settingsSeriesId &&
+        (() => {
+          const settingsSeries = series.find((s) => s.id === settingsSeriesId);
+          return settingsSeries ? (
+            <SeriesSettingsDialog
+              series={settingsSeries}
+              isOpen={isSeriesSettingsOpen}
+              onClose={() => {
+                setIsSeriesSettingsOpen(false);
+                setSettingsSeriesId(null);
+              }}
+              onSave={handleSaveSeriesSettings}
+            />
+          ) : null;
+        })()}
+
+      {/* Sprint-34-Step-05: Book Settings dialog */}
+      {settingsBookId &&
+        (() => {
+          const settingsBook = books.find((b) => b.id === settingsBookId);
+          const bookSeries = settingsBook
+            ? series.find((s) => s.id === settingsBook.seriesId)
+            : null;
+          return settingsBook ? (
+            <BookSettingsDialog
+              book={settingsBook}
+              series={bookSeries || null}
+              isOpen={isBookSettingsOpen}
+              onClose={() => {
+                setIsBookSettingsOpen(false);
+                setSettingsBookId(null);
+              }}
+              onSave={handleSaveBookSettings}
+            />
+          ) : null;
+        })()}
     </div>
   );
 }

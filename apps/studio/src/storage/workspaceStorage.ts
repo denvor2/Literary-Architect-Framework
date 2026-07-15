@@ -287,6 +287,25 @@ async function fetchBooksFromApi(): Promise<readonly Book[] | null> {
   }
 }
 
+// Fetch series from /api/series endpoint. Same error handling as books.
+async function fetchSeriesFromApi(): Promise<readonly import("@/domain/model").Series[] | null> {
+  try {
+    const response = await fetch("/api/series", {
+      credentials: "include",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const data = (await response.json()) as { ok?: boolean; data?: unknown };
+    if (!data.ok || !Array.isArray(data.data)) {
+      return null;
+    }
+    return data.data as import("@/domain/model").Series[];
+  } catch {
+    return null;
+  }
+}
+
 // Best-effort write of `books` to the database. Never throws — a failure
 // here is exactly the "database unavailable" case ADR-0012 Decision 5
 // requires to fall back silently at this layer (the visible warning is
@@ -329,9 +348,11 @@ export async function loadWorkspace(): Promise<Workspace> {
   // and set syncWarning to signal the UI (SyncStatusBanner will show offline).
   // Ephemeral UI state (activeBookId, selectedChapterId, etc.) always comes
   // from localStorage, never from the database.
+  // Sprint-29-Step-05 (Updated): Also load series from /api/series.
 
   const ephemeralState = readLocalEphemeralState();
   const dbBooks = await fetchBooksFromApi();
+  const dbSeries = await fetchSeriesFromApi();
 
   if (dbBooks === null) {
     // Database is unavailable (network error, non-2xx response, malformed
@@ -349,7 +370,7 @@ export async function loadWorkspace(): Promise<Workspace> {
     );
     return {
       books: normalizedBooks,
-      series: [], // Sprint-29-Step-05: series loaded separately in future
+      series: dbSeries ?? [], // Load from /api/series, fallback to empty if unavailable
       activeBookId: ephemeralState.activeBookId ?? null,
       selectedChapterId: ephemeralState.selectedChapterId ?? null,
       selectedSceneId: ephemeralState.selectedSceneId ?? null,

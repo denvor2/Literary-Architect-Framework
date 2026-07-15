@@ -5,8 +5,22 @@ html {
 }
 
 :root {
+  /* Light mode base colors */
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Light mode semantic colors */
+  --border: #e4e4e7;
+  --input-bg: #ffffff;
+  --input-border: #d4d4d8;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #2563eb;
+  --accent-foreground: #ffffff;
+  --success: #16a34a;
+  --warning: #ea580c;
+  --error: #dc2626;
+  --info: #0284c7;
 }
 
 @theme inline {
@@ -18,8 +32,24 @@ html {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark mode base colors - zinc scale optimized for contrast */
+    --background: #09090b;
+    --foreground: #f4f4f5;
+
+    /* Dark mode semantic colors - inverted zinc scale + semantic accent */
+    --border: #27272a;
+    --input-bg: #18181b;
+    --input-border: #3f3f46;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+
+    /* Accent colors adjusted for dark mode - maintain vibrancy */
+    --accent: #3b82f6;
+    --accent-foreground: #09090b;
+    --success: #22c55e;
+    --warning: #f97316;
+    --error: #ef4444;
+    --info: #06b6d4;
   }
 }
 

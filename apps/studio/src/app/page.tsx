@@ -119,9 +119,11 @@ export default function Home() {
     permanentlyDeleteBook,
     createChapter,
     updateChapter,
+    deleteChapter,
     createScene,
     updateSceneText,
     updateSceneTitle,
+    deleteScene,
     selectChapter,
     selectScene,
     characters,
@@ -752,6 +754,7 @@ export default function Home() {
                 selectedCharacterId={selectedCharacterId}
                 onSelectCharacter={selectCharacter}
                 onCreateCharacter={createCharacter}
+                onDeleteCharacter={deleteCharacter}
                 onSelectBook={handleSelectBook}
                 onNewBook={() => setIsDialogOpen(true)}
                 onDeleteBook={deleteBook}
@@ -759,7 +762,9 @@ export default function Home() {
                 onRestoreBook={restoreBook}
                 onPermanentlyDeleteBook={permanentlyDeleteBook}
                 onCreateChapter={createChapter}
+                onDeleteChapter={deleteChapter}
                 onCreateScene={createScene}
+                onDeleteScene={deleteScene}
                 collapsedChapterIds={collapsedChapterIds}
                 onToggleChapterCollapsed={toggleChapterCollapsed}
                 ideas={ideas}
@@ -1062,6 +1067,7 @@ export default function Home() {
               selectedCharacterId={selectedCharacterId}
               onSelectCharacter={selectCharacter}
               onCreateCharacter={createCharacter}
+              onDeleteCharacter={deleteCharacter}
               onSelectBook={handleSelectBook}
               onNewBook={() => setIsDialogOpen(true)}
               onDeleteBook={deleteBook}
@@ -1069,7 +1075,9 @@ export default function Home() {
               onRestoreBook={restoreBook}
               onPermanentlyDeleteBook={permanentlyDeleteBook}
               onCreateChapter={createChapter}
+              onDeleteChapter={deleteChapter}
               onCreateScene={createScene}
+              onDeleteScene={deleteScene}
               collapsedChapterIds={collapsedChapterIds}
               onToggleChapterCollapsed={toggleChapterCollapsed}
               ideas={ideas}

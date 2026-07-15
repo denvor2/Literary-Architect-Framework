@@ -484,6 +484,71 @@ export function useWorkspaceController() {
     });
   }
 
+  function deleteChapter(chapterId: string) {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+
+      const remainingChapters = activeBook.chapters.filter(
+        (c) => c.id !== chapterId,
+      );
+      const newSelectedChapterId =
+        previous.selectedChapterId === chapterId
+          ? (remainingChapters[0]?.id ?? null)
+          : previous.selectedChapterId;
+
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? { ...book, chapters: remainingChapters }
+            : book,
+        ),
+        selectedChapterId: newSelectedChapterId,
+        selectedSceneId: null,
+        selectedCharacterId: null,
+      };
+    });
+  }
+
+  function deleteScene(chapterId: string, sceneId: string) {
+    setWorkspace((previous) => {
+      const activeBook = previous.books.find(
+        (book) => book.id === previous.activeBookId,
+      );
+      if (!activeBook) return previous;
+
+      const chapter = activeBook.chapters.find((c) => c.id === chapterId);
+      if (!chapter) return previous;
+
+      const remainingScenes = chapter.scenes.filter((s) => s.id !== sceneId);
+      const newSelectedSceneId =
+        previous.selectedSceneId === sceneId
+          ? (remainingScenes[0]?.id ?? null)
+          : previous.selectedSceneId;
+
+      return {
+        ...previous,
+        books: previous.books.map((book) =>
+          book.id === activeBook.id
+            ? {
+                ...book,
+                chapters: book.chapters.map((c) =>
+                  c.id === chapterId
+                    ? { ...c, scenes: remainingScenes }
+                    : c,
+                ),
+              }
+            : book,
+        ),
+        selectedSceneId: newSelectedSceneId,
+        selectedCharacterId: null,
+      };
+    });
+  }
+
   function selectChapter(chapterId: string) {
     setWorkspace((previous) => ({
       ...previous,
@@ -1165,9 +1230,11 @@ export function useWorkspaceController() {
     permanentlyDeleteBook,
     createChapter,
     updateChapter,
+    deleteChapter,
     createScene,
     updateSceneText,
     updateSceneTitle,
+    deleteScene,
     selectChapter,
     selectScene,
     createCharacter,

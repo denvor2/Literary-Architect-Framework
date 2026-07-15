@@ -95,7 +95,8 @@
       "Bash(node audit-desktop-layout.js)",
       "Bash(grep -E \"\\(ARP|\\\\.md$\\)\")",
       "Bash(cd e:/Projects/Literary-Architect-Framework && mv docs/task-bus/queue/active/Sprint-34-Design-Step-*.md docs/task-bus/queue/pending/ && git status --short)",
-      "Bash(git commit -m 'Revert Step-01 scope violation: remove Sprint-33 logic, return to audit-only *)"
+      "Bash(git commit -m 'Revert Step-01 scope violation: remove Sprint-33 logic, return to audit-only *)",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "\\tmp",

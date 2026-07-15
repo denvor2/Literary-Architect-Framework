@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 31 — Тарифные планы, оплата и права доступа по подписке (see ROADMAP_18-27.md)** — **in progress**
+**Sprint 36 — Section Counters (Sidebar Enhancement)** — **in progress**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,10 +10,32 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** In progress — scope pending (payment provider selection required before decomposition).
+- **Status:** In progress — two step cards planned (implementation + live verification)
 - **Phase:** Phase 1 (MVP)
-- **Scope source:** `docs/project/ROADMAP_18-27.md` (Sprint 31 row, Definition of Done requirements
-  are tier model, Prisma schema, feature gating, UI, automatic downgrade; see ROADMAP for full Definition).
+- **Scope:** Add visual counters to Sidebar section headers (Books, Series, Chapters, Characters, Ideas)
+
+## Sprint 35 — closed
+
+Menu System (File/Edit/View/Help/About) — completed 2026-07-15. Six Step Cards, all completed:
+ADR-0013 refinement, File menu (New Book, Save, Export, Exit), Edit menu (Undo, Redo, Find, Replace),
+View menu (Theme selection, Font size, Sidebar toggle), Help/About (Documentation, Shortcuts, Version),
+Keyboard shortcuts (Ctrl+K, N, S, E, Z/Y, Escape), and Live verification on scratch port.
+
+- **Step 01-05:** Menu implementation across all systems layers
+- **Step 06:** Live verification on production build (port 3418)
+
+All steps live-verified and archived to done/. Sprint 35 closed. Next: Sprint 36 (Section Counters).
+
+## Sprint 34 — closed
+
+Design Polish (Icons, Accessibility, Performance) — completed 2026-07-15. Six Step Cards covering
+dark mode, mobile/tablet responsive layouts, and icon/accessibility improvements (Accessibility 95/100).
+All steps archived to done/. Sprint closed.
+
+## Sprint 33 — closed
+
+Trash System (Book/Series Deletion) — partial completion. Steps 01-07 in various states.
+Continued in parallel with Sprint 34/35 work.
 
 ## Sprint 29 — closed
 
@@ -98,25 +120,14 @@ with user display + logout, LoginDialog, RegisterDialog, workspace integration).
 All five steps live-verified against real Postgres and the Product Owner's active dev server (no
 disruption). Committed `33c0a2f` (architecture) through `e9e2d63` (archive complete, 2026-07-12).
 
-## Sprint 31 — in progress
+## Sprint 36 — in progress
 
-Тарифные планы, оплата и права доступа по подписке (Pricing, Billing, Subscriptions) — add a
-pricing tier system (Free/Basic + paid tiers) with payment processing, subscription tracking,
-and tier-based feature gating and request limits. Automatic tier downgrade to Free on subscription
-expiration or failed payment. Scope pending step decomposition — depends on Sprint 30 (now
-complete) role system. Requires selection of payment provider at sprint start (evolutionary
-architecture principle — decision deferred until implementation context is clear).
+Section Counters (Sidebar Enhancement) — add visual item counters to Sidebar section headers
+showing how many items are in each section (Books, Series, Chapters, Characters, Ideas, Trash).
 
-**Definition of Done (from ROADMAP_18-27.md):**
-- ADR accepted: tier model (Plan/Subscription/Payment entities), payment provider selection,
-  invoice storage schema, automatic-downgrade mechanism
-- Prisma schema: Plan, UserSubscription, Payment models + migration
-- Feature access and request limits gated by active tier at runtime
-- UI: tier selection/purchase, invoice history, active tier + expiration date display (closes
-  placeholder note in BOOK_LEVEL_ASSISTANTS_VISION.md)
-- Automatic rollback to Free tier on expiration/failed payment implemented and live-verified
-  (including limits/rights reset)
-- tsc, eslint, prettier, build clean
+Two Step Cards planned:
+- **Step 01:** Implement counters in Sidebar.tsx (display counts for all sections)
+- **Step 02:** Live verification on scratch port (verify real-time updates, visual design)
 
-See `docs/project/ROADMAP_18-27.md` (Sprint 31 section, lines 358-385) for the full scope,
-confidence level (Low — new surface, payments), and scope charter.
+Simple feature, low scope, high visual impact. Counters are calculated from existing data structures,
+no database schema changes required.

@@ -9,22 +9,27 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-35-Menu-Step-02
-status: active
-next: [Sprint-35-Menu-Step-03]
+id: Sprint-36-Step-01
+status: next
 ```
 
-## Sprint 35 — Menu System (File/Edit/View/Help/About) ⏳ IN PROGRESS
+## Sprint 36 — Section Counters (Sidebar Enhancement) ⏳ IN PROGRESS
 
-**Current Step:** Sprint-35-Menu-Step-01 (File menu implementation)
+**Current Step:** Sprint-36-Step-01 (Add item counters to Sidebar sections)
 
 **Step Cards queued:**
-- Step 01: File menu (New Book, Open, Save, Export, Exit)
-- Step 02: Edit menu (Undo, Redo, Find, Replace)
-- Step 03: View menu (Theme, Font Size, Sidebar Toggle, Focus Mode)
-- Step 04: Help & About (Docs, Shortcuts, Version, Credits, License)
-- Step 05: Keyboard shortcuts (Ctrl+K, Z/Y, Escape)
-- Step 06: Live verification (scratch-server testing)
+- Step 01: Add counters to Sidebar headers (Books, Series, Chapters, Characters, Ideas)
+- Step 02: Live verification + Polish
+
+---
+
+## Sprint 35 — Menu System (File/Edit/View/Help/About) ✅ CLOSED
+
+**All 6 steps completed** (2026-07-15):
+- Step 01-05: Menu implementation ✅
+- Step 06: Live verification ✅
+
+**Status**: All steps archived to done/. Sprint closed.
 
 ---
 

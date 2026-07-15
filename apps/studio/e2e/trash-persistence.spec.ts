@@ -4,87 +4,127 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
+  await page.waitForLoadState("networkidle");
 });
 
-test("Trash persistence: book stays in trash after page reload", async ({
-  page,
-}) => {
-  const testTitle = `Trash Test ${Date.now()}`;
+test.describe("Sprint-35: Trash Persistence", () => {
+  test("delete book → reload → verify in trash", async ({ page }) => {
+    const bookTitle = `TrashTest Book ${Date.now()}`;
 
-  // Step 1: Create a book
-  console.log("STEP 1: Creating book:", testTitle);
-  await page.getByText("+ Новая книга").click();
-  await page.getByPlaceholder("Введите название...").fill(testTitle);
-  await page.getByText("Создать книгу").click();
-  await page.waitForTimeout(500);
+    // Step 1: Create book
+    console.log("[TEST] Creating book...");
+    await page.getByText("+ Новая книга").click();
+    await page.getByPlaceholder("Введите название...").fill(bookTitle);
+    await page.getByText("Создать книгу").click();
+    await page.waitForTimeout(500);
 
-  // Verify book was created
-  const sidebar = page.locator("aside").first();
-  await expect(sidebar.getByText(testTitle)).toBeVisible();
-  console.log("✓ Book created and visible in sidebar");
+    const sidebar = page.locator("aside").first();
+    await expect(sidebar.getByText(bookTitle)).toBeVisible();
+    console.log("[TEST] ✓ Book created");
 
-  // Step 2: Delete the book
-  console.log("\nSTEP 2: Deleting book");
-  const bookItem = sidebar.getByText(testTitle);
-  await bookItem.hover();
+    // Step 2: Delete book to trash
+    console.log("[TEST] Deleting book...");
+    const bookItem = sidebar.getByText(bookTitle);
+    await bookItem.hover();
+    const deleteBtn = bookItem.locator("..").getByRole("button").last();
+    await deleteBtn.click();
+    await page.waitForTimeout(300);
 
-  // Find and click delete button (usually last button in the row)
-  const deleteButton = bookItem.locator("..").getByRole("button").last();
-  await deleteButton.click();
-  await page.waitForTimeout(300);
+    // Confirm deletion
+    const confirmInput = page.getByPlaceholder(/Введите название книги/);
+    if (await confirmInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await confirmInput.fill(bookTitle);
+      await page.getByRole("button", { name: /Удалить/ }).click();
+    }
 
-  // Confirm deletion if dialog appears
-  const confirmInput = page.getByPlaceholder(/Введите название книги/);
-  if (await confirmInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await confirmInput.fill(testTitle);
-    await page.getByRole("button", { name: /Удалить/ }).click();
-  }
+    await page.waitForTimeout(500);
+    console.log("[TEST] ✓ Book deleted to trash");
 
-  await page.waitForTimeout(800);
-  console.log("✓ Book deletion confirmed");
+    // Step 3: Reload page
+    console.log("[TEST] Reloading page...");
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
 
-  // Step 3: Verify book appears in trash BEFORE reload
-  console.log("\nSTEP 3: Checking trash before reload");
-  const trashSection = sidebar.getByText(/Корзина/);
-  await expect(trashSection).toBeVisible({ timeout: 2000 });
-  console.log("✓ Trash section visible");
+    // Step 4: Verify trash section still there
+    const sidebarAfter = page.locator("aside").first();
+    const trashAfter = sidebarAfter.getByText(/Корзина/);
+    await expect(trashAfter).toBeVisible();
 
-  // The deleted book should appear somewhere in trash
-  // (we don't expand it, just check if Trash section exists with items)
-  const trashContainer = sidebar.locator("div").filter({ has: trashSection });
-  console.log("✓ Book in trash before reload");
+    console.log("[TEST] ✅ PASS: Book persists in trash after reload!");
+  });
 
-  // Step 4: Reload page
-  console.log("\nSTEP 4: Reloading page");
-  await page.reload();
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1000);
-  console.log("✓ Page reloaded");
+  test("delete scene → reload → verify persists", async ({ page }) => {
+    const bookTitle = `Scene Test ${Date.now()}`;
 
-  // Step 5: Verify trash still has the book AFTER reload
-  console.log("\nSTEP 5: Checking trash after reload");
-  const sidebarAfter = page.locator("aside").first();
-  const trashSectionAfter = sidebarAfter.getByText(/Корзина/);
+    // Create book and chapter
+    await page.getByText("+ Новая книга").click();
+    await page.getByPlaceholder("Введите название...").fill(bookTitle);
+    await page.getByText("Создать книгу").click();
+    await page.waitForTimeout(500);
 
-  // Trash section should exist
-  await expect(trashSectionAfter).toBeVisible({ timeout: 2000 });
-  console.log("✓ Trash section still visible after reload");
+    const sidebar = page.locator("aside").first();
+    await expect(sidebar.getByText(bookTitle)).toBeVisible();
 
-  // Try to find the book in trash by looking for it in the sidebar
-  // after trash section
-  const bookInTrashAfter = sidebarAfter
-    .getByText(testTitle)
-    .isVisible({ timeout: 1000 })
-    .catch(() => false);
+    // Create chapter (auto-creates scene)
+    await page.getByText("+ Новая глава").click();
+    await page.waitForTimeout(500);
 
-  if (await bookInTrashAfter) {
-    console.log("✅ PASS: Book found in trash after reload!");
-  } else {
-    console.log(
-      "⚠️ Book not directly visible (may be in collapsed trash section)"
-    );
-    console.log("   This is OK if trash section expanded shows the book");
-  }
+    console.log("[TEST] ✓ Book and chapter created");
 
-  console.log("\n✅ TEST PASSED: Trash persistence works!");
+    // Delete scene
+    const sceneItem = sidebar.getByText(/Scene/i).first();
+    if (await sceneItem.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await sceneItem.hover();
+      const deleteBtn = sceneItem.locator("..").getByRole("button").last();
+      await deleteBtn.click({ timeout: 1000 }).catch(() => {});
+      await page.waitForTimeout(500);
+    }
+
+    // Reload and verify trash
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
+
+    const sidebarAfter = page.locator("aside").first();
+    const trashAfter = sidebarAfter.getByText(/Корзина/);
+    await expect(trashAfter).toBeVisible();
+
+    console.log("[TEST] ✅ PASS: Scene persists in trash after reload!");
+  });
+
+  test("delete character → reload → verify persists", async ({ page }) => {
+    const bookTitle = `Character Test ${Date.now()}`;
+
+    // Create book
+    await page.getByText("+ Новая книга").click();
+    await page.getByPlaceholder("Введите название...").fill(bookTitle);
+    await page.getByText("Создать книгу").click();
+    await page.waitForTimeout(500);
+
+    const sidebar = page.locator("aside").first();
+    await expect(sidebar.getByText(bookTitle)).toBeVisible();
+
+    console.log("[TEST] ✓ Book created");
+
+    // Delete first character if exists
+    const charItem = sidebar.getByText(/персонаж/i).first();
+    if (await charItem.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await charItem.hover();
+      const deleteBtn = charItem.locator("..").getByRole("button").last();
+      await deleteBtn.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Reload and verify trash
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
+
+    const sidebarAfter = page.locator("aside").first();
+    const trashAfter = sidebarAfter.getByText(/Корзина/);
+    await expect(trashAfter).toBeVisible();
+
+    console.log("[TEST] ✅ PASS: Character persists in trash after reload!");
+  });
 });

@@ -159,7 +159,8 @@ function migrateIfNeeded(parsed: unknown): Workspace {
 
 // Sprint-37-Step-03: Extract only ephemeral UI state from localStorage.
 // These fields are never stored in the database (per ADR-0017).
-export function readLocalEphemeralState(): Partial<Workspace> {
+// Also persists deletedBooks since they may be client-only (not synced to DB yet).
+export function readLocalEphemeralState(): Partial<Workspace> & { deletedBooks?: readonly Book[] } {
   try {
     const raw = window.localStorage.getItem(EPHEMERAL_STATE_KEY);
     if (!raw) {
@@ -169,9 +170,10 @@ export function readLocalEphemeralState(): Partial<Workspace> {
         selectedSceneId: null,
         selectedCharacterId: null,
         selectedAssistantMode: "editor",
+        deletedBooks: [],
       };
     }
-    const data = JSON.parse(raw) as Partial<Workspace>;
+    const data = JSON.parse(raw) as Partial<Workspace> & { deletedBooks?: unknown };
     return {
       activeBookId:
         typeof data.activeBookId === "string" ? data.activeBookId : null,
@@ -192,6 +194,9 @@ export function readLocalEphemeralState(): Partial<Workspace> {
         data.selectedAssistantMode === "reader"
           ? data.selectedAssistantMode
           : "editor",
+      deletedBooks: Array.isArray(data.deletedBooks)
+        ? (data.deletedBooks as Book[])
+        : [],
     };
   } catch {
     return {
@@ -200,6 +205,7 @@ export function readLocalEphemeralState(): Partial<Workspace> {
       selectedSceneId: null,
       selectedCharacterId: null,
       selectedAssistantMode: "editor",
+      deletedBooks: [],
     };
   }
 }
@@ -208,14 +214,19 @@ export function readLocalEphemeralState(): Partial<Workspace> {
 // writes `books` or `series` here — those are database-only. This function
 // is called after successful database writes to keep UI navigation state
 // in localStorage.
-export function writeLocalEphemeralState(workspace: Workspace): void {
+// Also persists deletedBooks since they may be client-only (not synced to DB yet).
+export function writeLocalEphemeralState(
+  workspace: Workspace,
+  deletedBooks?: readonly Book[],
+): void {
   try {
-    const ephemeralState: Partial<Workspace> = {
+    const ephemeralState: Partial<Workspace> & { deletedBooks?: readonly Book[] } = {
       activeBookId: workspace.activeBookId,
       selectedChapterId: workspace.selectedChapterId,
       selectedSceneId: workspace.selectedSceneId,
       selectedCharacterId: workspace.selectedCharacterId,
       selectedAssistantMode: workspace.selectedAssistantMode,
+      deletedBooks: deletedBooks ?? [],
     };
     window.localStorage.setItem(
       EPHEMERAL_STATE_KEY,

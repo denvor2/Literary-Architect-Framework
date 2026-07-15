@@ -15,6 +15,8 @@ import {
   getSyncWarning,
   loadWorkspace,
   saveWorkspace,
+  writeLocalEphemeralState,
+  readLocalEphemeralState,
   type SyncWarning,
 } from "@/storage/workspaceStorage";
 
@@ -86,6 +88,13 @@ export function useWorkspaceController() {
       setSyncWarning(getSyncWarning());
 
       // Load deleted books for trash section (Sprint-33-Step-02)
+      // First check localStorage (for client-only deletions), then API
+      const ephemeralState = readLocalEphemeralState();
+      if (ephemeralState.deletedBooks && ephemeralState.deletedBooks.length > 0) {
+        console.log("[DEBUG] Loaded deletedBooks from localStorage:", ephemeralState.deletedBooks.length);
+        setDeletedBooks(ephemeralState.deletedBooks);
+      }
+
       try {
         const response = await fetch("/api/workspace?deleted=true", {
           method: "GET",
@@ -97,7 +106,7 @@ export function useWorkspaceController() {
             deletedBooks?: Book[];
           };
           console.log("[DEBUG] Loaded deletedBooks from API:", data.deletedBooks?.length ?? 0);
-          if (data.deletedBooks) {
+          if (data.deletedBooks && data.deletedBooks.length > 0) {
             setDeletedBooks(data.deletedBooks);
           }
         } else {
@@ -130,7 +139,9 @@ export function useWorkspaceController() {
     saveWorkspace(workspace)
       .catch(() => {})
       .finally(() => setSyncWarning(getSyncWarning()));
-  }, [workspace, isLoaded]);
+    // Also persist deletedBooks to localStorage so they survive page reloads
+    writeLocalEphemeralState(workspace, deletedBooks);
+  }, [workspace, deletedBooks, isLoaded]);
 
   const activeBook = books.find((book) => book.id === activeBookId);
   const chapters = activeBook?.chapters ?? [];

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Book, Chapter, Character, Idea, Series } from "@/domain/model";
 import { IdeasPanel } from "@/components/IdeasPanel";
 import { Trash2 } from "lucide-react";
@@ -41,6 +42,8 @@ type SidebarProps = {
   deletedBooks?: readonly Book[];
   onRestoreBook?: (bookId: string) => void;
   onPermanentlyDeleteBook?: (bookId: string) => void;
+  // Sprint-33-Step-07: Drag-drop support for moving books between series
+  onMoveBookToSeries?: (bookId: string, targetSeriesId: string | null) => void;
 };
 
 // Sprint-16-17-Step-02: the unified view (EditorArea.tsx) shows every
@@ -86,7 +89,95 @@ export function Sidebar({
   deletedBooks = [],
   onRestoreBook,
   onPermanentlyDeleteBook,
+  onMoveBookToSeries,
 }: SidebarProps) {
+  // Sprint-33-Step-07: Drag-drop state tracking
+  const [draggedBookId, setDraggedBookId] = useState<string | null>(null);
+  const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
+
+  function handleBookDragStart(
+    e: React.DragEvent<HTMLLIElement>,
+    bookId: string,
+  ) {
+    setDraggedBookId(bookId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("bookId", bookId);
+  }
+
+  function handleBookDragEnd() {
+    setDraggedBookId(null);
+    setDragOverTarget(null);
+  }
+
+  // Drop target: "Без серии" section
+  function handleUnsortedDragOver(
+    e: React.DragEvent<HTMLUListElement> | React.DragEvent<HTMLDivElement>,
+  ) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverTarget("unsorted");
+  }
+
+  function handleUnsortedDragLeave() {
+    setDragOverTarget(null);
+  }
+
+  function handleUnsortedDrop(
+    e: React.DragEvent<HTMLUListElement> | React.DragEvent<HTMLDivElement>,
+  ) {
+    e.preventDefault();
+    const bookId = e.dataTransfer.getData("bookId");
+    if (bookId && draggedBookId === bookId) {
+      // Drop to "Без серии" (null seriesId)
+      onMoveBookToSeries?.(bookId, null);
+    }
+    setDraggedBookId(null);
+    setDragOverTarget(null);
+  }
+
+  // Drop target: Series section (both header and content)
+  function handleSeriesDragOver(
+    e: React.DragEvent<HTMLDivElement> | React.DragEvent<HTMLUListElement>,
+  ) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  }
+
+  function handleSeriesHeaderDragOver(
+    e: React.DragEvent<HTMLDivElement> | React.DragEvent<HTMLUListElement>,
+    seriesId: string,
+  ) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverTarget(seriesId);
+  }
+
+  function handleSeriesDragLeave(
+    e: React.DragEvent<HTMLDivElement> | React.DragEvent<HTMLUListElement>,
+  ) {
+    // Only clear if leaving the series container entirely
+    if (e.currentTarget === e.target) {
+      setDragOverTarget(null);
+    }
+  }
+
+  function handleSeriesDrop(
+    e: React.DragEvent<HTMLDivElement> | React.DragEvent<HTMLUListElement>,
+    seriesId: string,
+  ) {
+    e.preventDefault();
+    const bookId = e.dataTransfer.getData("bookId");
+    if (bookId && draggedBookId === bookId) {
+      // Don't move if already in this series
+      const book = books.find((b) => b.id === bookId);
+      if (book?.seriesId !== seriesId) {
+        onMoveBookToSeries?.(bookId, seriesId);
+      }
+    }
+    setDraggedBookId(null);
+    setDragOverTarget(null);
+  }
+
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 md:w-56 md:p-3 md:gap-4">
       <div className="flex flex-col gap-2">
@@ -107,41 +198,60 @@ export function Sidebar({
             Пока нет книг
           </p>
         ) : (
-          <ul className="flex flex-col gap-2">
-            {books.map((book) => (
-              <li key={book.id}>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => onSelectBook?.(book.id)}
-                    className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                      book.id === activeBookId
-                        ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                        : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
-                    }`}
-                    aria-label={`Выбрать книгу ${book.title || "Без названия"}`}
-                  >
-                    {book.title || "Без названия"}
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (
-                        confirm(
-                          `Удалить книгу "${book.title || "Без названия"}"?`,
-                        )
-                      ) {
-                        onDeleteBook?.(book.id);
-                      }
-                    }}
-                    className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                    title="Удалить книгу"
-                    aria-label={`Удалить книгу ${book.title || "Без названия"}`}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </li>
-            ))}
+          <ul
+            className={`flex flex-col gap-2 rounded-md p-2 transition-all ${
+              dragOverTarget === "unsorted"
+                ? "border-2 border-dashed border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950/30"
+                : ""
+            }`}
+            onDragOver={handleUnsortedDragOver}
+            onDragLeave={handleUnsortedDragLeave}
+            onDrop={handleUnsortedDrop}
+          >
+            {books
+              .filter((b) => !b.seriesId)
+              .map((book) => (
+                <li
+                  key={book.id}
+                  draggable
+                  onDragStart={(e) => handleBookDragStart(e, book.id)}
+                  onDragEnd={handleBookDragEnd}
+                  className={`transition-opacity ${
+                    draggedBookId === book.id ? "opacity-50" : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => onSelectBook?.(book.id)}
+                      className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                        book.id === activeBookId
+                          ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                          : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
+                      }`}
+                      aria-label={`Выбрать книгу ${book.title || "Без названия"}`}
+                    >
+                      {book.title || "Без названия"}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (
+                          confirm(
+                            `Удалить книгу "${book.title || "Без названия"}"?`,
+                          )
+                        ) {
+                          onDeleteBook?.(book.id);
+                        }
+                      }}
+                      className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                      title="Удалить книгу"
+                      aria-label={`Удалить книгу ${book.title || "Без названия"}`}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </li>
+              ))}
           </ul>
         )}
       </div>
@@ -169,7 +279,16 @@ export function Sidebar({
               const booksInSeries = books.filter((b) => b.seriesId === s.id);
               return (
                 <li key={s.id}>
-                  <div className="flex items-center gap-1">
+                  <div
+                    className={`flex items-center gap-1 rounded-md p-2 transition-all ${
+                      dragOverTarget === s.id
+                        ? "border-2 border-dashed border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-950/30"
+                        : ""
+                    }`}
+                    onDragOver={(e) => handleSeriesHeaderDragOver(e, s.id)}
+                    onDragLeave={handleSeriesDragLeave}
+                    onDrop={(e) => handleSeriesDrop(e, s.id)}
+                  >
                     {booksInSeries.length > 0 && (
                       <button
                         onClick={() => onToggleSeriesCollapsed?.(s.id)}
@@ -194,9 +313,26 @@ export function Sidebar({
                     </button>
                   </div>
                   {!isSeriesCollapsed && booksInSeries.length > 0 && (
-                    <ul className="ml-3 mt-1 flex flex-col gap-2 border-l border-zinc-200 pl-2 dark:border-zinc-800">
+                    <ul
+                      className={`ml-3 mt-1 flex flex-col gap-2 border-l border-zinc-200 pl-2 dark:border-zinc-800 ${
+                        dragOverTarget === s.id
+                          ? "rounded-md bg-green-50/30 dark:bg-green-950/20"
+                          : ""
+                      }`}
+                      onDragOver={(e) => handleSeriesDragOver(e)}
+                      onDragLeave={handleSeriesDragLeave}
+                      onDrop={(e) => handleSeriesDrop(e, s.id)}
+                    >
                       {booksInSeries.map((book) => (
-                        <li key={book.id}>
+                        <li
+                          key={book.id}
+                          draggable
+                          onDragStart={(e) => handleBookDragStart(e, book.id)}
+                          onDragEnd={handleBookDragEnd}
+                          className={`transition-opacity ${
+                            draggedBookId === book.id ? "opacity-50" : ""
+                          }`}
+                        >
                           <button
                             onClick={() => onSelectBook?.(book.id)}
                             className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${

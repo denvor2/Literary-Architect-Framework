@@ -1119,6 +1119,63 @@ export function useWorkspaceController() {
     return updatedBook;
   }
 
+  // Sprint-33-Step-07: move book to a different series (or to "Без серии" if
+  // targetSeriesId is null). Used by drag-drop UI in Sidebar.
+  function moveBookToSeries(
+    bookId: string,
+    targetSeriesId: string | null,
+  ): Book {
+    const book = workspace.books.find((b) => b.id === bookId);
+    if (!book) {
+      throw new Error(`Book with id ${bookId} not found`);
+    }
+
+    // Check if target series exists (if not null)
+    if (targetSeriesId !== null) {
+      const series = workspace.series.find((s) => s.id === targetSeriesId);
+      if (!series) {
+        throw new Error(`Series with id ${targetSeriesId} not found`);
+      }
+    }
+
+    // Don't move if already in the target series
+    if (book.seriesId === targetSeriesId) {
+      return book;
+    }
+
+    const updatedBook: Book = {
+      ...book,
+      seriesId: targetSeriesId ?? undefined,
+    };
+
+    // Async save to backend — fire-and-forget with error logging
+    void (async () => {
+      try {
+        await saveWorkspace({
+          ...workspace,
+          books: workspace.books.map((b) =>
+            b.id === bookId ? updatedBook : b,
+          ),
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to move book to series";
+        console.error("moveBookToSeries API error:", message);
+        throw error;
+      }
+    })();
+
+    // Update local state immediately (optimistic update)
+    setWorkspace((previous) => ({
+      ...previous,
+      books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
+    }));
+
+    return updatedBook;
+  }
+
   // Derived convenience value for Step 05's UI — the active dialog per role
   // of the active book (last element of each role's thread array).
   const activeThreads = activeBook
@@ -1180,5 +1237,6 @@ export function useWorkspaceController() {
     deleteSeries,
     addBookToSeries,
     removeBookFromSeries,
+    moveBookToSeries,
   };
 }

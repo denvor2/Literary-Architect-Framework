@@ -147,10 +147,12 @@ export default function Home() {
     deleteSeries,
     // Sprint-29-Step-06: addBookToSeries and removeBookFromSeries imported for
     // future drag-drop UI (not yet implemented in this step)
+    // Sprint-33-Step-07: now using moveBookToSeries instead
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     addBookToSeries,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     removeBookFromSeries,
+    moveBookToSeries,
   } = useWorkspaceController();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // Sprint-29-Step-06: Series dialog state
@@ -718,6 +720,7 @@ export default function Home() {
                 }
                 onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
                 onEditSeries={setEditingSeriesId}
+                onMoveBookToSeries={moveBookToSeries}
               />
             </div>
           )}
@@ -1027,6 +1030,7 @@ export default function Home() {
               }
               onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
               onEditSeries={setEditingSeriesId}
+              onMoveBookToSeries={moveBookToSeries}
             />
           </div>
         )}

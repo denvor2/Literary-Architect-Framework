@@ -199,8 +199,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the plan
+    const { customAlphabet } = await import("nanoid");
+    const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
     const newPlan = await prisma.plan.create({
       data: {
+        id: nanoid(),
         name,
         tier: tier as "free" | "premium" | "pro",
         price,
@@ -209,6 +212,7 @@ export async function POST(request: NextRequest) {
         features: features as string[],
         description,
         isActive: true,
+        updatedAt: new Date(),
       },
     });
 

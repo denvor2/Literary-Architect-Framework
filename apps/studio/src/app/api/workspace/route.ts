@@ -175,8 +175,13 @@ export async function DELETE(request: NextRequest) {
         const books = await loadBooksForUser(userId);
         const book = books.find((b) => b.id === bookId);
         const bookTitle = book?.title || "Unknown";
-        console.log("[DELETE] Soft-deleting book:", bookId, bookTitle);
+        console.log("[DELETE] Found book:", bookId, bookTitle, "exists:", !!book);
 
+        if (!book) {
+          console.warn("[DELETE] Book not found, but continuing with soft delete");
+        }
+
+        console.log("[DELETE] Soft-deleting book:", bookId, bookTitle);
         await softDeleteBook(bookId);
         console.log("[DELETE] Book soft-deleted successfully");
 

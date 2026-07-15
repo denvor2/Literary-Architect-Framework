@@ -394,10 +394,19 @@ export async function softDeleteBook(bookId: string): Promise<void> {
       "Database connection unavailable. Cannot soft delete book.",
     );
   }
-  await prisma.book.update({
-    where: { id: bookId },
-    data: { deletedAt: new Date() },
-  });
+  console.log("[softDeleteBook] Attempting to soft-delete book:", bookId);
+  console.log("[softDeleteBook] Data being sent:", { deletedAt: new Date() });
+
+  try {
+    const result = await prisma.book.update({
+      where: { id: bookId },
+      data: { deletedAt: new Date() },
+    });
+    console.log("[softDeleteBook] Success, updated book:", result.id);
+  } catch (error) {
+    console.error("[softDeleteBook] Prisma error:", error);
+    throw error;
+  }
 }
 
 export async function restoreBook(bookId: string): Promise<void> {

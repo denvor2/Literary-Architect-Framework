@@ -413,6 +413,15 @@ export async function saveWorkspace(workspace: Workspace): Promise<void> {
   // localStorage. If the database is unavailable, fall back to localStorage
   // and set syncWarning to signal the UI.
 
+  // Debug logging
+  const booksWithSeries = workspace.books.filter((b) => b.seriesId);
+  if (booksWithSeries.length > 0) {
+    console.log(
+      "saveWorkspace called with books that have seriesId:",
+      booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
+    );
+  }
+
   // Try the database first
   const pushed = await pushBooksToApi(workspace.books);
 

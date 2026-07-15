@@ -1058,24 +1058,7 @@ export function useWorkspaceController() {
 
     const updatedBook: Book = { ...book, seriesId };
 
-    void (async () => {
-      try {
-        await saveWorkspace({
-          ...workspace,
-          books: workspace.books.map((b) =>
-            b.id === bookId ? updatedBook : b,
-          ),
-        });
-      } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to add book to series";
-        console.error("addBookToSeries API error:", message);
-        throw error;
-      }
-    })();
-
+    // Update local state — useEffect will automatically save to backend
     setWorkspace((previous) => ({
       ...previous,
       books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
@@ -1092,24 +1075,7 @@ export function useWorkspaceController() {
 
     const updatedBook: Book = { ...book, seriesId: undefined };
 
-    void (async () => {
-      try {
-        await saveWorkspace({
-          ...workspace,
-          books: workspace.books.map((b) =>
-            b.id === bookId ? updatedBook : b,
-          ),
-        });
-      } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to remove book from series";
-        console.error("removeBookFromSeries API error:", message);
-        throw error;
-      }
-    })();
-
+    // Update local state — useEffect will automatically save to backend
     setWorkspace((previous) => ({
       ...previous,
       books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
@@ -1147,41 +1113,19 @@ export function useWorkspaceController() {
       seriesId: targetSeriesId ?? undefined,
     };
 
-    // Async save to backend — fire-and-forget with error logging
-    void (async () => {
-      try {
-        // Capture current workspace state to avoid stale closure
-        const currentState = workspace;
-        const updatedWorkspace = {
-          ...currentState,
-          books: currentState.books.map((b) =>
-            b.id === bookId ? updatedBook : b,
-          ),
-        };
-        const bookToSave = updatedWorkspace.books.find((b) => b.id === bookId);
-        console.log(
-          "moveBookToSeries: saving book",
-          bookId,
-          "with seriesId:",
-          bookToSave?.seriesId,
-        );
-        await saveWorkspace(updatedWorkspace);
-        console.log("moveBookToSeries: save completed successfully");
-      } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to move book to series";
-        console.error("moveBookToSeries API error:", message);
-        throw error;
-      }
-    })();
-
-    // Update local state immediately (optimistic update)
+    // Update local state — useEffect will automatically save to backend
+    // Don't call saveWorkspace here to avoid double-save (useEffect already handles it)
+    console.log(
+      "moveBookToSeries: moving book",
+      bookId,
+      "to seriesId:",
+      targetSeriesId ?? "undefined (Без серии)",
+    );
     setWorkspace((previous) => ({
       ...previous,
       books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
     }));
+    console.log("moveBookToSeries: state updated, waiting for useEffect to save");
 
     return updatedBook;
   }

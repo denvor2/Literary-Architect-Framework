@@ -380,6 +380,21 @@ export default function Home() {
     });
   }
 
+  // Sprint-35-Menu-Step-01: Export book as JSON
+  function handleExportBook(bookId: string) {
+    const book = books.find((b) => b.id === bookId);
+    if (!book) return;
+
+    const data = JSON.stringify(book, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${book.title || "book"}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   // Sprint-30-Step-05: Show login dialog if not logged in (on mount only)
   const hasShownAuthDialog = useRef(false);
   useEffect(() => {
@@ -434,6 +449,11 @@ export default function Home() {
           currentUser={auth.user}
           onLogout={logout}
           onOpenLogin={() => setAuthDialogMode("login")}
+          onCreateBook={() => createBook({ title: "Новая книга", genre: "", language: "ru", premise: "" })}
+          onSaveWorkspace={() => {
+            /* Auto-saved by useWorkspaceController */
+          }}
+          onExportBook={handleExportBook}
         />
         <SyncWarningBanner warning={syncWarning} />
 
@@ -625,6 +645,11 @@ export default function Home() {
         currentUser={auth.user}
         onLogout={logout}
         onOpenLogin={() => setAuthDialogMode("login")}
+        onCreateBook={() => createBook({ title: "Новая книга", genre: "", language: "ru", premise: "" })}
+        onSaveWorkspace={() => {
+          /* Auto-saved by useWorkspaceController */
+        }}
+        onExportBook={handleExportBook}
       />
       <SyncWarningBanner warning={syncWarning} />
       {/* Sprint-34-Design-Step-03: Tablet layout (768-1024px) with hamburger menu */}

@@ -45,6 +45,9 @@ type HeaderProps = {
   currentUser?: User | null;
   onLogout?: () => void;
   onOpenLogin?: () => void;
+  onCreateBook?: () => void;
+  onSaveWorkspace?: () => void;
+  onExportBook?: (bookId: string) => void;
 };
 
 function SearchResultsSection({
@@ -113,6 +116,9 @@ export function Header({
   currentUser,
   onLogout,
   onOpenLogin,
+  onCreateBook,
+  onSaveWorkspace,
+  onExportBook,
 }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
@@ -179,15 +185,25 @@ export function Header({
       document.removeEventListener("mousedown", handleClickOutsideSearch);
   }, []);
 
-  // Escape closes the results dropdown and menu; Ctrl/Cmd+K focuses the search
-  // field — a trivial, optional shortcut per the Step Card's Rules ("включить,
-  // только если реализация тривиальна").
+  // Keyboard shortcuts: Ctrl+K (search), Ctrl+N (new book), Ctrl+S (save), Ctrl+E (export)
+  // Escape closes menu/search
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         searchInputRef.current?.focus();
         setIsResultsOpen(true);
+      } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n") {
+        event.preventDefault();
+        onCreateBook?.();
+      } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        onSaveWorkspace?.();
+      } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "e") {
+        event.preventDefault();
+        if (activeBookId) {
+          onExportBook?.(activeBookId);
+        }
       } else if (event.key === "Escape") {
         setIsResultsOpen(false);
         setOpenMenu(null);
@@ -195,7 +211,7 @@ export function Header({
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [onCreateBook, onSaveWorkspace, onExportBook, activeBookId]);
 
   function closeResults() {
     setIsResultsOpen(false);
@@ -225,13 +241,73 @@ export function Header({
               {menu.label}
             </button>
             {openMenu === menu.key && (
-              <div className="absolute left-0 top-full z-50 mt-1 min-w-32 rounded-md border border-zinc-200 bg-white py-1 shadow-md dark:border-zinc-800 dark:bg-zinc-950">
-                <button
-                  disabled
-                  className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
-                >
-                  Скоро
-                </button>
+              <div className="absolute left-0 top-full z-50 mt-1 min-w-48 rounded-md border border-zinc-200 bg-white py-1 shadow-md dark:border-zinc-800 dark:bg-zinc-950">
+                {menu.key === "file" ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        onCreateBook?.();
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                      aria-label="Новая книга (Ctrl+N)"
+                    >
+                      Новая книга
+                    </button>
+                    <button
+                      disabled
+                      className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
+                      aria-label="Открыть (скоро)"
+                    >
+                      Открыть (скоро)
+                    </button>
+                    <button
+                      onClick={() => {
+                        onSaveWorkspace?.();
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                      aria-label="Сохранить (Ctrl+S)"
+                    >
+                      Сохранить
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (activeBookId) {
+                          onExportBook?.(activeBookId);
+                        }
+                        setOpenMenu(null);
+                      }}
+                      disabled={!activeBookId}
+                      className={`w-full px-3 py-1.5 text-left text-sm ${
+                        activeBookId
+                          ? "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                          : "cursor-not-allowed text-zinc-400 dark:text-zinc-600"
+                      }`}
+                      aria-label="Экспортировать (Ctrl+E)"
+                    >
+                      Экспортировать
+                    </button>
+                    <div className="border-t border-zinc-200 dark:border-zinc-800" />
+                    <button
+                      onClick={() => {
+                        onLogout?.();
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-red-600 hover:bg-zinc-100 dark:text-red-400 dark:hover:bg-zinc-900"
+                      aria-label="Выход"
+                    >
+                      Выход
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    disabled
+                    className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
+                  >
+                    Скоро
+                  </button>
+                )}
               </div>
             )}
           </div>

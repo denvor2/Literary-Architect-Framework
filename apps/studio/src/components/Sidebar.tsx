@@ -180,81 +180,7 @@ export function Sidebar({
 
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 md:w-56 md:p-3 md:gap-4">
-      <div className="flex flex-col gap-2">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Книга ({books.length})
-          </h2>
-          <button
-            onClick={() => onNewBook?.()}
-            className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-            aria-label="Создать новую книгу"
-          >
-            + Новая книга
-          </button>
-        </div>
-        {books.length === 0 ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            Пока нет книг
-          </p>
-        ) : (
-          <ul
-            className={`flex flex-col gap-2 rounded-md p-2 transition-all ${
-              dragOverTarget === "unsorted"
-                ? "border-2 border-dashed border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950/30"
-                : ""
-            }`}
-            onDragOver={handleUnsortedDragOver}
-            onDragLeave={handleUnsortedDragLeave}
-            onDrop={handleUnsortedDrop}
-          >
-            {books
-              .filter((b) => !b.seriesId)
-              .map((book) => (
-                <li
-                  key={book.id}
-                  draggable
-                  onDragStart={(e) => handleBookDragStart(e, book.id)}
-                  onDragEnd={handleBookDragEnd}
-                  className={`transition-opacity ${
-                    draggedBookId === book.id ? "opacity-50" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => onSelectBook?.(book.id)}
-                      className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                        book.id === activeBookId
-                          ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                          : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
-                      }`}
-                      aria-label={`Выбрать книгу ${book.title || "Без названия"}`}
-                    >
-                      {book.title || "Без названия"}
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (
-                          confirm(
-                            `Удалить книгу "${book.title || "Без названия"}"?`,
-                          )
-                        ) {
-                          onDeleteBook?.(book.id);
-                        }
-                      }}
-                      className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                      title="Удалить книгу"
-                      aria-label={`Удалить книгу ${book.title || "Без названия"}`}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </li>
-              ))}
-          </ul>
-        )}
-      </div>
+      {/* SERIES SECTION (REORDERED TO TOP) */}
       <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -354,63 +280,85 @@ export function Sidebar({
           </ul>
         )}
       </div>
+
+      {/* BOOKS SECTION (REORDERED AFTER SERIES) */}
       <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Корзина {deletedBooks.length > 0 && `(${deletedBooks.length})`}
+            Книга ({books.length})
           </h2>
+          <button
+            onClick={() => onNewBook?.()}
+            className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            aria-label="Создать новую книгу"
+          >
+            + Новая книга
+          </button>
         </div>
-        {deletedBooks.length === 0 ? (
+        {books.length === 0 ? (
           <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            Корзина пуста
+            Пока нет книг
           </p>
         ) : (
-          <ul className="flex flex-col gap-2">
-            {deletedBooks.map((book) => (
-              <li key={book.id}>
-                <div className="flex items-center gap-1">
-                  <div className="flex-1">
-                    <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
-                      <div className="truncate">
-                        {book.title || "Без названия"}
-                      </div>
-                      {book.deletedAt && (
-                        <div className="text-xs text-zinc-500 dark:text-zinc-700">
-                          {new Date(book.deletedAt).toLocaleDateString("ru-RU")}
-                        </div>
-                      )}
-                    </div>
+          <ul
+            className={`flex flex-col gap-2 rounded-md p-2 transition-all ${
+              dragOverTarget === "unsorted"
+                ? "border-2 border-dashed border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950/30"
+                : ""
+            }`}
+            onDragOver={handleUnsortedDragOver}
+            onDragLeave={handleUnsortedDragLeave}
+            onDrop={handleUnsortedDrop}
+          >
+            {books
+              .filter((b) => !b.seriesId)
+              .map((book) => (
+                <li
+                  key={book.id}
+                  draggable
+                  onDragStart={(e) => handleBookDragStart(e, book.id)}
+                  onDragEnd={handleBookDragEnd}
+                  className={`transition-opacity ${
+                    draggedBookId === book.id ? "opacity-50" : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => onSelectBook?.(book.id)}
+                      className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                        book.id === activeBookId
+                          ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                          : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
+                      }`}
+                      aria-label={`Выбрать книгу ${book.title || "Без названия"}`}
+                    >
+                      {book.title || "Без названия"}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (
+                          confirm(
+                            `Удалить книгу "${book.title || "Без названия"}"?`,
+                          )
+                        ) {
+                          onDeleteBook?.(book.id);
+                        }
+                      }}
+                      className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                      title="Удалить книгу"
+                      aria-label={`Удалить книгу ${book.title || "Без названия"}`}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => onRestoreBook?.(book.id)}
-                    className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
-                    title="Восстановить"
-                    aria-label={`Восстановить книгу ${book.title || "Без названия"}`}
-                  >
-                    ↩️
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (
-                        confirm(
-                          `Безвозвратно удалить "${book.title || "Без названия"}"?`,
-                        )
-                      ) {
-                        onPermanentlyDeleteBook?.(book.id);
-                      }
-                    }}
-                    className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                    title="Удалить безвозвратно"
-                    aria-label={`Безвозвратно удалить книгу ${book.title || "Без названия"}`}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </li>
-            ))}
+                </li>
+              ))}
           </ul>
         )}
       </div>
+
+      {/* CHAPTERS SECTION */}
       <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -498,6 +446,8 @@ export function Sidebar({
           </ul>
         )}
       </div>
+
+      {/* CHARACTERS SECTION */}
       <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -535,6 +485,8 @@ export function Sidebar({
           </ul>
         )}
       </div>
+
+      {/* IDEAS SECTION */}
       <div>
         <IdeasPanel
           ideas={ideas}
@@ -542,6 +494,65 @@ export function Sidebar({
           onUpdate={onUpdateIdea}
           onDelete={onDeleteIdea}
         />
+      </div>
+
+      {/* TRASH SECTION (REORDERED TO BOTTOM) */}
+      <div className="flex flex-col gap-2">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Корзина {deletedBooks.length > 0 && `(${deletedBooks.length})`}
+          </h2>
+        </div>
+        {deletedBooks.length === 0 ? (
+          <p className="text-sm text-zinc-400 dark:text-zinc-600">
+            Корзина пуста
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {deletedBooks.map((book) => (
+              <li key={book.id}>
+                <div className="flex items-center gap-1">
+                  <div className="flex-1">
+                    <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                      <div className="truncate">
+                        {book.title || "Без названия"}
+                      </div>
+                      {book.deletedAt && (
+                        <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                          {new Date(book.deletedAt).toLocaleDateString("ru-RU")}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onRestoreBook?.(book.id)}
+                    className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                    title="Восстановить"
+                    aria-label={`Восстановить книгу ${book.title || "Без названия"}`}
+                  >
+                    ↩️
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (
+                        confirm(
+                          `Безвозвратно удалить "${book.title || "Без названия"}"?`,
+                        )
+                      ) {
+                        onPermanentlyDeleteBook?.(book.id);
+                      }
+                    }}
+                    className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                    title="Удалить безвозвратно"
+                    aria-label={`Безвозвратно удалить книгу ${book.title || "Без названия"}`}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </aside>
   );

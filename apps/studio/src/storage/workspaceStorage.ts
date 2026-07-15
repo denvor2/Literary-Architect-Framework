@@ -9,24 +9,18 @@
 // dual-mode and async. `localStorage` remains the sole owner of ephemeral
 // UI state (ADR-0012 Decision 2) and is still written/read exactly as
 // before; only `books` additionally round-trips through `/api/workspace`
-// (the Sprint-24-Step-04 coarse endpoint), with the database treated as
-// primary once it holds data. See ADR-0012 Decision 5 for the exact
-// availability-detection/conflict semantics implemented below (checked on
-// every call, not just at session start; silent fallback at this layer —
-// the UI-visible warning is Sprint-24-Step-06's responsibility).
+// (the Sprint-24-Step-04 coarse endpoint).
 //
-// Sprint-24-Step-07: Step 05's "database non-empty -> database always
-// wins" rule had a read-side race ADR-0012 Decision 5 didn't literally
-// cover — edits made while the database was unreachable (saved only to
-// `localStorage`) were silently lost if the page reloaded after the
-// database recovered but before the next successful saveWorkspace(). Fixed
-// with a small piece of storage-layer-only bookkeeping (not a Workspace/
-// Book domain field — see SYNC_PENDING_KEY below): a "local books are not
-// yet confirmed synced to the database" flag, set pessimistically before
-// every push attempt and cleared only on confirmed success. loadWorkspace()
-// now consults it before letting a non-empty database result win. This
-// also introduces getSyncWarning(), a one-shot/level signal consumed by
-// Sprint-24-Step-08's UI wiring — no UI code here.
+// Sprint-37-Step-03 (ADR-0017 database-primary): Complete refactor to make
+// the database the primary source of truth. loadWorkspace() now tries the
+// database first, falling back to localStorage only if the database is
+// unavailable (network error, non-2xx response, etc.). saveWorkspace()
+// writes to the database first; if that fails, falls back to localStorage
+// and sets syncStatus='offline' for UI signaling. SYNC_PENDING_KEY workaround
+// is removed — the simpler database-first logic eliminates the race
+// conditions it existed to handle. Ephemeral UI state (activeBookId,
+// selectedChapterId, etc.) is split into separate functions and remains
+// localStorage-only, never stored in the database per ADR-0017.
 
 import type {
   AssistantThread,
@@ -38,63 +32,21 @@ import type {
 import type { Workspace } from "@/domain/workspace";
 
 const STORAGE_KEY = "literary-studio-workspace";
+const EPHEMERAL_STATE_KEY = "literary-studio-ephemeral-state";
 
-// Sprint-24-Step-07: separate localStorage key, read/written only by this
-// file — deliberately NOT a Workspace/Book domain field (Step Card Rules:
-// "НЕ через новое поле в domain Workspace/Book"). Holds "1" while the
-// current `localStorage` `books` have not yet been confirmed written to
-// the database (either a push is in flight/never completed, or the last
-// attempted push failed); absent/anything else means "confirmed synced".
-const SYNC_PENDING_KEY = "literary-studio-db-sync-pending";
-
-// Sprint-24-Step-07: exported so Sprint-24-Step-08's UI wiring can read a
-// signal without touching this file's internals. Deliberately a plain
-// string-literal union, not an object/enum — the Step Card leaves the
-// exact form to the implementation, and this is the smallest shape that
-// satisfies "at minimum two cases".
-//   - "db-unavailable": the most recent fetchBooksFromApi()/
-//     pushBooksToApi() call failed. A level signal — stays set until a
-//     later call succeeds, clears automatically then.
-//   - "recovered-local-wins": loadWorkspace() just resolved the race
-//     described above in favor of local data over a stale non-empty
-//     database result. One-shot: consumed (reset to null) the first time
-//     getSyncWarning() is called after it's set, per the Step Card's "not
-//     a permanent status" requirement.
-export type SyncWarning = "db-unavailable" | "recovered-local-wins";
+// Sprint-37-Step-03 (ADR-0017): Simplified sync warning. Only tracks
+// "db-unavailable" — the database-first architecture eliminates the race
+// condition that required "recovered-local-wins" in ADR-0012. This signal
+// is consumed by SyncStatusBanner to show user that changes are being
+// saved locally until the database recovers.
+export type SyncWarning = "db-unavailable";
 
 // Module-level, not persisted — this signal is about the current tab's
-// session, not a durable fact worth surviving a reload (per Step Card
-// Rules, module-level variable is an explicitly sanctioned storage form
-// alongside the localStorage key above).
+// session state, tracking if the most recent API call(s) failed.
 let syncWarning: SyncWarning | null = null;
 
 export function getSyncWarning(): SyncWarning | null {
-  const current = syncWarning;
-  if (current === "recovered-local-wins") {
-    syncWarning = null;
-  }
-  return current;
-}
-
-function readSyncPendingFlag(): boolean {
-  try {
-    return window.localStorage.getItem(SYNC_PENDING_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function writeSyncPendingFlag(pending: boolean): void {
-  try {
-    if (pending) {
-      window.localStorage.setItem(SYNC_PENDING_KEY, "1");
-    } else {
-      window.localStorage.removeItem(SYNC_PENDING_KEY);
-    }
-  } catch {
-    // Best-effort, same tolerance for a broken/unavailable localStorage as
-    // the rest of this file.
-  }
+  return syncWarning;
 }
 
 const EMPTY_WORKSPACE: Workspace = {
@@ -203,17 +155,101 @@ function migrateIfNeeded(parsed: unknown): Workspace {
   return EMPTY_WORKSPACE;
 }
 
-// Synchronous localStorage read, unchanged from the pre-Sprint-24 behavior
-// (renamed from the old `loadWorkspace()` body) — still the sole source of
-// ephemeral UI state, and the fallback source of `books` when the database
-// is unreachable.
-function readLocalWorkspace(): Workspace {
+// Sprint-37-Step-03: Extract only ephemeral UI state from localStorage.
+// These fields are never stored in the database (per ADR-0017).
+export function readLocalEphemeralState(): Partial<Workspace> {
+  try {
+    const raw = window.localStorage.getItem(EPHEMERAL_STATE_KEY);
+    if (!raw) {
+      return {
+        activeBookId: null,
+        selectedChapterId: null,
+        selectedSceneId: null,
+        selectedCharacterId: null,
+        selectedAssistantMode: "editor",
+      };
+    }
+    const data = JSON.parse(raw) as Partial<Workspace>;
+    return {
+      activeBookId:
+        typeof data.activeBookId === "string" ? data.activeBookId : null,
+      selectedChapterId:
+        typeof data.selectedChapterId === "string"
+          ? data.selectedChapterId
+          : null,
+      selectedSceneId:
+        typeof data.selectedSceneId === "string" ? data.selectedSceneId : null,
+      selectedCharacterId:
+        typeof data.selectedCharacterId === "string"
+          ? data.selectedCharacterId
+          : null,
+      selectedAssistantMode:
+        data.selectedAssistantMode === "coauthor" ||
+        data.selectedAssistantMode === "editor" ||
+        data.selectedAssistantMode === "critic" ||
+        data.selectedAssistantMode === "reader"
+          ? data.selectedAssistantMode
+          : "editor",
+    };
+  } catch {
+    return {
+      activeBookId: null,
+      selectedChapterId: null,
+      selectedSceneId: null,
+      selectedCharacterId: null,
+      selectedAssistantMode: "editor",
+    };
+  }
+}
+
+// Sprint-37-Step-03: Write only ephemeral UI state to localStorage. Never
+// writes `books` or `series` here — those are database-only. This function
+// is called after successful database writes to keep UI navigation state
+// in localStorage.
+export function writeLocalEphemeralState(workspace: Workspace): void {
+  try {
+    const ephemeralState: Partial<Workspace> = {
+      activeBookId: workspace.activeBookId,
+      selectedChapterId: workspace.selectedChapterId,
+      selectedSceneId: workspace.selectedSceneId,
+      selectedCharacterId: workspace.selectedCharacterId,
+      selectedAssistantMode: workspace.selectedAssistantMode,
+    };
+    window.localStorage.setItem(
+      EPHEMERAL_STATE_KEY,
+      JSON.stringify(ephemeralState),
+    );
+  } catch {
+    // Best-effort, same tolerance for a broken/unavailable localStorage.
+  }
+}
+
+// Synchronous localStorage read of the full workspace (for fallback only).
+// This reads the old STORAGE_KEY format and performs migration if needed.
+// Sprint-37-Step-03: This is now used only as a fallback when the database
+// is unavailable or on first load if localStorage has older data (migration).
+function readLocalWorkspaceForFallback(): Workspace {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return EMPTY_WORKSPACE;
-    return migrateIfNeeded(JSON.parse(raw));
+    if (!raw) {
+      // No old data — construct fallback with ephemeral state
+      return {
+        ...EMPTY_WORKSPACE,
+        ...readLocalEphemeralState(),
+      };
+    }
+    const migrated = migrateIfNeeded(JSON.parse(raw));
+    // Merge with ephemeral state from separate key if it exists
+    const ephemeral = readLocalEphemeralState();
+    return {
+      ...migrated,
+      ...ephemeral,
+    };
   } catch {
-    return EMPTY_WORKSPACE;
+    return {
+      ...EMPTY_WORKSPACE,
+      ...readLocalEphemeralState(),
+    };
   }
 }
 
@@ -285,79 +321,78 @@ async function pushBooksToApi(books: readonly Book[]): Promise<boolean> {
 }
 
 export async function loadWorkspace(): Promise<Workspace> {
-  // Always read localStorage first — it is the only source of ephemeral UI
-  // state (activeBookId/selectedChapterId/etc., ADR-0012 Decision 2), and
-  // the fallback source of `books` if the database call below fails.
-  const localWorkspace = readLocalWorkspace();
+  // Sprint-37-Step-03 (ADR-0017 database-primary): Load books from the
+  // database first. If the database is unavailable, fall back to localStorage
+  // and set syncWarning to signal the UI (SyncStatusBanner will show offline).
+  // Ephemeral UI state (activeBookId, selectedChapterId, etc.) always comes
+  // from localStorage, never from the database.
 
+  const ephemeralState = readLocalEphemeralState();
   const dbBooks = await fetchBooksFromApi();
 
   if (dbBooks === null) {
-    // Database unreachable (network error, non-2xx, malformed body) ->
-    // fall back to localStorage entirely, exactly as before Sprint 24.
-    return localWorkspace;
+    // Database is unavailable (network error, non-2xx response, malformed
+    // body, or timeout). Fall back to localStorage entirely (ADR-0017
+    // Decision 2: hybrid fallback). The SyncStatusBanner will show that
+    // changes are being saved locally.
+    return readLocalWorkspaceForFallback();
   }
 
   if (dbBooks.length > 0) {
-    // Sprint-24-Step-07: a non-empty database result is not automatically
-    // trustworthy — if local books were never confirmed synced (edits made
-    // while the database was unreachable, or a saveWorkspace() that never
-    // got to report success/failure), the database result can be stale.
-    if (readSyncPendingFlag()) {
-      // Local wins instead of the database. Attempt one immediate,
-      // best-effort reconciliation push — not a retry queue/timer, just
-      // the single attempt this Step Card's Rules call for; if it fails,
-      // the flag stays set and the same check runs again next
-      // loadWorkspace() (or the next organic saveWorkspace() retries it).
-      const reconciled = await pushBooksToApi(localWorkspace.books);
-      if (reconciled) {
-        writeSyncPendingFlag(false);
-        syncWarning = "recovered-local-wins";
-      }
-      return localWorkspace;
-    }
-
-    // No pending local edits -> database wins, as before Sprint-24-Step-07
-    // (e.g. a second tab/device wrote newer data — that data is exactly
-    // what this path is meant to pick up).
+    // Database has books — use them as the source of truth. Combine with
+    // ephemeral state from localStorage for UI navigation.
+    const normalizedBooks = dbBooks.map((book) =>
+      normalizeBook(book as Partial<Book>),
+    );
     return {
-      ...localWorkspace,
-      books: dbBooks.map((book) => normalizeBook(book as Partial<Book>)),
+      books: normalizedBooks,
+      series: [], // Sprint-29-Step-05: series loaded separately in future
+      activeBookId: ephemeralState.activeBookId ?? null,
+      selectedChapterId: ephemeralState.selectedChapterId ?? null,
+      selectedSceneId: ephemeralState.selectedSceneId ?? null,
+      selectedCharacterId: ephemeralState.selectedCharacterId ?? null,
+      selectedAssistantMode: ephemeralState.selectedAssistantMode ?? "editor",
     };
   }
 
+  // Database is empty but might have older data in localStorage (migration
+  // scenario from before Sprint-37). Check localStorage for books to migrate.
+  const localWorkspace = readLocalWorkspaceForFallback();
   if (localWorkspace.books.length > 0) {
-    // Database is empty but localStorage has books -> one-time migration:
-    // push them to the database (ADR-0012 Decision 6). Whether the push
-    // succeeds or not, `localWorkspace.books` (already normalized by
-    // readLocalWorkspace()'s migrateIfNeeded()) is the correct result to
-    // return here — on success it now matches the database; on failure the
-    // next saveWorkspace() best-effort PUT retries it (no dedicated retry
-    // queue, per ADR-0012 Decision 5/Known Gaps).
-    const migrated = await pushBooksToApi(localWorkspace.books);
-    if (migrated) writeSyncPendingFlag(false);
+    // Attempt one best-effort migration push to the database. Whether it
+    // succeeds or not, return the local books (already normalized) — the
+    // next saveWorkspace() will retry if this push failed.
+    await pushBooksToApi(localWorkspace.books);
   }
 
   return localWorkspace;
 }
 
 export async function saveWorkspace(workspace: Workspace): Promise<void> {
-  // Always, synchronously, before any await: write the full workspace
-  // (ephemeral fields included) to localStorage — identical to
-  // pre-Sprint-24 behavior, so a caller that doesn't await this promise
-  // still gets the localStorage write immediately (Sprint-24-Step-06 is
-  // what makes the call site itself `await` this).
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace));
+  // Sprint-37-Step-03 (ADR-0017 database-primary): Try to save `books` to
+  // the database first. If successful, persist ephemeral UI state to
+  // localStorage. If the database is unavailable, fall back to localStorage
+  // and set syncWarning to signal the UI.
 
-  // Sprint-24-Step-07: mark local books as "not yet confirmed synced"
-  // BEFORE attempting the push (pessimistic, per Step Card Rules) — if
-  // this tab crashes/closes mid-fetch, the flag must already be set so the
-  // next loadWorkspace() knows this attempt never got to report success.
-  writeSyncPendingFlag(true);
-
-  // Best-effort: also push `books` to the database. Never throws (see
-  // pushBooksToApi) — a failure here is exactly the case the pending flag
-  // above exists to remember for the next loadWorkspace().
+  // Try the database first
   const pushed = await pushBooksToApi(workspace.books);
-  if (pushed) writeSyncPendingFlag(false);
+
+  if (pushed) {
+    // Database write succeeded — save ephemeral state to localStorage and
+    // clear any offline warning (the next successful API call will clear
+    // syncWarning if it was set).
+    writeLocalEphemeralState(workspace);
+  } else {
+    // Database write failed — fall back to localStorage. This stores both
+    // books and ephemeral state, so the next loadWorkspace() after
+    // reconnection can restore the full state. syncWarning is already set
+    // by pushBooksToApi() to "db-unavailable", signaling the UI to show
+    // the SyncStatusBanner (offline mode).
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace));
+    } catch {
+      // Best-effort: if localStorage is also broken, continue anyway —
+      // the next saveWorkspace() will retry the database push.
+    }
+  }
 }

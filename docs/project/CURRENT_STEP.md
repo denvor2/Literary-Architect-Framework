@@ -9,10 +9,24 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-34-Design-Step-06
-status: done
-next: [Sprint-35-Menu-Step-01]
+id: Sprint-35-Menu-Step-01
+status: active
+next: [Sprint-35-Menu-Step-02]
 ```
+
+## Sprint 35 — Menu System (File/Edit/View/Help/About) ⏳ IN PROGRESS
+
+**Current Step:** Sprint-35-Menu-Step-01 (File menu implementation)
+
+**Step Cards queued:**
+- Step 01: File menu (New Book, Open, Save, Export, Exit)
+- Step 02: Edit menu (Undo, Redo, Find, Replace)
+- Step 03: View menu (Theme, Font Size, Sidebar Toggle, Focus Mode)
+- Step 04: Help & About (Docs, Shortcuts, Version, Credits, License)
+- Step 05: Keyboard shortcuts (Ctrl+K, Z/Y, Escape)
+- Step 06: Live verification (scratch-server testing)
+
+---
 
 ## Sprint 34 — Design Polish (Icons, Accessibility, Performance) ✅ CLOSED
 
@@ -20,7 +34,7 @@ next: [Sprint-35-Menu-Step-01]
 - Step 01-05: Dark Mode, Mobile, Tablet, Responsive layouts ✅
 - Step 06: Icons (emoji → lucide), ARIA labels, Accessibility 95/100 ✅
 
-**Status**: All steps in done/. Sprint closed, moving to Sprint-35 Menu System.
+**Status**: All steps archived to done/. Sprint closed.
 
 ---
 

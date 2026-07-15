@@ -317,7 +317,7 @@ export async function canMakeAssistantRequest(
     return true;
   }
 
-  // Count requests in the current month
+  // Count requests in the current month (only completed payments)
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -325,6 +325,7 @@ export async function canMakeAssistantRequest(
     where: {
       userId,
       createdAt: { gte: monthStart },
+      status: "completed",
     },
   });
 

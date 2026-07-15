@@ -267,7 +267,9 @@ function readLocalWorkspaceForFallback(): Workspace {
 // its own reconciliation push, not by this generic read helper).
 async function fetchBooksFromApi(): Promise<readonly Book[] | null> {
   try {
-    const response = await fetch("/api/workspace");
+    const response = await fetch("/api/workspace", {
+      credentials: "include", // CRITICAL: Send JWT token in httpOnly cookie
+    });
     if (!response.ok) {
       syncWarning = "db-unavailable";
       return null;
@@ -300,6 +302,7 @@ async function pushBooksToApi(books: readonly Book[]): Promise<boolean> {
     const response = await fetch("/api/workspace", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
+      credentials: "include", // CRITICAL: Send JWT token in httpOnly cookie
       body: JSON.stringify({ books }),
     });
     if (!response.ok) {

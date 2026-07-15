@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 type LoginDialogProps = {
   onLogin: (email: string, password: string) => Promise<boolean>;
@@ -17,6 +18,7 @@ export function LoginDialog({
 }: LoginDialogProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -79,15 +81,31 @@ export function LoginDialog({
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Пароль
             </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="••••••••"
-              disabled={isSubmitting || isLoading}
-              className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none placeholder:text-zinc-400 disabled:opacity-50 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="••••••••"
+                disabled={isSubmitting || isLoading}
+                className="w-full rounded-md border border-zinc-300 bg-white p-2 pr-10 text-sm text-black outline-none placeholder:text-zinc-400 disabled:opacity-50 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isSubmitting || isLoading}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-700 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-300"
+                aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                title={showPassword ? "Скрыть пароль" : "Показать пароль"}
+              >
+                {showPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
+              </button>
+            </div>
           </label>
 
           {(localError || error) && (

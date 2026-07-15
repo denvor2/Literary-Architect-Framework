@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 type RegisterDialogProps = {
   onRegister: (
@@ -51,6 +52,8 @@ export function RegisterDialog({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -150,18 +153,34 @@ export function RegisterDialog({
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Пароль
             </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => handlePasswordChange(event.target.value)}
-              placeholder="••••••••"
-              disabled={isSubmitting || isLoading}
-              className={`rounded-md border bg-white p-2 text-sm text-black outline-none placeholder:text-zinc-400 disabled:opacity-50 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 ${
-                passwordErrors.length > 0
-                  ? "border-red-300 dark:border-red-700"
-                  : "border-zinc-300"
-              }`}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => handlePasswordChange(event.target.value)}
+                placeholder="••••••••"
+                disabled={isSubmitting || isLoading}
+                className={`w-full rounded-md border bg-white p-2 pr-10 text-sm text-black outline-none placeholder:text-zinc-400 disabled:opacity-50 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 ${
+                  passwordErrors.length > 0
+                    ? "border-red-300 dark:border-red-700"
+                    : "border-zinc-300"
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isSubmitting || isLoading}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-700 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-300"
+                aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                title={showPassword ? "Скрыть пароль" : "Показать пароль"}
+              >
+                {showPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
+              </button>
+            </div>
             {passwordErrors.length > 0 && (
               <div className="flex flex-col gap-1">
                 {passwordErrors.map((err, idx) => (
@@ -180,19 +199,39 @@ export function RegisterDialog({
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Подтверждение пароля
             </span>
-            <input
-              type="password"
-              value={passwordConfirm}
-              onChange={(event) => setPasswordConfirm(event.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="••••••••"
-              disabled={isSubmitting || isLoading}
-              className={`rounded-md border bg-white p-2 text-sm text-black outline-none placeholder:text-zinc-400 disabled:opacity-50 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 ${
-                passwordMismatch
-                  ? "border-red-300 dark:border-red-700"
-                  : "border-zinc-300"
-              }`}
-            />
+            <div className="relative">
+              <input
+                type={showPasswordConfirm ? "text" : "password"}
+                value={passwordConfirm}
+                onChange={(event) => setPasswordConfirm(event.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="••••••••"
+                disabled={isSubmitting || isLoading}
+                className={`w-full rounded-md border bg-white p-2 pr-10 text-sm text-black outline-none placeholder:text-zinc-400 disabled:opacity-50 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 ${
+                  passwordMismatch
+                    ? "border-red-300 dark:border-red-700"
+                    : "border-zinc-300"
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                disabled={isSubmitting || isLoading}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-700 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-300"
+                aria-label={
+                  showPasswordConfirm ? "Скрыть пароль" : "Показать пароль"
+                }
+                title={
+                  showPasswordConfirm ? "Скрыть пароль" : "Показать пароль"
+                }
+              >
+                {showPasswordConfirm ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
+              </button>
+            </div>
             {passwordMismatch && (
               <span className="text-xs text-red-600 dark:text-red-400">
                 Пароли не совпадают

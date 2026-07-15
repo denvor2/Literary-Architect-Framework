@@ -1,5 +1,6 @@
 import JSZip from "jszip";
 import type { Book, Chapter, Character, Idea, Series } from "@/domain/model";
+import { generateStoryBibleMarkdown } from "./storyBibleExporter";
 
 /**
  * Slugify a string for use in filenames.
@@ -219,6 +220,11 @@ export function generateMarkdownZip(series: Series | null, book: Book): JSZip {
 
   // README.md — book metadata and summary
   zip.file("README.md", generateREADME(series, book));
+
+  // StoryBible.md — series and book story bible data (Sprint-34-Step-06)
+  if (series) {
+    zip.file("StoryBible.md", generateStoryBibleMarkdown(series, [book]));
+  }
 
   // 00_Structure folder
   const structureFolder = zip.folder("00_Structure");

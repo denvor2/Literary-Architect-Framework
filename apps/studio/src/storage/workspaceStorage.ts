@@ -318,6 +318,14 @@ async function fetchSeriesFromApi(): Promise<readonly import("@/domain/model").S
 // path, or loadWorkspace()'s reconciliation attempt) triggered it.
 async function pushBooksToApi(books: readonly Book[]): Promise<boolean> {
   try {
+    // Debug logging for seriesId
+    const booksWithSeries = books.filter((b) => b.seriesId);
+    if (booksWithSeries.length > 0) {
+      console.log(
+        "pushBooksToApi: sending books with seriesId:",
+        booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
+      );
+    }
     const response = await fetch("/api/workspace", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

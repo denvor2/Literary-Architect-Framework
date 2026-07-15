@@ -32,6 +32,7 @@ export async function execute(
     const response = await fetch("/api/line-editor", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(
         bookContext
           ? { sceneText, bookContext, messages }
@@ -49,6 +50,7 @@ export async function execute(
     const response = await fetch("/api/critic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         sceneText,
         messages,
@@ -69,6 +71,7 @@ export async function execute(
     const response = await fetch("/api/reader", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         sceneText,
         messages,
@@ -88,6 +91,7 @@ export async function execute(
     const response = await fetch("/api/coauthor", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ sceneText, bookContext, messages }),
     });
     const data = await response.json();
@@ -102,6 +106,7 @@ export async function execute(
     const response = await fetch("/api/coauthor", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ bookContext, messages, mode: "structure" }),
     });
     const data = await response.json();
@@ -117,6 +122,7 @@ export async function execute(
     const response = await fetch("/api/book-field", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         fieldName,
         currentValue,

@@ -89,6 +89,7 @@ export function useWorkspaceController() {
       try {
         const response = await fetch("/api/workspace?deleted=true", {
           method: "GET",
+          credentials: "include",
         });
         if (response.ok) {
           const data = (await response.json()) as {
@@ -204,7 +205,7 @@ export function useWorkspaceController() {
       try {
         const response = await fetch(
           `/api/workspace?id=${encodeURIComponent(bookId)}`,
-          { method: "DELETE" },
+          { method: "DELETE", credentials: "include" },
         );
         if (!response.ok) {
           throw new Error(
@@ -253,7 +254,7 @@ export function useWorkspaceController() {
       try {
         const response = await fetch(
           `/api/workspace?id=${encodeURIComponent(bookId)}&action=restore`,
-          { method: "DELETE" },
+          { method: "DELETE", credentials: "include" },
         );
         if (!response.ok) {
           throw new Error(
@@ -283,7 +284,7 @@ export function useWorkspaceController() {
       try {
         const response = await fetch(
           `/api/workspace?id=${encodeURIComponent(bookId)}&action=permanent`,
-          { method: "DELETE" },
+          { method: "DELETE", credentials: "include" },
         );
         if (!response.ok) {
           throw new Error(
@@ -968,7 +969,7 @@ export function useWorkspaceController() {
     body?: unknown,
   ): Promise<unknown> {
     try {
-      const options: RequestInit = { method };
+      const options: RequestInit = { method, credentials: "include" };
       if (body !== undefined) {
         options.headers = { "Content-Type": "application/json" };
         options.body = JSON.stringify(body);
@@ -1099,7 +1100,7 @@ export function useWorkspaceController() {
           try {
             await fetch(
               `/api/workspace?id=${encodeURIComponent(book.id)}`,
-              { method: "DELETE" },
+              { method: "DELETE", credentials: "include" },
             );
           } catch (error) {
             console.error(`Failed to soft-delete book ${book.id}:`, error);

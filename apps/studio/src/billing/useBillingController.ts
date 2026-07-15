@@ -40,7 +40,7 @@ export function useBillingController(): BillingState & BillingActions {
   const loadCurrentPlan = async () => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
-      const res = await fetch("/api/billing/plan");
+      const res = await fetch("/api/billing/plan", { credentials: "include" });
       if (!res.ok) throw new Error(await res.text());
       const data = (await res.json()) as {
         ok: boolean;
@@ -86,6 +86,7 @@ export function useBillingController(): BillingState & BillingActions {
       const res = await fetch("/api/billing/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ planId }),
       });
       if (!res.ok) throw new Error(await res.text());

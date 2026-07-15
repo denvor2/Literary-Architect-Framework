@@ -96,12 +96,15 @@ export function useWorkspaceController() {
             ok: boolean;
             deletedBooks?: Book[];
           };
+          console.log("[DEBUG] Loaded deletedBooks from API:", data.deletedBooks?.length ?? 0);
           if (data.deletedBooks) {
             setDeletedBooks(data.deletedBooks);
           }
+        } else {
+          console.warn("[DEBUG] Trash API returned non-OK:", response.status);
         }
-      } catch {
-        // Silently fail — deleted books are optional for display
+      } catch (err) {
+        console.warn("[DEBUG] Failed to load deletedBooks:", err);
       }
     })();
     return () => {
@@ -203,6 +206,7 @@ export function useWorkspaceController() {
     // Soft delete: call API to mark book as deleted, then update local state
     void (async () => {
       try {
+        console.log("[DEBUG] Deleting book:", bookId);
         const response = await fetch(
           `/api/workspace?id=${encodeURIComponent(bookId)}`,
           { method: "DELETE", credentials: "include" },
@@ -212,6 +216,7 @@ export function useWorkspaceController() {
             `Failed to soft delete book: ${response.status} ${response.statusText}`,
           );
         }
+        console.log("[DEBUG] Book deleted successfully on server:", bookId);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to soft delete book";
@@ -232,6 +237,7 @@ export function useWorkspaceController() {
 
       // Add book to deletedBooks with deletedAt timestamp
       if (bookToDelete) {
+        console.log("[DEBUG] Adding to local deletedBooks:", bookToDelete.title);
         setDeletedBooks((previous) => [
           { ...bookToDelete, deletedAt: new Date() },
           ...previous,

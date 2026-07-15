@@ -423,6 +423,14 @@ export async function saveWorkspace(workspace: Workspace): Promise<void> {
   }
 
   // Try the database first
+  console.log(
+    "saveWorkspace: about to call pushBooksToApi with workspace.books length:",
+    workspace.books.length,
+    "books with seriesId:",
+    workspace.books.filter((b) => b.seriesId).length,
+    "full books:",
+    workspace.books.map((b) => ({ id: b.id, seriesId: b.seriesId })),
+  );
   const pushed = await pushBooksToApi(workspace.books);
 
   if (pushed) {

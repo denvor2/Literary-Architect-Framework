@@ -324,6 +324,12 @@ async function pushBooksToApi(books: readonly Book[]): Promise<boolean> {
       console.log(
         "pushBooksToApi: sending books with seriesId:",
         booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
+        "Full books array length:",
+        books.length,
+      );
+      console.log(
+        "pushBooksToApi: ALL books:",
+        books.map((b) => ({ id: b.id, title: b.title, seriesId: b.seriesId })),
       );
     }
     const response = await fetch("/api/workspace", {

@@ -46,19 +46,19 @@ export function IdeasPanel({
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          Идеи и заметки ({ideas.length})
+          Идеи ({ideas.length})
         </h2>
         <button
           onClick={onCreate}
           className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
         >
-          + Добавить заметку
+          + Добавить идею
         </button>
       </div>
 
       {ideas.length === 0 ? (
         <p className="text-sm text-zinc-400 dark:text-zinc-600">
-          Пока нет заметок
+          Пока нет идей
         </p>
       ) : (
         <div className="flex flex-col gap-2">

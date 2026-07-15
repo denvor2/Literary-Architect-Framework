@@ -1,6 +1,7 @@
 // Sprint-30-Step-04: Authentication middleware
 // Protects API endpoints by verifying JWT token from cookie or Authorization header.
 // Allows public routes (/api/auth/*, /api/health, /api/genres) to pass through.
+// Sprint-40-Step-01: Added protection for /admin/* routes (admin panel)
 
 import { NextRequest, NextResponse } from "next/server";
 import { extractToken, verifyJWT } from "@/lib/auth";
@@ -27,6 +28,9 @@ const PROTECTED_ROUTES = [
   "/api/assistant-settings",
 ];
 
+// Sprint-40-Step-01: Admin routes require both authentication and admin role
+const ADMIN_ROUTES = ["/admin"];
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -35,6 +39,30 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route),
   );
   if (isPublicRoute) {
+    return NextResponse.next();
+  }
+
+  // Sprint-40-Step-01: Check if route is admin route - require authentication + admin role
+  const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
+  if (isAdminRoute) {
+    const token = extractToken(request);
+    if (!token) {
+      // Not authenticated - redirect to login
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const payload = await verifyJWT(token);
+    if (!payload) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    // Check if user has admin role
+    if (payload.role !== "admin") {
+      // Authenticated but not admin - forbidden
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
+    // Admin user - allow through
     return NextResponse.next();
   }
 
@@ -74,5 +102,7 @@ export const config = {
   matcher: [
     // Apply middleware to all /api/* routes except static assets
     "/api/:path*",
+    // Sprint-40-Step-01: Apply middleware to /admin/* routes
+    "/admin/:path*",
   ],
 };

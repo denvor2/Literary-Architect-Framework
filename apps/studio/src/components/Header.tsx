@@ -693,6 +693,16 @@ export function Header({
                 </span>
               )}
             </div>
+            {/* Sprint-40-Step-01: Admin button visible only to admins */}
+            {currentUser.role === "admin" && (
+              <a
+                href="/admin"
+                title="Администраторская панель"
+                className="rounded-md border border-amber-300 px-3 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950"
+              >
+                Admin
+              </a>
+            )}
             <button
               onClick={onLogout}
               title="Выход"

@@ -320,17 +320,18 @@ async function pushBooksToApi(books: readonly Book[]): Promise<boolean> {
   try {
     // Debug logging for seriesId
     const booksWithSeries = books.filter((b) => b.seriesId);
-    if (booksWithSeries.length > 0) {
-      console.log(
-        "pushBooksToApi: sending books with seriesId:",
-        booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
-        "Full books array length:",
-        books.length,
-      );
+    console.log(
+      "pushBooksToApi called: total books:",
+      books.length,
+      "books with seriesId:",
+      booksWithSeries.length,
+    );
+    if (booksWithSeries.length > 0 || books.length > 0) {
       console.log(
         "pushBooksToApi: ALL books:",
         books.map((b) => ({ id: b.id, title: b.title, seriesId: b.seriesId })),
       );
+      console.trace("pushBooksToApi called from:");
     }
     const response = await fetch("/api/workspace", {
       method: "PUT",

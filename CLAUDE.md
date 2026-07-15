@@ -147,3 +147,36 @@ During Sprint 06:
 - Domain Model is the single source of truth for Book/Chapter/Scene
 
 Temporary coupling is allowed only during migration steps — not as final state.
+
+---
+
+## Testing & Quality (SPRINT 35+ MANDATORY)
+
+**Every Step Card must:**
+
+1. **Have E2E tests if user-facing** — if feature touches UI, it needs Playwright test
+   - Path: `apps/studio/e2e/feature-name.spec.ts`
+   - Run: `npm run test:e2e e2e/feature-name.spec.ts`
+
+2. **Update CRITICAL_FEATURES.md** — if function is user-visible and core
+   - Add row to table in `docs/project/CRITICAL_FEATURES.md`
+   - Mark status: ✅ VERIFIED (only after live testing confirms)
+   - Link to E2E test file
+
+3. **Pass `npm run validate` before commit**
+   - Runs: format check → type check → lint → build → E2E tests
+   - All must pass. Zero failures allowed.
+
+4. **Prevent regressions via tests**
+   - Breaking a user-facing feature = test failure on CI
+   - Tests fail = PR cannot merge
+   - This catches deletions/breaks BEFORE they reach main
+
+**Sprint Closure Checklist:**
+- [ ] All Step Cards have E2E tests (if UI-touching)
+- [ ] All tests passing locally (`npm run test:e2e`)
+- [ ] All critical features added to CRITICAL_FEATURES.md
+- [ ] Live QA testing done (human verification)
+- [ ] No regressions vs. previous sprint
+
+See [CRITICAL_FEATURES.md](docs/project/CRITICAL_FEATURES.md) for tracked functions.

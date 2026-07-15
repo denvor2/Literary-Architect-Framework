@@ -142,7 +142,7 @@ export function useWorkspaceController() {
   // behavior.
   useEffect(() => {
     if (!isLoaded) return;
-    saveWorkspace(workspace)
+    saveWorkspace(workspace, deletedBooks)
       .catch(() => {})
       .finally(() => setSyncWarning(getSyncWarning()));
     // Also persist deletedBooks to localStorage so they survive page reloads

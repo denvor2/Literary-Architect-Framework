@@ -8,6 +8,7 @@ import type {
   ChatMessage,
   Character,
   Idea,
+  Scene,
   Series,
 } from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
@@ -53,6 +54,8 @@ export function useWorkspaceController() {
   // below, the same two places that already touch the module-level signal.
   const [syncWarning, setSyncWarning] = useState<SyncWarning | null>(null);
   const [deletedBooks, setDeletedBooks] = useState<readonly Book[]>([]);
+  const [deletedScenes, setDeletedScenes] = useState<readonly Scene[]>([]);
+  const [deletedCharacters, setDeletedCharacters] = useState<readonly Character[]>([]);
   const {
     books,
     series,
@@ -100,6 +103,16 @@ export function useWorkspaceController() {
         console.log("[TRASH] No deletedBooks in localStorage, fetching from API");
       }
 
+      if (ephemeralState.deletedScenes && ephemeralState.deletedScenes.length > 0) {
+        console.log("[TRASH] Setting deletedScenes from localStorage:", ephemeralState.deletedScenes.map(s => s.title));
+        setDeletedScenes(ephemeralState.deletedScenes);
+      }
+
+      if (ephemeralState.deletedCharacters && ephemeralState.deletedCharacters.length > 0) {
+        console.log("[TRASH] Setting deletedCharacters from localStorage:", ephemeralState.deletedCharacters.map(c => c.name));
+        setDeletedCharacters(ephemeralState.deletedCharacters);
+      }
+
       try {
         const response = await fetch("/api/workspace?deleted=true", {
           method: "GET",
@@ -145,9 +158,9 @@ export function useWorkspaceController() {
     saveWorkspace(workspace, deletedBooks)
       .catch(() => {})
       .finally(() => setSyncWarning(getSyncWarning()));
-    // Also persist deletedBooks to localStorage so they survive page reloads
-    writeLocalEphemeralState(workspace, deletedBooks);
-  }, [workspace, deletedBooks, isLoaded]);
+    // Persist all deleted items to localStorage so they survive page reloads
+    writeLocalEphemeralState(workspace, deletedBooks, deletedScenes, deletedCharacters);
+  }, [workspace, deletedBooks, deletedScenes, deletedCharacters, isLoaded]);
 
   const activeBook = books.find((book) => book.id === activeBookId);
   const chapters = activeBook?.chapters ?? [];
@@ -551,11 +564,23 @@ export function useWorkspaceController() {
       const chapter = activeBook.chapters.find((c) => c.id === chapterId);
       if (!chapter) return previous;
 
+      const sceneToDelete = chapter.scenes.find((s) => s.id === sceneId);
       const remainingScenes = chapter.scenes.filter((s) => s.id !== sceneId);
       const newSelectedSceneId =
         previous.selectedSceneId === sceneId
           ? (remainingScenes[0]?.id ?? null)
           : previous.selectedSceneId;
+
+      // Add to trash
+      if (sceneToDelete) {
+        console.log("[TRASH] === deleteScene START ===");
+        console.log("[TRASH] Deleting scene:", sceneId, sceneToDelete.title);
+        setDeletedScenes((previous) => {
+          const updated = [{ ...sceneToDelete, deletedAt: new Date() }, ...previous];
+          console.log("[TRASH] deletedScenes after add:", updated.map(s => s.title));
+          return updated;
+        });
+      }
 
       return {
         ...previous,
@@ -657,6 +682,25 @@ export function useWorkspaceController() {
         (book) => book.id === previous.activeBookId,
       );
       if (!activeBook) return previous;
+
+      const characterToDelete = activeBook.characters.find(
+        (c) => c.id === characterId,
+      );
+
+      // Add to trash
+      if (characterToDelete) {
+        console.log("[TRASH] === deleteCharacter START ===");
+        console.log("[TRASH] Deleting character:", characterId, characterToDelete.name);
+        setDeletedCharacters((previous) => {
+          const updated = [
+            { ...characterToDelete, deletedAt: new Date() },
+            ...previous,
+          ];
+          console.log("[TRASH] deletedCharacters after add:", updated.map(c => c.name));
+          return updated;
+        });
+      }
+
       return {
         ...previous,
         books: previous.books.map((book) =>
@@ -1261,6 +1305,8 @@ export function useWorkspaceController() {
     activeBook,
     books,
     deletedBooks,
+    deletedScenes,
+    deletedCharacters,
     series,
     activeBookId,
     chapters,

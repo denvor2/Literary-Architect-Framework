@@ -28,6 +28,7 @@ import type {
   Book,
   Chapter,
   Character,
+  Scene,
 } from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
 
@@ -160,7 +161,11 @@ function migrateIfNeeded(parsed: unknown): Workspace {
 // Sprint-37-Step-03: Extract only ephemeral UI state from localStorage.
 // These fields are never stored in the database (per ADR-0017).
 // Also persists deletedBooks since they may be client-only (not synced to DB yet).
-export function readLocalEphemeralState(): Partial<Workspace> & { deletedBooks?: readonly Book[] } {
+export function readLocalEphemeralState(): Partial<Workspace> & {
+  deletedBooks?: readonly Book[];
+  deletedScenes?: readonly Scene[];
+  deletedCharacters?: readonly Character[];
+} {
   try {
     const raw = window.localStorage.getItem(EPHEMERAL_STATE_KEY);
     if (!raw) {
@@ -173,7 +178,11 @@ export function readLocalEphemeralState(): Partial<Workspace> & { deletedBooks?:
         deletedBooks: [],
       };
     }
-    const data = JSON.parse(raw) as Partial<Workspace> & { deletedBooks?: unknown };
+    const data = JSON.parse(raw) as Partial<Workspace> & {
+      deletedBooks?: unknown;
+      deletedScenes?: unknown;
+      deletedCharacters?: unknown;
+    };
     return {
       activeBookId:
         typeof data.activeBookId === "string" ? data.activeBookId : null,
@@ -197,6 +206,12 @@ export function readLocalEphemeralState(): Partial<Workspace> & { deletedBooks?:
       deletedBooks: Array.isArray(data.deletedBooks)
         ? (data.deletedBooks as Book[])
         : [],
+      deletedScenes: Array.isArray(data.deletedScenes)
+        ? (data.deletedScenes as Scene[])
+        : [],
+      deletedCharacters: Array.isArray(data.deletedCharacters)
+        ? (data.deletedCharacters as Character[])
+        : [],
     };
   } catch {
     return {
@@ -206,6 +221,8 @@ export function readLocalEphemeralState(): Partial<Workspace> & { deletedBooks?:
       selectedCharacterId: null,
       selectedAssistantMode: "editor",
       deletedBooks: [],
+      deletedScenes: [],
+      deletedCharacters: [],
     };
   }
 }
@@ -218,20 +235,23 @@ export function readLocalEphemeralState(): Partial<Workspace> & { deletedBooks?:
 export function writeLocalEphemeralState(
   workspace: Workspace,
   deletedBooks?: readonly Book[],
+  deletedScenes?: readonly Scene[],
+  deletedCharacters?: readonly Character[],
 ): void {
   try {
-    const ephemeralState: Partial<Workspace> & { deletedBooks?: readonly Book[] } = {
+    const ephemeralState = {
       activeBookId: workspace.activeBookId,
       selectedChapterId: workspace.selectedChapterId,
       selectedSceneId: workspace.selectedSceneId,
       selectedCharacterId: workspace.selectedCharacterId,
       selectedAssistantMode: workspace.selectedAssistantMode,
       deletedBooks: deletedBooks ?? [],
+      deletedScenes: deletedScenes ?? [],
+      deletedCharacters: deletedCharacters ?? [],
     };
     console.log("[TRASH] writeLocalEphemeralState - saving deletedBooks count:", deletedBooks?.length ?? 0);
-    if (deletedBooks && deletedBooks.length > 0) {
-      console.log("[TRASH] Saving to localStorage:", deletedBooks.map(b => b.title));
-    }
+    console.log("[TRASH] writeLocalEphemeralState - saving deletedScenes count:", deletedScenes?.length ?? 0);
+    console.log("[TRASH] writeLocalEphemeralState - saving deletedCharacters count:", deletedCharacters?.length ?? 0);
     window.localStorage.setItem(
       EPHEMERAL_STATE_KEY,
       JSON.stringify(ephemeralState),

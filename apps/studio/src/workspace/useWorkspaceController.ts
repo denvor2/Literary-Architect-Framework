@@ -1023,10 +1023,7 @@ export function useWorkspaceController() {
 
     void (async () => {
       try {
-        await callSeriesApi(
-          `/api/series?id=${encodeURIComponent(seriesId)}`,
-          "DELETE",
-        );
+        await callSeriesApi("/api/series", "DELETE", { id: seriesId });
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to delete series";

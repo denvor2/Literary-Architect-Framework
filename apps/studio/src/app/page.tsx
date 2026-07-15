@@ -86,6 +86,9 @@ export default function Home() {
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark" | "auto">("auto");
   const [currentFontSize, setCurrentFontSize] = useState(14);
 
+  // Sprint-35-Menu-Step-04: Keyboard Shortcuts dialog state
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+
   // All workspace hooks must be called unconditionally, even if not logged in
   const {
     workspace,
@@ -469,6 +472,41 @@ export default function Home() {
             onSwitchToLogin={() => setAuthDialogMode("login")}
           />
         )}
+        {showKeyboardShortcuts && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-96 max-h-96 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+              <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">⌨️ Горячие клавиши</h2>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+K / Ctrl+F</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Открыть поиск</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+N</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Новая книга</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+S</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Сохранить</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+E</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Экспортировать</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Escape</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Закрыть меню/поиск</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowKeyboardShortcuts(false)}
+                className="mt-4 w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-black hover:bg-zinc-200 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -503,6 +541,8 @@ export default function Home() {
           onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
           currentTheme={currentTheme}
           currentFontSize={currentFontSize}
+          onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
+          appVersion="0.1.0"
         />
         <SyncWarningBanner warning={syncWarning} />
 
@@ -674,6 +714,41 @@ export default function Home() {
               />
             ) : null;
           })()}
+        {showKeyboardShortcuts && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-96 max-h-96 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+              <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">⌨️ Горячие клавиши</h2>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+K / Ctrl+F</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Открыть поиск</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+N</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Новая книга</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+S</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Сохранить</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+E</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Экспортировать</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Escape</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Закрыть меню/поиск</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowKeyboardShortcuts(false)}
+                className="mt-4 w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-black hover:bg-zinc-200 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -707,6 +782,8 @@ export default function Home() {
         onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
         currentTheme={currentTheme}
         currentFontSize={currentFontSize}
+        onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
+        appVersion="0.1.0"
       />
       <SyncWarningBanner warning={syncWarning} />
       {/* Sprint-34-Design-Step-03: Tablet layout (768-1024px) with hamburger menu */}
@@ -951,6 +1028,41 @@ export default function Home() {
             />
           ) : null;
         })()}
+        {showKeyboardShortcuts && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-96 max-h-96 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+              <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">⌨️ Горячие клавиши</h2>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+K / Ctrl+F</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Открыть поиск</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+N</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Новая книга</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+S</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Сохранить</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Ctrl+E</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Экспортировать</div>
+                </div>
+                <div>
+                  <div className="font-medium text-black dark:text-white">Escape</div>
+                  <div className="text-zinc-600 dark:text-zinc-400">Закрыть меню/поиск</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowKeyboardShortcuts(false)}
+                className="mt-4 w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-black hover:bg-zinc-200 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

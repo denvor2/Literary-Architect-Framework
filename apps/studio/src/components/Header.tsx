@@ -54,6 +54,8 @@ type HeaderProps = {
   onToggleSidebar?: () => void;
   currentTheme?: "light" | "dark" | "auto";
   currentFontSize?: number;
+  onShowKeyboardShortcuts?: () => void;
+  appVersion?: string;
 };
 
 function SearchResultsSection({
@@ -131,6 +133,8 @@ export function Header({
   onToggleSidebar,
   currentTheme = "auto",
   currentFontSize = 14,
+  onShowKeyboardShortcuts,
+  appVersion = "0.1.0",
 }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
@@ -424,6 +428,62 @@ export function Header({
                       className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
                     >
                       Режим фокуса (скоро)
+                    </button>
+                  </>
+                ) : menu.key === "help" ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        window.open("https://github.com/Denys-Vorovyev/Literary-Studio", "_blank");
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                    >
+                      📖 Документация
+                    </button>
+                    <button
+                      onClick={() => {
+                        onShowKeyboardShortcuts?.();
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                    >
+                      ⌨️ Горячие клавиши
+                    </button>
+                    <button
+                      onClick={() => {
+                        window.open("https://github.com/Denys-Vorovyev/Literary-Studio/issues", "_blank");
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                    >
+                      🐛 Сообщить об ошибке
+                    </button>
+                  </>
+                ) : menu.key === "about" ? (
+                  <>
+                    <div className="px-3 py-2 text-sm">
+                      <div className="font-semibold text-black dark:text-white">Literary Studio</div>
+                      <div className="text-xs text-zinc-600 dark:text-zinc-400">v{appVersion}</div>
+                    </div>
+                    <div className="border-t border-zinc-200 dark:border-zinc-800" />
+                    <button
+                      onClick={() => {
+                        window.open("https://github.com/Denys-Vorovyev", "_blank");
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                    >
+                      👤 Автор
+                    </button>
+                    <button
+                      onClick={() => {
+                        window.open("https://github.com/Denys-Vorovyev/Literary-Studio/blob/main/LICENSE", "_blank");
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                    >
+                      📄 Лицензия
                     </button>
                   </>
                 ) : (

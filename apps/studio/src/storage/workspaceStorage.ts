@@ -296,11 +296,11 @@ async function fetchSeriesFromApi(): Promise<readonly import("@/domain/model").S
     if (!response.ok) {
       return null;
     }
-    const data = (await response.json()) as { ok?: boolean; data?: unknown };
-    if (!data.ok || !Array.isArray(data.data)) {
+    const data = (await response.json()) as { ok?: boolean; series?: unknown };
+    if (!data.ok || !Array.isArray(data.series)) {
       return null;
     }
-    return data.data as import("@/domain/model").Series[];
+    return data.series as import("@/domain/model").Series[];
   } catch {
     return null;
   }

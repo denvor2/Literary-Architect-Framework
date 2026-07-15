@@ -297,6 +297,7 @@ enum EventType {
   payment_created
   payment_completed
   payment_failed
+  workspace_updated
 }
 
 enum MessageRole {

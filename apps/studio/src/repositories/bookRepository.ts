@@ -395,7 +395,6 @@ export async function softDeleteBook(bookId: string): Promise<void> {
     );
   }
   console.log("[softDeleteBook] Attempting to soft-delete book:", bookId);
-  console.log("[softDeleteBook] Data being sent:", { deletedAt: new Date() });
 
   try {
     const result = await prisma.book.update({
@@ -404,6 +403,17 @@ export async function softDeleteBook(bookId: string): Promise<void> {
     });
     console.log("[softDeleteBook] Success, updated book:", result.id);
   } catch (error) {
+    // If book not found, that's OK - it may exist only in client state
+    if (
+      error instanceof Error &&
+      error.message.includes("No record was found")
+    ) {
+      console.warn(
+        "[softDeleteBook] Book not found in DB (client-only state):",
+        bookId,
+      );
+      return;
+    }
     console.error("[softDeleteBook] Prisma error:", error);
     throw error;
   }

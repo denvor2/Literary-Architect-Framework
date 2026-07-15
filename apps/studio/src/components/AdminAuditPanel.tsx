@@ -11,15 +11,19 @@ export type AdminAuditPanelProps = {
 
 export function AdminAuditPanel({ className }: AdminAuditPanelProps) {
   const [startDate, setStartDate] = useState<Date>(
-    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // last 7 days
+    () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // last 7 days
   );
-  const [endDate, setEndDate] = useState<Date>(new Date());
-  const [selectedEventType, setSelectedEventType] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<Date>(() => new Date());
+  const [selectedEventType, setSelectedEventType] = useState<string | null>(
+    null,
+  );
   const [searchText, setSearchText] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
-  const [stats, setStats] = useState<Array<{ eventType: string; count: number }>>([]);
+  const [stats, setStats] = useState<
+    Array<{ eventType: string; count: number }>
+  >([]);
 
   // Fetch events on filter change
   useEffect(() => {

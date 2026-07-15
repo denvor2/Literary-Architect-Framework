@@ -249,7 +249,7 @@ export function Header({
               if (hasEnoughQuery) setIsResultsOpen(true);
             }}
             placeholder="Поиск по книге... (Ctrl+K)"
-            className="w-64 rounded-md border border-zinc-300 bg-white px-3 py-1.5 pr-9 text-sm text-black outline-none placeholder:text-zinc-400 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600"
+            className="w-64 rounded-md border border-zinc-300 bg-white px-3 py-1.5 pr-9 text-sm text-black outline-none placeholder:text-zinc-400 focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 dark:focus:ring-zinc-400"
           />
           <button
             type="button"

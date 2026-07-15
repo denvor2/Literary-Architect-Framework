@@ -89,7 +89,7 @@ export function Sidebar({
 }: SidebarProps) {
   return (
     <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
-      <div>
+      <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Книга
@@ -106,7 +106,7 @@ export function Sidebar({
             Пока нет книг
           </p>
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-2">
             {books.map((book) => (
               <li key={book.id}>
                 <div className="flex items-center gap-1">
@@ -138,7 +138,7 @@ export function Sidebar({
           </ul>
         )}
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Серии
@@ -155,7 +155,7 @@ export function Sidebar({
             Пока нет серий
           </p>
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-2">
             {series.map((s) => {
               const isSeriesCollapsed = collapsedSeriesIds?.has(s.id) ?? false;
               const booksInSeries = books.filter((b) => b.seriesId === s.id);
@@ -185,7 +185,7 @@ export function Sidebar({
                     </button>
                   </div>
                   {!isSeriesCollapsed && booksInSeries.length > 0 && (
-                    <ul className="ml-3 mt-1 flex flex-col gap-1 border-l border-zinc-200 pl-2 dark:border-zinc-800">
+                    <ul className="ml-3 mt-1 flex flex-col gap-2 border-l border-zinc-200 pl-2 dark:border-zinc-800">
                       {booksInSeries.map((book) => (
                         <li key={book.id}>
                           <button
@@ -208,7 +208,7 @@ export function Sidebar({
           </ul>
         )}
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Корзина {deletedBooks.length > 0 && `(${deletedBooks.length})`}
@@ -219,7 +219,7 @@ export function Sidebar({
             Корзина пуста
           </p>
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-2">
             {deletedBooks.map((book) => (
               <li key={book.id}>
                 <div className="flex items-center gap-1">
@@ -257,7 +257,7 @@ export function Sidebar({
           </ul>
         )}
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Главы
@@ -274,7 +274,7 @@ export function Sidebar({
             Пока нет глав
           </p>
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-2">
             {chapters.map((chapter) => {
               const isChapterCollapsed =
                 collapsedChapterIds?.has(chapter.id) ?? false;
@@ -313,7 +313,7 @@ export function Sidebar({
                     </button>
                   </div>
                   {!isChapterCollapsed && chapter.scenes.length > 0 && (
-                    <ul className="ml-3 mt-1 flex flex-col gap-1 border-l border-zinc-200 pl-2 dark:border-zinc-800">
+                    <ul className="ml-3 mt-1 flex flex-col gap-2 border-l border-zinc-200 pl-2 dark:border-zinc-800">
                       {chapter.scenes.map((scene) => (
                         <li key={scene.id}>
                           <button
@@ -340,7 +340,7 @@ export function Sidebar({
           </ul>
         )}
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Персонажи
@@ -357,7 +357,7 @@ export function Sidebar({
             Пока нет персонажей
           </p>
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-2">
             {characters.map((character) => (
               <li key={character.id}>
                 <button

@@ -321,7 +321,7 @@ function UnifiedBookView({
   }
 
   return (
-    <main className="flex flex-1 flex-col overflow-y-auto p-8">
+    <main className="flex flex-1 flex-col overflow-y-auto p-6">
       <div
         className={`flex w-full flex-1 flex-col gap-6 ${
           isFocusMode ? "mx-auto max-w-3xl" : ""
@@ -361,7 +361,7 @@ function UnifiedBookView({
                     onUpdateBook?.(book.id, { title: event.target.value })
                   }
                   placeholder="Название книги..."
-                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400"
                 />
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -392,7 +392,7 @@ function UnifiedBookView({
                   onChange={(event) =>
                     onUpdateBook?.(book.id, { language: event.target.value })
                   }
-                  className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
                 >
                   {LANGUAGES.map((option) => (
                     <option key={option} value={option}>
@@ -409,7 +409,7 @@ function UnifiedBookView({
                   }
                   placeholder="О чём эта книга?"
                   rows={4}
-                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
                 />
                 {onRequestFieldSuggestion && (
                   <button
@@ -437,7 +437,7 @@ function UnifiedBookView({
                   })
                 }
                 placeholder="Теги (через запятую)..."
-                className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
               />
               <div className="flex items-start gap-2">
                 <textarea
@@ -449,7 +449,7 @@ function UnifiedBookView({
                   }
                   placeholder="Краткая аннотация..."
                   rows={2}
-                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
                 />
                 {onRequestFieldSuggestion && (
                   <button
@@ -476,7 +476,7 @@ function UnifiedBookView({
                   }
                   placeholder="Полная аннотация..."
                   rows={6}
-                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
                 />
                 {onRequestFieldSuggestion && (
                   <button
@@ -554,7 +554,7 @@ function UnifiedBookView({
                           })
                         }
                         placeholder="Название главы..."
-                        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xl font-semibold tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xl font-semibold tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400"
                       />
                       {!isChapterCollapsed && (
                         <input
@@ -565,7 +565,7 @@ function UnifiedBookView({
                             })
                           }
                           placeholder="Подзаголовок..."
-                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
                         />
                       )}
                     </div>
@@ -636,7 +636,7 @@ function UnifiedBookView({
                                       }
                                     }}
                                     placeholder="Название сцены..."
-                                    className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-base font-medium tracking-tight text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base font-medium tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400"
                                   />
                                 </div>
                                 {!isSceneCollapsed && (
@@ -660,7 +660,7 @@ function UnifiedBookView({
                                       }
                                       placeholder="Начните писать сцену..."
                                       rows={8}
-                                      className="w-full resize-none rounded-md bg-transparent p-3 text-base leading-relaxed text-black outline-none dark:text-white"
+                                      className="w-full resize-none rounded-md bg-transparent p-3 text-base leading-relaxed text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:text-white dark:focus:ring-zinc-400"
                                     />
                                     <p className="text-xs text-zinc-400 dark:text-zinc-600">
                                       Слов: {wordCount} · Символов:{" "}

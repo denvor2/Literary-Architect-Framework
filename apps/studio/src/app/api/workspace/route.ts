@@ -117,11 +117,15 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  console.log("[DELETE ROUTE] Started");
   const { searchParams } = new URL(request.url);
   const bookId = searchParams.get("id");
   const action = searchParams.get("action") || "soft-delete";
 
+  console.log("[DELETE ROUTE] bookId:", bookId, "action:", action);
+
   if (!bookId) {
+    console.log("[DELETE ROUTE] No bookId");
     return NextResponse.json(
       { ok: false, error: "Book id is required" },
       { status: 400 },
@@ -130,16 +134,24 @@ export async function DELETE(request: NextRequest) {
 
   try {
     // Get userId from JWT (Sprint-30-Step-04 auth)
+    console.log("[DELETE ROUTE] Extracting token...");
     const token = extractToken(request);
+    console.log("[DELETE ROUTE] Token extracted:", !!token);
+
     if (!token) {
+      console.log("[DELETE ROUTE] No token");
       return NextResponse.json(
         { ok: false, error: "Unauthorized" },
         { status: 401 },
       );
     }
 
+    console.log("[DELETE ROUTE] Verifying JWT...");
     const payload = await verifyJWT(token);
+    console.log("[DELETE ROUTE] JWT verified:", !!payload, "sub:", payload?.sub);
+
     if (!payload || !payload.sub) {
+      console.log("[DELETE ROUTE] Invalid payload");
       return NextResponse.json(
         { ok: false, error: "Invalid token" },
         { status: 401 },
@@ -147,6 +159,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const userId = payload.sub;
+    console.log("[DELETE ROUTE] userId:", userId);
 
     if (action === "restore") {
       await restoreBook(bookId);
@@ -179,7 +192,11 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("[DELETE] Catch block:", error);
+    console.error("[DELETE ROUTE] Catch block - Error:", error);
+    if (error instanceof Error) {
+      console.error("[DELETE ROUTE] Error message:", error.message);
+      console.error("[DELETE ROUTE] Error stack:", error.stack);
+    }
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

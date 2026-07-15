@@ -81,6 +81,13 @@ export function useWorkspaceController() {
     void (async () => {
       const restored = await loadWorkspace();
       if (cancelled) return;
+      const booksWithSeries = restored.books.filter((b) => b.seriesId);
+      if (booksWithSeries.length > 0) {
+        console.log(
+          "useEffect init: loaded books with seriesId from DB:",
+          booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
+        );
+      }
       setWorkspace(restored);
       setIsLoaded(true);
       setSyncWarning(getSyncWarning());
@@ -123,6 +130,13 @@ export function useWorkspaceController() {
   // behavior.
   useEffect(() => {
     if (!isLoaded) return;
+    const booksWithSeries = workspace.books.filter((b) => b.seriesId);
+    if (booksWithSeries.length > 0) {
+      console.log(
+        "useEffect auto-save: workspace has books with seriesId:",
+        booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
+      );
+    }
     saveWorkspace(workspace)
       .catch(() => {})
       .finally(() => setSyncWarning(getSyncWarning()));

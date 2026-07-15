@@ -46,7 +46,7 @@ export function IdeasPanel({
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          Идеи и заметки
+          Идеи и заметки ({ideas.length})
         </h2>
         <button
           onClick={onCreate}

@@ -183,7 +183,7 @@ export function Sidebar({
       <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Книга
+            Книга ({books.length})
           </h2>
           <button
             onClick={() => onNewBook?.()}
@@ -258,7 +258,7 @@ export function Sidebar({
       <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Серии
+            Серии ({series.length})
           </h2>
           <button
             onClick={() => onCreateSeries?.()}
@@ -414,7 +414,7 @@ export function Sidebar({
       <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Главы
+            Главы ({chapters.length})
           </h2>
           <button
             onClick={() => onCreateChapter?.()}
@@ -501,7 +501,7 @@ export function Sidebar({
       <div className="flex flex-col gap-2">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Персонажи
+            Персонажи ({characters.length})
           </h2>
           <button
             onClick={() => onCreateCharacter?.()}

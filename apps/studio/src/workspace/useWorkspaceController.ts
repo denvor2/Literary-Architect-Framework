@@ -1086,9 +1086,25 @@ export function useWorkspaceController() {
       throw new Error(`Series with id ${seriesId} not found`);
     }
 
+    // Get books in this series BEFORE modifying state
+    const booksInSeries = workspace.books.filter((b) => b.seriesId === seriesId);
+
     void (async () => {
       try {
+        // Delete series on server
         await callSeriesApi("/api/series", "DELETE", { id: seriesId });
+
+        // Soft-delete each book in the series on server
+        for (const book of booksInSeries) {
+          try {
+            await fetch(
+              `/api/workspace?id=${encodeURIComponent(book.id)}`,
+              { method: "DELETE" },
+            );
+          } catch (error) {
+            console.error(`Failed to soft-delete book ${book.id}:`, error);
+          }
+        }
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to delete series";
@@ -1098,17 +1114,6 @@ export function useWorkspaceController() {
     })();
 
     setWorkspace((previous) => {
-      // Get books that belong to this series to soft-delete them
-      const booksInSeries = previous.books.filter((b) => b.seriesId === seriesId);
-
-      // Add books to trash
-      if (booksInSeries.length > 0) {
-        setDeletedBooks((prev) => [
-          ...booksInSeries.map((b) => ({ ...b, deletedAt: new Date() })),
-          ...prev,
-        ]);
-      }
-
       // Remove the series and delete books that belonged to it
       const updatedBooks = previous.books.filter((b) => b.seriesId !== seriesId);
       return {
@@ -1117,6 +1122,22 @@ export function useWorkspaceController() {
         books: updatedBooks,
       };
     });
+
+    // Update deletedBooks with books from this series
+    if (booksInSeries.length > 0) {
+      setDeletedBooks((prev) => {
+        const newDeleted = booksInSeries.map((b) => ({
+          ...b,
+          deletedAt: new Date(),
+        }));
+        // Deduplicate: avoid adding books already in deletedBooks
+        const existingIds = new Set(prev.map((b) => b.id));
+        const uniqueNewDeleted = newDeleted.filter(
+          (b) => !existingIds.has(b.id),
+        );
+        return [...uniqueNewDeleted, ...prev];
+      });
+    }
   }
 
   function addBookToSeries(bookId: string, seriesId: string): Book {

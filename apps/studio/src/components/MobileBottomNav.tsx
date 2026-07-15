@@ -19,11 +19,10 @@ export function MobileBottomNav({
     id: MobileTab;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
-    emoji: string;
   }> = [
-    { id: "collection", label: "Коллекция", icon: BarChart3, emoji: "📊" },
-    { id: "editor", label: "Редактор", icon: Pencil, emoji: "📝" },
-    { id: "helpers", label: "Помощники", icon: MessageSquare, emoji: "💬" },
+    { id: "collection", label: "Коллекция", icon: BarChart3 },
+    { id: "editor", label: "Редактор", icon: Pencil },
+    { id: "helpers", label: "Помощники", icon: MessageSquare },
   ];
 
   return (
@@ -63,7 +62,6 @@ export function MobileBottomNav({
             aria-label={tab.label}
           >
             <tab.icon className="h-5 w-5" />
-            <span className="text-xs font-medium">{tab.emoji}</span>
           </button>
         ))}
       </div>

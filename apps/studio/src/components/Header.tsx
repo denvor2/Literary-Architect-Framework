@@ -179,7 +179,7 @@ export function Header({
       document.removeEventListener("mousedown", handleClickOutsideSearch);
   }, []);
 
-  // Escape closes the results dropdown; Ctrl/Cmd+K focuses the search
+  // Escape closes the results dropdown and menu; Ctrl/Cmd+K focuses the search
   // field — a trivial, optional shortcut per the Step Card's Rules ("включить,
   // только если реализация тривиальна").
   useEffect(() => {
@@ -190,6 +190,7 @@ export function Header({
         setIsResultsOpen(true);
       } else if (event.key === "Escape") {
         setIsResultsOpen(false);
+        setOpenMenu(null);
       }
     }
     document.addEventListener("keydown", handleKeyDown);
@@ -218,6 +219,8 @@ export function Header({
                 )
               }
               className="rounded-md px-2 py-1 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+              aria-expanded={openMenu === menu.key}
+              aria-label={`Меню ${menu.label}`}
             >
               {menu.label}
             </button>
@@ -249,6 +252,7 @@ export function Header({
               if (hasEnoughQuery) setIsResultsOpen(true);
             }}
             placeholder="Поиск по книге... (Ctrl+K)"
+            aria-label="Поиск по книге"
             className="w-64 rounded-md border border-zinc-300 bg-white px-3 py-1.5 pr-9 text-sm text-black outline-none placeholder:text-zinc-400 focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 dark:focus:ring-zinc-400"
           />
           <button
@@ -259,6 +263,7 @@ export function Header({
             }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300"
             title="Поиск"
+            aria-label="Поиск"
           >
             <Search size={16} />
           </button>
@@ -351,6 +356,7 @@ export function Header({
           disabled
           title="Переключение языка интерфейса — скоро"
           className="cursor-not-allowed rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-400 dark:border-zinc-700 dark:text-zinc-600"
+          aria-label="Переключение языка интерфейса — скоро"
         >
           RU
         </button>
@@ -387,6 +393,7 @@ export function Header({
           <button
             onClick={onOpenLogin}
             className="rounded-md border border-zinc-300 px-3 py-1 text-sm font-medium text-black transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
+            aria-label="Вход в приложение"
           >
             Войти
           </button>

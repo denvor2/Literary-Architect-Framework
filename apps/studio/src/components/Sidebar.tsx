@@ -97,6 +97,7 @@ export function Sidebar({
           <button
             onClick={() => onNewBook?.()}
             className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            aria-label="Создать новую книгу"
           >
             + Новая книга
           </button>
@@ -117,18 +118,24 @@ export function Sidebar({
                         ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
                         : "text-black hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900"
                     }`}
+                    aria-label={`Выбрать книгу ${book.title || "Без названия"}`}
                   >
                     {book.title || "Без названия"}
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm(`Удалить книгу "${book.title || 'Без названия'}"?`)) {
+                      if (
+                        confirm(
+                          `Удалить книгу "${book.title || "Без названия"}"?`,
+                        )
+                      ) {
                         onDeleteBook?.(book.id);
                       }
                     }}
                     className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
                     title="Удалить книгу"
+                    aria-label={`Удалить книгу ${book.title || "Без названия"}`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -146,6 +153,7 @@ export function Sidebar({
           <button
             onClick={() => onCreateSeries?.()}
             className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            aria-label="Создать новую серию"
           >
             +
           </button>
@@ -180,6 +188,7 @@ export function Sidebar({
                       onClick={() => onEditSeries?.(s.id)}
                       className="w-full rounded-md px-2 py-1 text-left text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900"
                       title={s.description || ""}
+                      aria-label={`Редактировать серию ${s.title || "Без названия"}`}
                     >
                       {s.title || "Без названия"}
                     </button>
@@ -195,6 +204,7 @@ export function Sidebar({
                                 ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
                                 : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
                             }`}
+                            aria-label={`Выбрать книгу ${book.title || "Без названия"}`}
                           >
                             {book.title || "Без названия"}
                           </button>
@@ -225,7 +235,9 @@ export function Sidebar({
                 <div className="flex items-center gap-1">
                   <div className="flex-1">
                     <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
-                      <div className="truncate">{book.title || "Без названия"}</div>
+                      <div className="truncate">
+                        {book.title || "Без названия"}
+                      </div>
                       {book.deletedAt && (
                         <div className="text-xs text-zinc-500 dark:text-zinc-700">
                           {new Date(book.deletedAt).toLocaleDateString("ru-RU")}
@@ -237,17 +249,23 @@ export function Sidebar({
                     onClick={() => onRestoreBook?.(book.id)}
                     className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
                     title="Восстановить"
+                    aria-label={`Восстановить книгу ${book.title || "Без названия"}`}
                   >
                     ↩️
                   </button>
                   <button
                     onClick={() => {
-                      if (confirm(`Безвозвратно удалить "${book.title || 'Без названия'}"?`)) {
+                      if (
+                        confirm(
+                          `Безвозвратно удалить "${book.title || "Без названия"}"?`,
+                        )
+                      ) {
                         onPermanentlyDeleteBook?.(book.id);
                       }
                     }}
                     className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
                     title="Удалить безвозвратно"
+                    aria-label={`Безвозвратно удалить книгу ${book.title || "Без названия"}`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -265,6 +283,7 @@ export function Sidebar({
           <button
             onClick={() => onCreateChapter?.()}
             className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            aria-label="Создать новую главу"
           >
             + Новая глава
           </button>
@@ -302,12 +321,14 @@ export function Sidebar({
                           ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
                           : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
                       }`}
+                      aria-label={`Выбрать главу ${chapter.title}`}
                     >
                       {chapter.title}
                     </button>
                     <button
                       onClick={() => onCreateScene?.(chapter.id)}
                       className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                      aria-label={`Создать новую сцену в главе ${chapter.title}`}
                     >
                       + Новая сцена
                     </button>
@@ -327,6 +348,7 @@ export function Sidebar({
                                 ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
                                 : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
                             }`}
+                            aria-label={`Выбрать сцену ${scene.title}`}
                           >
                             {scene.title}
                           </button>
@@ -348,6 +370,7 @@ export function Sidebar({
           <button
             onClick={() => onCreateCharacter?.()}
             className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            aria-label="Создать нового персонажа"
           >
             + Новый персонаж
           </button>
@@ -367,6 +390,7 @@ export function Sidebar({
                       ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
                       : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
                   }`}
+                  aria-label={`Выбрать персонажа ${character.name || "Без имени"}`}
                 >
                   {character.name || "Без имени"}
                 </button>

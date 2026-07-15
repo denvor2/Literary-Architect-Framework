@@ -448,6 +448,21 @@ export default function Home() {
     document.documentElement.style.fontSize = `${size}px`;
   }
 
+  // Sprint-35-Menu-Step-05: Global keyboard shortcuts (Ctrl+Plus/Minus for font size)
+  useEffect(() => {
+    function handleGlobalKeyDown(event: KeyboardEvent) {
+      if ((event.ctrlKey || event.metaKey) && (event.key === "+" || event.key === "=")) {
+        event.preventDefault();
+        handleFontSizeChange(Math.min(18, currentFontSize + 1));
+      } else if ((event.ctrlKey || event.metaKey) && event.key === "-") {
+        event.preventDefault();
+        handleFontSizeChange(Math.max(10, currentFontSize - 1));
+      }
+    }
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [currentFontSize]);
+
   // Sprint-30-Step-05: If not logged in, show only auth screen
   if (!auth.isLoading && !auth.isLoggedIn) {
     return (

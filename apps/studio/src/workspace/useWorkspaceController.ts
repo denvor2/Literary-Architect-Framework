@@ -81,13 +81,6 @@ export function useWorkspaceController() {
     void (async () => {
       const restored = await loadWorkspace();
       if (cancelled) return;
-      const booksWithSeries = restored.books.filter((b) => b.seriesId);
-      if (booksWithSeries.length > 0) {
-        console.log(
-          "useEffect init: loaded books with seriesId from DB:",
-          booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
-        );
-      }
       setWorkspace(restored);
       setIsLoaded(true);
       setSyncWarning(getSyncWarning());
@@ -130,13 +123,6 @@ export function useWorkspaceController() {
   // behavior.
   useEffect(() => {
     if (!isLoaded) return;
-    const booksWithSeries = workspace.books.filter((b) => b.seriesId);
-    if (booksWithSeries.length > 0) {
-      console.log(
-        "useEffect auto-save: workspace has books with seriesId:",
-        booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
-      );
-    }
     saveWorkspace(workspace)
       .catch(() => {})
       .finally(() => setSyncWarning(getSyncWarning()));
@@ -1127,34 +1113,11 @@ export function useWorkspaceController() {
       seriesId: targetSeriesId ?? undefined,
     };
 
-    console.log("moveBookToSeries: updatedBook:", {
-      id: updatedBook.id,
-      seriesId: updatedBook.seriesId,
-      hasSeriesId: "seriesId" in updatedBook,
-    });
-
     // Update local state — useEffect will automatically save to backend
-    // Don't call saveWorkspace here to avoid double-save (useEffect already handles it)
-    console.log(
-      "moveBookToSeries: moving book",
-      bookId,
-      "to seriesId:",
-      targetSeriesId ?? "undefined (Без серии)",
-    );
-    setWorkspace((previous) => {
-      const updated = {
-        ...previous,
-        books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
-      };
-      const checkBook = updated.books.find((b) => b.id === bookId);
-      console.log("moveBookToSeries: setWorkspace callback, book after update:", {
-        id: checkBook?.id,
-        seriesId: checkBook?.seriesId,
-        hasSeriesId: checkBook ? "seriesId" in checkBook : false,
-      });
-      return updated;
-    });
-    console.log("moveBookToSeries: state updated, waiting for useEffect to save");
+    setWorkspace((previous) => ({
+      ...previous,
+      books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
+    }));
 
     return updatedBook;
   }

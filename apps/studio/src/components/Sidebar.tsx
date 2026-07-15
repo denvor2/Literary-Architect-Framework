@@ -103,7 +103,6 @@ export function Sidebar({
     e: React.DragEvent<HTMLLIElement>,
     bookId: string,
   ) {
-    console.log("handleBookDragStart: bookId:", bookId);
     setDraggedBookId(bookId);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("bookId", bookId);
@@ -132,15 +131,8 @@ export function Sidebar({
   ) {
     e.preventDefault();
     const bookId = e.dataTransfer.getData("bookId");
-    console.log(
-      "handleUnsortedDrop: bookId from dataTransfer:",
-      bookId,
-      "draggedBookId:",
-      draggedBookId,
-    );
     if (bookId && draggedBookId === bookId) {
       // Drop to "Без серии" (null seriesId)
-      console.log("handleUnsortedDrop: calling onMoveBookToSeries with null");
       onMoveBookToSeries?.(bookId, null);
     }
     setDraggedBookId(null);
@@ -179,25 +171,10 @@ export function Sidebar({
   ) {
     e.preventDefault();
     const bookId = e.dataTransfer.getData("bookId");
-    console.log(
-      "handleSeriesDrop: bookId from dataTransfer:",
-      bookId,
-      "draggedBookId:",
-      draggedBookId,
-      "seriesId:",
-      seriesId,
-    );
     if (bookId && draggedBookId === bookId) {
       // Don't move if already in this series
       const book = books.find((b) => b.id === bookId);
-      console.log(
-        "handleSeriesDrop: moving book, current seriesId:",
-        book?.seriesId,
-        "target seriesId:",
-        seriesId,
-      );
       if (book?.seriesId !== seriesId) {
-        console.log("handleSeriesDrop: calling onMoveBookToSeries");
         onMoveBookToSeries?.(bookId, seriesId);
       }
     }

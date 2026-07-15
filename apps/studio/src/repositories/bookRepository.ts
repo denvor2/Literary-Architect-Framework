@@ -197,15 +197,6 @@ export async function saveBooksForUser(
     throw new Error("Database connection unavailable. Cannot save books.");
   }
 
-  // Debug logging
-  const booksWithSeries = books.filter((b) => b.seriesId);
-  if (booksWithSeries.length > 0) {
-    console.log(
-      "saveBooksForUser: received books with seriesId:",
-      booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
-    );
-  }
-
   await prisma.$transaction(
     async (tx) => {
       const incomingBookIds = books.map((book) => book.id);

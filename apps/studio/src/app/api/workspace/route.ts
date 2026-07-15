@@ -82,18 +82,6 @@ export async function PUT(request: NextRequest) {
 
     const userId = payload.sub;
 
-    // Debug logging for seriesId
-    const booksWithSeries = books.filter((b: { seriesId?: string }) => b.seriesId);
-    if (booksWithSeries.length > 0) {
-      console.log(
-        "PUT /api/workspace: saving books with seriesId:",
-        booksWithSeries.map((b: { id: string; seriesId?: string }) => ({
-          id: b.id,
-          seriesId: b.seriesId,
-        })),
-      );
-    }
-
     // Count chapters and scenes for logging
     let chaptersCount = 0;
     let scenesCount = 0;

@@ -320,35 +320,6 @@ async function fetchSeriesFromApi(): Promise<readonly import("@/domain/model").S
 // path, or loadWorkspace()'s reconciliation attempt) triggered it.
 async function pushBooksToApi(books: readonly Book[]): Promise<boolean> {
   try {
-    // Debug logging for seriesId - check the EXACT parameter received
-    console.log(
-      "pushBooksToApi START: books parameter received, length:",
-      books.length,
-    );
-    console.log(
-      "pushBooksToApi: books parameter content:",
-      books.map((b) => ({
-        id: b.id,
-        title: b.title,
-        seriesId: b.seriesId,
-        keys: Object.keys(b),
-      })),
-    );
-
-    const booksWithSeries = books.filter((b) => b.seriesId);
-    console.log(
-      "pushBooksToApi called: total books:",
-      books.length,
-      "books with seriesId:",
-      booksWithSeries.length,
-    );
-    if (booksWithSeries.length > 0 || books.length > 0) {
-      console.log(
-        "pushBooksToApi: ALL books:",
-        books.map((b) => ({ id: b.id, title: b.title, seriesId: b.seriesId })),
-      );
-      console.trace("pushBooksToApi called from:");
-    }
     const response = await fetch("/api/workspace", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -429,24 +400,7 @@ export async function saveWorkspace(workspace: Workspace): Promise<void> {
   // localStorage. If the database is unavailable, fall back to localStorage
   // and set syncWarning to signal the UI.
 
-  // Debug logging
-  const booksWithSeries = workspace.books.filter((b) => b.seriesId);
-  if (booksWithSeries.length > 0) {
-    console.log(
-      "saveWorkspace called with books that have seriesId:",
-      booksWithSeries.map((b) => ({ id: b.id, seriesId: b.seriesId })),
-    );
-  }
-
   // Try the database first
-  console.log(
-    "saveWorkspace: about to call pushBooksToApi with workspace.books length:",
-    workspace.books.length,
-    "books with seriesId:",
-    workspace.books.filter((b) => b.seriesId).length,
-    "full books:",
-    workspace.books.map((b) => ({ id: b.id, seriesId: b.seriesId })),
-  );
   const pushed = await pushBooksToApi(workspace.books);
 
   if (pushed) {

@@ -289,13 +289,13 @@ export function Sidebar({
                           draggable
                           onDragStart={(e) => handleBookDragStart(e, book.id)}
                           onDragEnd={handleBookDragEnd}
-                          className={`transition-opacity ${
+                          className={`flex items-center gap-1 transition-opacity ${
                             draggedBookId === book.id ? "opacity-50" : ""
                           }`}
                         >
                           <button
                             onClick={() => onSelectBook?.(book.id)}
-                            className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                            className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
                               book.id === activeBookId
                                 ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
                                 : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
@@ -303,6 +303,23 @@ export function Sidebar({
                             aria-label={`Выбрать книгу ${book.title || "Без названия"}`}
                           >
                             {book.title || "Без названия"}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (
+                                confirm(
+                                  `Удалить книгу "${book.title || "Без названия"}"?`,
+                                )
+                              ) {
+                                onDeleteBook?.(book.id);
+                              }
+                            }}
+                            className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                            title="Удалить книгу"
+                            aria-label={`Удалить книгу ${book.title || "Без названия"}`}
+                          >
+                            <Trash2 size={16} />
                           </button>
                         </li>
                       ))}

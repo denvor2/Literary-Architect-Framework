@@ -1033,10 +1033,19 @@ export function useWorkspaceController() {
     })();
 
     setWorkspace((previous) => {
-      // Remove the series and disconnect books that belonged to it
-      const updatedBooks = previous.books.map((book) =>
-        book.seriesId === seriesId ? { ...book, seriesId: undefined } : book,
-      );
+      // Get books that belong to this series to soft-delete them
+      const booksInSeries = previous.books.filter((b) => b.seriesId === seriesId);
+
+      // Add books to trash
+      if (booksInSeries.length > 0) {
+        setDeletedBooks((prev) => [
+          ...booksInSeries.map((b) => ({ ...b, deletedAt: new Date() })),
+          ...prev,
+        ]);
+      }
+
+      // Remove the series and delete books that belonged to it
+      const updatedBooks = previous.books.filter((b) => b.seriesId !== seriesId);
       return {
         ...previous,
         series: previous.series.filter((s) => s.id !== seriesId),

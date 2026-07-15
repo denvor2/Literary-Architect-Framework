@@ -10,9 +10,11 @@ import { getUserById } from "@/repositories/userRepository";
 
 export async function GET(request: NextRequest) {
   try {
-    // Extract and verify JWT token
+    // Extract and verify JWT token from cookies or Authorization header
     const token = extractToken(request);
+
     if (!token) {
+      // Debug: log missing token (common on first load before login)
       return NextResponse.json(
         { ok: false, error: "Unauthorized: Missing authentication token" },
         { status: 401 },
@@ -21,21 +23,32 @@ export async function GET(request: NextRequest) {
 
     const payload = await verifyJWT(token);
     if (!payload) {
+      // Token is invalid or expired
       return NextResponse.json(
         { ok: false, error: "Unauthorized: Invalid or expired token" },
         { status: 401 },
       );
     }
 
-    // Get full user data from database
+    // Get full user data from database to include isBlocked status
     const user = await getUserById(payload.sub);
     if (!user) {
+      // User was deleted or doesn't exist
       return NextResponse.json(
         { ok: false, error: "User not found" },
         { status: 401 },
       );
     }
 
+    // Check if user is blocked - deny access if blocked
+    if (user.isBlocked) {
+      return NextResponse.json(
+        { ok: false, error: "Account is blocked" },
+        { status: 403 },
+      );
+    }
+
+    // User is authenticated and not blocked - return user data
     return NextResponse.json(
       {
         ok: true,

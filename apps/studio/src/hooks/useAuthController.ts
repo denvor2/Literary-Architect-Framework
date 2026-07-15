@@ -22,7 +22,7 @@ export function useAuthController() {
     isLoading: true,
   });
 
-  // On mount: fetch current user from GET /api/auth/me
+  // On mount: fetch current user from GET /api/auth/me (restore session from cookies)
   useEffect(() => {
     let cancelled = false;
 
@@ -30,7 +30,11 @@ export function useAuthController() {
       try {
         const response = await fetch("/api/auth/me", {
           method: "GET",
-          credentials: "include", // Include cookies
+          credentials: "include", // Include cookies (CRITICAL for session restoration)
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store", // Don't cache auth responses
         });
 
         if (cancelled) return;
@@ -43,6 +47,8 @@ export function useAuthController() {
             role: "admin" | "user";
             isBlocked: boolean;
           };
+
+          // User is authenticated - session restored from cookies
           setAuth({
             isLoggedIn: true,
             user: {
@@ -54,11 +60,12 @@ export function useAuthController() {
             isLoading: false,
           });
         } else {
+          // 401 Unauthorized - no valid session in cookies
           setAuth({ isLoggedIn: false, isLoading: false });
         }
       } catch (error) {
         if (cancelled) return;
-        console.error("Failed to fetch current user:", error);
+        console.warn("Session restoration failed (user not authenticated):", error);
         setAuth({ isLoggedIn: false, isLoading: false });
       }
     }

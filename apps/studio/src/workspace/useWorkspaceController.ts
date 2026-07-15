@@ -1127,6 +1127,12 @@ export function useWorkspaceController() {
       seriesId: targetSeriesId ?? undefined,
     };
 
+    console.log("moveBookToSeries: updatedBook:", {
+      id: updatedBook.id,
+      seriesId: updatedBook.seriesId,
+      hasSeriesId: "seriesId" in updatedBook,
+    });
+
     // Update local state — useEffect will automatically save to backend
     // Don't call saveWorkspace here to avoid double-save (useEffect already handles it)
     console.log(
@@ -1135,10 +1141,19 @@ export function useWorkspaceController() {
       "to seriesId:",
       targetSeriesId ?? "undefined (Без серии)",
     );
-    setWorkspace((previous) => ({
-      ...previous,
-      books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
-    }));
+    setWorkspace((previous) => {
+      const updated = {
+        ...previous,
+        books: previous.books.map((b) => (b.id === bookId ? updatedBook : b)),
+      };
+      const checkBook = updated.books.find((b) => b.id === bookId);
+      console.log("moveBookToSeries: setWorkspace callback, book after update:", {
+        id: checkBook?.id,
+        seriesId: checkBook?.seriesId,
+        hasSeriesId: checkBook ? "seriesId" in checkBook : false,
+      });
+      return updated;
+    });
     console.log("moveBookToSeries: state updated, waiting for useEffect to save");
 
     return updatedBook;

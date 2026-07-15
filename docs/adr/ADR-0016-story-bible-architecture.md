@@ -9,7 +9,7 @@
 
 ## Problem
 
-Currently, Literary Studio lacks a structured way to capture high-level creative decisions, constraints, and metadata about a Series and Book. Authors need to:
+Currently, Literary Studio lacks a structured way to capture high-level creative decisions, constraints, and metadata about a Series and Book (as "Реквизиты" — Requisites). Authors need to:
 
 1. **Document story-level decisions** (why this story exists, core conflicts, themes)
 2. **Enforce constraints** ("what NOT to do") to maintain consistency
@@ -107,6 +107,16 @@ type BookStatus = "outline" | "draft" | "editing" | "beta" | "published";
 - If `Book.targetAudience` is `null` → inherit from `Series.targetAudience`
 - If `Book.genre` is empty → inherit from `Series.genre`
 - `Book.mainPlotlines` + `Series.throughlineElements` are displayed together (without duplicates)
+
+**Books without Series:**
+
+Books can exist without a Series. When a Book has no `seriesId`:
+- **Option A (Recommended):** Book Story Bible is independent, no inheritance
+- **Option B (Future):** Create implicit "Без серии" (No Series) container for books without explicit series
+  - Allow authors to group standalone books later
+  - UI shows "Без серии" in Sidebar alongside explicit Series
+
+**Decision:** Implement Option A for now. Option B can be added in future sprint if needed.
 
 **In UI (Sidebar):**
 ```
@@ -247,6 +257,11 @@ See Sprint 34 Step Cards:
 
 ## Acceptance
 
-- [ ] Product Owner: Confirms Story Bible structure matches user expectations
+- [x] **Product Owner (2026-07-15):** Confirms Story Bible structure matches user expectations
+  - ✅ Structure OK (fits into Реквизиты/Requisites pattern)
+  - ✅ Fields OK (possible to expand later)
+  - ✅ Inheritance pattern OK (Series → Book)
+  - ⚠️ Books without Series: Use Option A (independent Story Bible, no inheritance)
+  - ⚠️ Export button (File menu) needs fix — currently disabled
 - [ ] Architect: Validates schema, export logic, UI hierarchy
 - [ ] Programmer: Implements all 6 steps, validates against user guide

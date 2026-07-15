@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Book } from "@/domain/model";
+import type { Book, Series } from "@/domain/model";
 import { GENRES } from "@/lib/genres";
 import { GenreAutocomplete } from "./GenreAutocomplete";
 
@@ -15,6 +15,7 @@ export const LANGUAGES = [
 
 type NewBookDialogProps = {
   onCancel: () => void;
+  series?: readonly Series[];
   onCreate: (
     book: Omit<
       Book,
@@ -30,17 +31,18 @@ type NewBookDialogProps = {
   ) => void;
 };
 
-export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {
+export function NewBookDialog({ onCancel, series = [], onCreate }: NewBookDialogProps) {
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState(GENRES[0]);
   const [language, setLanguage] = useState("Russian");
   const [premise, setPremise] = useState("");
+  const [seriesId, setSeriesId] = useState<string | undefined>(undefined);
 
   const canCreate = title.trim().length > 0;
 
   function handleCreate() {
     if (!canCreate) return;
-    onCreate({ title: title.trim(), genre, language, premise });
+    onCreate({ title: title.trim(), genre, language, premise, seriesId });
   }
 
   return (
@@ -87,6 +89,24 @@ export function NewBookDialog({ onCancel, onCreate }: NewBookDialogProps) {
               {LANGUAGES.map((option) => (
                 <option key={option} value={option}>
                   {option}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Серия (опционально)
+            </span>
+            <select
+              value={seriesId ?? ""}
+              onChange={(event) => setSeriesId(event.target.value || undefined)}
+              className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            >
+              <option value="">Без серии</option>
+              {series.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title || "Без названия"}
                 </option>
               ))}
             </select>

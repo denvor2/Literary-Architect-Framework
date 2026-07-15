@@ -874,6 +874,7 @@ export default function Home() {
 
         {isDialogOpen && (
           <NewBookDialog
+            series={series}
             onCancel={() => setIsDialogOpen(false)}
             onCreate={(newBook) => {
               createBook(newBook);

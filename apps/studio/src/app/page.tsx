@@ -15,6 +15,7 @@ import { NewSeriesDialog } from "@/components/NewSeriesDialog";
 import { SeriesEditDialog } from "@/components/SeriesEditDialog";
 import { LoginDialog } from "@/components/LoginDialog";
 import { RegisterDialog } from "@/components/RegisterDialog";
+import { ExportDialog, type ExportFormat } from "@/components/ExportDialog";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 import { useAuthController } from "@/hooks/useAuthController";
 import { execute as aiBusExecute } from "@/ai/aiBus";
@@ -83,11 +84,17 @@ export default function Home() {
   const [activeMobileTab, setActiveMobileTab] = useState<MobileTab>("editor");
 
   // Sprint-35-Menu-Step-03: Theme and font size state
-  const [currentTheme, setCurrentTheme] = useState<"light" | "dark" | "auto">("auto");
+  const [currentTheme, setCurrentTheme] = useState<"light" | "dark" | "auto">(
+    "auto",
+  );
   const [currentFontSize, setCurrentFontSize] = useState(14);
 
   // Sprint-35-Menu-Step-04: Keyboard Shortcuts dialog state
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+
+  // Sprint-36-Export-Step-01: Export dialog state
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isExportLoading, setIsExportLoading] = useState(false);
 
   // All workspace hooks must be called unconditionally, even if not logged in
   const {
@@ -387,17 +394,65 @@ export default function Home() {
     });
   }
 
-  // Sprint-35-Menu-Step-01: Export book as JSON
+  // Sprint-35-Menu-Step-01: Export book as JSON (replaced in Sprint-36-Step-01)
+  // Sprint-36-Export-Step-01: Export book as JSON or Markdown ZIP
   function handleExportBook(bookId: string) {
     const book = books.find((b) => b.id === bookId);
     if (!book) return;
+    setIsExportDialogOpen(true);
+  }
 
-    const data = JSON.stringify(book, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
+  // Sprint-36-Export-Step-01: Handle export format selection and download
+  async function handleExportDialogSubmit(format: ExportFormat) {
+    const book = activeBook;
+    if (!book) return;
+
+    setIsExportLoading(true);
+    try {
+      if (format === "json" || format === "both") {
+        // Download JSON
+        const jsonData = JSON.stringify(book, null, 2);
+        const jsonBlob = new Blob([jsonData], { type: "application/json" });
+        downloadFile(
+          jsonBlob,
+          `${book.title || "export"}.json`,
+          "application/json",
+        );
+      }
+
+      if (format === "markdown-zip" || format === "both") {
+        // Download Markdown ZIP via API
+        const activeSeries = series.find((s) => book.seriesId === s.id);
+        const response = await fetch("/api/export", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            format: "markdown-zip",
+            book,
+            series: activeSeries || null,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to generate Markdown ZIP");
+        }
+
+        const blob = await response.blob();
+        downloadFile(blob, `${book.title || "export"}.zip`, "application/zip");
+      }
+
+      setIsExportDialogOpen(false);
+    } finally {
+      setIsExportLoading(false);
+    }
+  }
+
+  // Sprint-36-Export-Step-01: Helper to download a file
+  function downloadFile(blob: Blob, filename: string, mimeType: string) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${book.title || "book"}.json`;
+    link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -413,7 +468,8 @@ export default function Home() {
 
   // Sprint-35-Menu-Step-03: Load and apply theme/font size from localStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | "auto" | null;
+    const savedTheme = localStorage.getItem("theme") as
+      "light" | "dark" | "auto" | null;
     const savedFontSize = localStorage.getItem("fontSize");
     if (savedTheme) setCurrentTheme(savedTheme);
     if (savedFontSize) setCurrentFontSize(parseInt(savedFontSize, 10));
@@ -451,7 +507,10 @@ export default function Home() {
   // Sprint-35-Menu-Step-05: Global keyboard shortcuts (Ctrl+Plus/Minus for font size)
   useEffect(() => {
     function handleGlobalKeyDown(event: KeyboardEvent) {
-      if ((event.ctrlKey || event.metaKey) && (event.key === "+" || event.key === "=")) {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        (event.key === "+" || event.key === "=")
+      ) {
         event.preventDefault();
         handleFontSizeChange(Math.min(18, currentFontSize + 1));
       } else if ((event.ctrlKey || event.metaKey) && event.key === "-") {
@@ -490,27 +549,49 @@ export default function Home() {
         {showKeyboardShortcuts && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="w-96 max-h-96 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-              <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">⌨️ Горячие клавиши</h2>
+              <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">
+                ⌨️ Горячие клавиши
+              </h2>
               <div className="space-y-3 text-sm">
                 <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+K / Ctrl+F</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Открыть поиск</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Ctrl+K / Ctrl+F
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Открыть поиск
+                  </div>
                 </div>
                 <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+N</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Новая книга</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Ctrl+N
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Новая книга
+                  </div>
                 </div>
                 <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+S</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Сохранить</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Ctrl+S
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Сохранить
+                  </div>
                 </div>
                 <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+E</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Экспортировать</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Ctrl+E
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Экспортировать
+                  </div>
                 </div>
                 <div>
-                  <div className="font-medium text-black dark:text-white">Escape</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Закрыть меню/поиск</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Escape
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Закрыть меню/поиск
+                  </div>
                 </div>
               </div>
               <button
@@ -543,7 +624,14 @@ export default function Home() {
           currentUser={auth.user}
           onLogout={logout}
           onOpenLogin={() => setAuthDialogMode("login")}
-          onCreateBook={() => createBook({ title: "Новая книга", genre: "", language: "ru", premise: "" })}
+          onCreateBook={() =>
+            createBook({
+              title: "Новая книга",
+              genre: "",
+              language: "ru",
+              premise: "",
+            })
+          }
           onSaveWorkspace={() => {
             /* Auto-saved by useWorkspaceController */
           }}
@@ -732,27 +820,49 @@ export default function Home() {
         {showKeyboardShortcuts && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="w-96 max-h-96 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-              <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">⌨️ Горячие клавиши</h2>
+              <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">
+                ⌨️ Горячие клавиши
+              </h2>
               <div className="space-y-3 text-sm">
                 <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+K / Ctrl+F</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Открыть поиск</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Ctrl+K / Ctrl+F
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Открыть поиск
+                  </div>
                 </div>
                 <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+N</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Новая книга</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Ctrl+N
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Новая книга
+                  </div>
                 </div>
                 <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+S</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Сохранить</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Ctrl+S
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Сохранить
+                  </div>
                 </div>
                 <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+E</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Экспортировать</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Ctrl+E
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Экспортировать
+                  </div>
                 </div>
                 <div>
-                  <div className="font-medium text-black dark:text-white">Escape</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Закрыть меню/поиск</div>
+                  <div className="font-medium text-black dark:text-white">
+                    Escape
+                  </div>
+                  <div className="text-zinc-600 dark:text-zinc-400">
+                    Закрыть меню/поиск
+                  </div>
                 </div>
               </div>
               <button
@@ -784,7 +894,14 @@ export default function Home() {
         currentUser={auth.user}
         onLogout={logout}
         onOpenLogin={() => setAuthDialogMode("login")}
-        onCreateBook={() => createBook({ title: "Новая книга", genre: "", language: "ru", premise: "" })}
+        onCreateBook={() =>
+          createBook({
+            title: "Новая книга",
+            genre: "",
+            language: "ru",
+            premise: "",
+          })
+        }
         onSaveWorkspace={() => {
           /* Auto-saved by useWorkspaceController */
         }}
@@ -1043,41 +1160,74 @@ export default function Home() {
             />
           ) : null;
         })()}
-        {showKeyboardShortcuts && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-96 max-h-96 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-              <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">⌨️ Горячие клавиши</h2>
-              <div className="space-y-3 text-sm">
-                <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+K / Ctrl+F</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Открыть поиск</div>
+      {showKeyboardShortcuts && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-96 max-h-96 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+            <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">
+              ⌨️ Горячие клавиши
+            </h2>
+            <div className="space-y-3 text-sm">
+              <div>
+                <div className="font-medium text-black dark:text-white">
+                  Ctrl+K / Ctrl+F
                 </div>
-                <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+N</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Новая книга</div>
-                </div>
-                <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+S</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Сохранить</div>
-                </div>
-                <div>
-                  <div className="font-medium text-black dark:text-white">Ctrl+E</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Экспортировать</div>
-                </div>
-                <div>
-                  <div className="font-medium text-black dark:text-white">Escape</div>
-                  <div className="text-zinc-600 dark:text-zinc-400">Закрыть меню/поиск</div>
+                <div className="text-zinc-600 dark:text-zinc-400">
+                  Открыть поиск
                 </div>
               </div>
-              <button
-                onClick={() => setShowKeyboardShortcuts(false)}
-                className="mt-4 w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-black hover:bg-zinc-200 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
-              >
-                Закрыть
-              </button>
+              <div>
+                <div className="font-medium text-black dark:text-white">
+                  Ctrl+N
+                </div>
+                <div className="text-zinc-600 dark:text-zinc-400">
+                  Новая книга
+                </div>
+              </div>
+              <div>
+                <div className="font-medium text-black dark:text-white">
+                  Ctrl+S
+                </div>
+                <div className="text-zinc-600 dark:text-zinc-400">
+                  Сохранить
+                </div>
+              </div>
+              <div>
+                <div className="font-medium text-black dark:text-white">
+                  Ctrl+E
+                </div>
+                <div className="text-zinc-600 dark:text-zinc-400">
+                  Экспортировать
+                </div>
+              </div>
+              <div>
+                <div className="font-medium text-black dark:text-white">
+                  Escape
+                </div>
+                <div className="text-zinc-600 dark:text-zinc-400">
+                  Закрыть меню/поиск
+                </div>
+              </div>
             </div>
+            <button
+              onClick={() => setShowKeyboardShortcuts(false)}
+              className="mt-4 w-full rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-black hover:bg-zinc-200 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+            >
+              Закрыть
+            </button>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Sprint-36-Export-Step-01: Export dialog for format selection */}
+      {activeBook && (
+        <ExportDialog
+          bookTitle={activeBook.title || "Book"}
+          isOpen={isExportDialogOpen}
+          isLoading={isExportLoading}
+          onExport={handleExportDialogSubmit}
+          onCancel={() => setIsExportDialogOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -15,11 +15,14 @@ type SidebarProps = {
   selectedCharacterId?: string | null;
   onSelectCharacter?: (id: string) => void;
   onCreateCharacter?: () => void;
+  onDeleteCharacter?: (id: string) => void;
   onSelectBook?: (bookId: string) => void;
   onNewBook?: () => void;
   onDeleteBook?: (bookId: string) => void;
   onCreateChapter?: () => void;
+  onDeleteChapter?: (chapterId: string) => void;
   onCreateScene?: (chapterId: string) => void;
+  onDeleteScene?: (chapterId: string, sceneId: string) => void;
   // Sprint-16-17-Step-03: same collapse state as EditorArea.tsx's chapter
   // blocks (lifted to page.tsx) — the tree's expand/collapse indicator stays
   // in sync with the unified view instead of tracking its own copy.
@@ -71,11 +74,14 @@ export function Sidebar({
   selectedCharacterId,
   onSelectCharacter,
   onCreateCharacter,
+  onDeleteCharacter,
   onSelectBook,
   onNewBook,
   onDeleteBook,
   onCreateChapter,
+  onDeleteChapter,
   onCreateScene,
+  onDeleteScene,
   collapsedChapterIds,
   onToggleChapterCollapsed,
   ideas = [],
@@ -307,12 +313,13 @@ export function Sidebar({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (
-                                confirm(
-                                  `Удалить книгу "${book.title || "Без названия"}"?`,
-                                )
-                              ) {
+                              const response = prompt(
+                                `Введите название книги "${book.title || "Без названия"}" для подтверждения удаления:`,
+                              );
+                              if (response === (book.title || "Без названия")) {
                                 onDeleteBook?.(book.id);
+                              } else if (response !== null) {
+                                alert("Название не совпадает. Удаление отменено.");
                               }
                             }}
                             className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
@@ -397,12 +404,13 @@ export function Sidebar({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (
-                                  confirm(
-                                    `Удалить книгу "${book.title || "Без названия"}"?`,
-                                  )
-                                ) {
+                                const response = prompt(
+                                  `Введите название книги "${book.title || "Без названия"}" для подтверждения удаления:`,
+                                );
+                                if (response === (book.title || "Без названия")) {
                                   onDeleteBook?.(book.id);
+                                } else if (response !== null) {
+                                  alert("Название не совпадает. Удаление отменено.");
                                 }
                               }}
                               className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
@@ -481,26 +489,56 @@ export function Sidebar({
                     >
                       + Новая сцена
                     </button>
+                    <button
+                      onClick={() => {
+                        if (
+                          confirm(`Удалить главу "${chapter.title}"?`)
+                        ) {
+                          onDeleteChapter?.(chapter.id);
+                        }
+                      }}
+                      className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                      title="Удалить главу"
+                      aria-label={`Удалить главу ${chapter.title}`}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                   {!isChapterCollapsed && chapter.scenes.length > 0 && (
                     <ul className="ml-3 mt-1 flex flex-col gap-2 border-l border-zinc-200 pl-2 dark:border-zinc-800">
                       {chapter.scenes.map((scene) => (
                         <li key={scene.id}>
-                          <button
-                            onClick={() => {
-                              onSelectScene?.(chapter.id, scene.id);
-                              scrollBlockIntoView(`scene-block-${scene.id}`);
-                            }}
-                            className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                              selectedChapterId === chapter.id &&
-                              selectedSceneId === scene.id
-                                ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                                : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
-                            }`}
-                            aria-label={`Выбрать сцену ${scene.title}`}
-                          >
-                            {scene.title}
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                onSelectScene?.(chapter.id, scene.id);
+                                scrollBlockIntoView(`scene-block-${scene.id}`);
+                              }}
+                              className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                                selectedChapterId === chapter.id &&
+                                selectedSceneId === scene.id
+                                  ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                                  : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
+                              }`}
+                              aria-label={`Выбрать сцену ${scene.title}`}
+                            >
+                              {scene.title}
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (
+                                  confirm(`Удалить сцену "${scene.title}"?`)
+                                ) {
+                                  onDeleteScene?.(chapter.id, scene.id);
+                                }
+                              }}
+                              className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                              title="Удалить сцену"
+                              aria-label={`Удалить сцену ${scene.title}`}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -534,17 +572,33 @@ export function Sidebar({
           <ul className="flex flex-col gap-2">
             {characters.map((character) => (
               <li key={character.id}>
-                <button
-                  onClick={() => onSelectCharacter?.(character.id)}
-                  className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                    selectedCharacterId === character.id
-                      ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                      : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                  }`}
-                  aria-label={`Выбрать персонажа ${character.name || "Без имени"}`}
-                >
-                  {character.name || "Без имени"}
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => onSelectCharacter?.(character.id)}
+                    className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                      selectedCharacterId === character.id
+                        ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                        : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    }`}
+                    aria-label={`Выбрать персонажа ${character.name || "Без имени"}`}
+                  >
+                    {character.name || "Без имени"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (
+                        confirm(`Удалить персонажа "${character.name || "Без имени"}"?`)
+                      ) {
+                        onDeleteCharacter?.(character.id);
+                      }
+                    }}
+                    className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                    title="Удалить персонажа"
+                    aria-label={`Удалить персонажа ${character.name || "Без имени"}`}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

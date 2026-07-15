@@ -30,25 +30,41 @@ model AssistantThread {
 }
 
 model Book {
-  id              String            @id
-  userId          String
-  title           String
-  genre           String
-  language        String
-  premise         String            @default("")
-  shortAnnotation String            @default("")
-  fullAnnotation  String            @default("")
-  tags            String[]          @default([])
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime
-  seriesId        String?
-  deletedAt       DateTime?
-  AssistantThread AssistantThread[]
-  Series          Series?           @relation(fields: [seriesId], references: [id])
-  User            User              @relation(fields: [userId], references: [id])
-  Chapter         Chapter[]
-  Character       Character[]
-  Idea            Idea[]
+  id                    String            @id
+  userId                String
+  title                 String
+  genre                 Json?             // Story Bible: ["Fantasy", "Sci-Fi"] — array of genres
+  language              String
+  premise               String            @default("")
+  shortAnnotation       String            @default("")
+  fullAnnotation        String            @default("")
+  tags                  String[]          @default([])
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime
+  seriesId              String?
+  deletedAt             DateTime?
+
+  // Story Bible fields
+  workingTitle          String?           // Working/draft title
+  targetAudience        String?           // e.g., "Adult", "YA", "Teen"
+  estimatedWordCount    Int?              // Estimated word count for this book
+  estimatedChapters     Int?              // Planned chapter count
+  status                BookStatus?       // outline | draft | editing | beta | published
+  mainPlotlines         Json?             // Array of main plotlines: ["Jordan (WildMind)", "Professor zoologist"]
+  principle             String?           // e.g., "Contrast. Chapters constantly switch POV."
+  escalation            String?           // e.g., "Sticks → Dolphins → Xenosys → Bears"
+  themes                Json?             // Array of themes: ["What is consciousness?", "Should we destroy new intelligence?"]
+  bookConstraints       Json?             // Array of constraints (what NOT to do): ["Don't overuse scientific jargon"]
+  notes                 String?           // Internal notes
+  publishedDate         DateTime?         // Publication date
+  isbn                  String?           // ISBN for published books
+
+  AssistantThread       AssistantThread[]
+  Series                Series?           @relation(fields: [seriesId], references: [id])
+  User                  User              @relation(fields: [userId], references: [id])
+  Chapter               Chapter[]
+  Character             Character[]
+  Idea                  Idea[]
 
   @@index([seriesId])
   @@index([userId, deletedAt])
@@ -174,15 +190,28 @@ model Scene {
 }
 
 model Series {
-  id          String   @id
-  userId      String
-  title       String
-  description String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
-  Book        Book[]
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                       String         @id
+  userId                   String
+  title                    String
+  description              String?
+  order                    Int            @default(0)
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime
+
+  // Story Bible fields
+  targetAudience           String?        // e.g., "Adult", "YA", "Teen"
+  genre                    Json?          // Array of genres for entire series: ["Fantasy", "Sci-Fi"]
+  estimatedTotalWordCount  Int?           // Estimated total word count for entire series
+  status                   SeriesStatus?  // outline | in_progress | complete | published
+  decisions                String?        // High-level creative decisions
+  throughlineElements      Json?          // Array of throughline elements: ["WildMind", "Jordan", "philosophical questions"]
+  seriesConstraints        Json?          // Array of series-level constraints: ["No absolute villains"]
+  notes                    String?        // Internal notes
+  firstPublishedDate       DateTime?      // First publication date
+  author                   String?        // Author name (if different from User)
+
+  Book                     Book[]
+  User                     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -226,6 +255,21 @@ enum AssistantRole {
   editor
   critic
   reader
+}
+
+enum BookStatus {
+  outline
+  draft
+  editing
+  beta
+  published
+}
+
+enum SeriesStatus {
+  outline
+  in_progress
+  complete
+  published
 }
 
 enum EventType {

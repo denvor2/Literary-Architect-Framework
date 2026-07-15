@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export type ExportFormat = "json" | "markdown-zip" | "both";
+export type ExportFormat = "json" | "markdown-zip" | "docx" | "both";
 
 export interface ExportDialogProps {
   bookTitle: string;
@@ -76,6 +76,26 @@ export function ExportDialog({
               </div>
               <div className="text-xs text-zinc-500 dark:text-zinc-400">
                 Structured folder with chapters, characters, notes
+              </div>
+            </span>
+          </label>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="radio"
+              name="format"
+              value="docx"
+              checked={selectedFormat === "docx"}
+              onChange={() => setSelectedFormat("docx")}
+              disabled={isLoading}
+              className="h-4 w-4"
+            />
+            <span className="flex-1 text-sm">
+              <div className="font-medium text-black dark:text-white">
+                DOCX (Word Document)
+              </div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                Formatted document ready for print and publishing
               </div>
             </span>
           </label>

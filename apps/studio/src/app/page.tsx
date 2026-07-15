@@ -441,6 +441,29 @@ export default function Home() {
         downloadFile(blob, `${book.title || "export"}.zip`, "application/zip");
       }
 
+      if (format === "docx" || format === "both") {
+        // Download DOCX via API
+        const response = await fetch("/api/export", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            format: "docx",
+            book,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to generate DOCX");
+        }
+
+        const blob = await response.blob();
+        downloadFile(
+          blob,
+          `${book.title || "export"}.docx`,
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        );
+      }
+
       setIsExportDialogOpen(false);
     } finally {
       setIsExportLoading(false);

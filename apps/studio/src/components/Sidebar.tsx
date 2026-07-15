@@ -569,13 +569,21 @@ export function Sidebar({
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
-            {characters.map((character) => (
+            {characters.map((character) => {
+              const isCharacterSelected = selectedCharacterId === character.id;
+              return (
               <li key={character.id}>
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => onSelectCharacter?.(character.id)}
+                    onClick={() => {
+                      if (isCharacterSelected) {
+                        // Already selected, keep it selected (no collapse)
+                      } else {
+                        onSelectCharacter?.(character.id);
+                      }
+                    }}
                     className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                      selectedCharacterId === character.id
+                      isCharacterSelected
                         ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
                         : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
                     }`}
@@ -599,7 +607,8 @@ export function Sidebar({
                   </button>
                 </div>
               </li>
-            ))}
+            );
+            })}
           </ul>
         )}
       </div>

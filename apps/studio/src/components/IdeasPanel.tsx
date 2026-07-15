@@ -28,19 +28,16 @@ export function IdeasPanel({
   onUpdate,
   onDelete,
 }: IdeasPanelProps) {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [expandedIdeaId, setExpandedIdeaId] = useState<string | null>(null);
 
   const toggleExpanded = (ideaId: string) => {
-    const newExpanded = new Set(expandedIds);
-    if (newExpanded.has(ideaId)) {
-      newExpanded.delete(ideaId);
-    } else {
-      newExpanded.add(ideaId);
-    }
-    setExpandedIds(newExpanded);
+    // Accordion: toggle selected idea
+    setExpandedIdeaId((previous) =>
+      previous === ideaId ? null : ideaId,
+    );
   };
 
-  const isExpanded = (ideaId: string) => expandedIds.has(ideaId);
+  const isExpanded = (ideaId: string) => expandedIdeaId === ideaId;
 
   return (
     <div className="flex flex-col gap-4">

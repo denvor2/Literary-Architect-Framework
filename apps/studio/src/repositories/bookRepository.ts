@@ -222,6 +222,7 @@ export async function saveBooksForUser(
             shortAnnotation: book.shortAnnotation,
             fullAnnotation: book.fullAnnotation,
             tags: [...book.tags],
+            seriesId: book.seriesId,
             updatedAt: new Date(),
           },
           update: {
@@ -232,6 +233,7 @@ export async function saveBooksForUser(
             shortAnnotation: book.shortAnnotation,
             fullAnnotation: book.fullAnnotation,
             tags: [...book.tags],
+            seriesId: book.seriesId,
           },
         });
 

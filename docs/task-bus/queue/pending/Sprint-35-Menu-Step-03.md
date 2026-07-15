@@ -1,63 +1,51 @@
 id: Sprint-35-Menu-Step-03
-name: "View меню: Focus Mode, Theme (Light/Dark), Fullscreen"
+name: "View menu: Theme, Font Size, Sidebar Toggle, Focus Mode"
 type: implementation
 
-## Objective
+scope:
+  allowed_paths:
+    - apps/studio/src/components/Header.tsx
+    - apps/studio/src/app/page.tsx
+    - apps/studio/src/hooks/
+  forbidden_paths:
+    - apps/studio/src/domain/
 
-Реализовать **View** меню:
+objective: |
+  Implement View menu with theme selector, font size control, sidebar toggle, and focus mode.
+  - Theme toggle: Light/Dark (already partially works, wire to Header)
+  - Font Size: +/- buttons or dropdown (10px to 18px)
+  - Sidebar Toggle: collapse/expand (already works via Sidebar)
+  - Focus Mode: hide sidebar, maximize editor (placeholder for now)
 
-```
-👁️ Вид
-├── 🔍+ Увеличить шрифт (Ctrl++)    → fontSize 17px → 18px
-├── 🔍- Уменьшить шрифт (Ctrl+-)   → fontSize 17px → 16px
-├── ─────────────────
-├── ☀️ Светлая тема                 → set theme='light' (show ● if active)
-├── ☾ Тёмная тема                   → set theme='dark' (show ● if active)
-```
+inputs:
+  - Sprint-35-Menu-Step-01 & Step-02 (menu UX pattern)
+  - Theme system (already exists, needs UI wiring)
+  - Sidebar collapse (already works via click, just need menu item)
+  - Focus Mode (future feature, placeholder for now)
 
-## Scope
+outputs:
+  - View menu with 4 items: Theme, Font Size, Sidebar Toggle, Focus Mode
+  - Theme submenu: Light / Dark / Auto (with check mark on current)
+  - Font Size submenu or dialog: 10px, 12px, 14px (default), 16px, 18px
+  - Sidebar Toggle: immediate collapse/expand
+  - Focus Mode: placeholder (marked "Скоро")
+  - ARP documenting theme persistence (localStorage + DB)
 
-### Allowed paths:
-- apps/studio/src/components/Header.tsx (View menu)
-- apps/studio/src/app/page.tsx (theme/focusMode state)
-- apps/studio/globals.css (theme variables)
+validation:
+  - npx tsc --noEmit passes
+  - npm run build succeeds
+  - Browser: View menu opens → 4 items visible
+  - Click "Theme" → submenu shows Light/Dark/Auto with current check mark
+  - Click theme → page background changes immediately
+  - Theme preference persists on reload (localStorage)
+  - Click "Font Size" → options 10px-18px
+  - Select font size → text resizes immediately
+  - Font preference persists on reload
+  - Click "Sidebar Toggle" → sidebar collapses/expands
+  - "Focus Mode" is disabled placeholder
 
-### Forbidden:
-- API changes
-- Новые компоненты
-
-**Font Size:**
-- State: `fontSize: number` (default 17) в page.tsx
-- Store в Editor/EditorArea component
-- Ctrl++ → fontSize++
-- Ctrl+- → fontSize--
-- Min: 12px, Max: 24px
-- Persist в localStorage: `"literary-studio:font-size"`
-
-**Theme:**
-- State: `theme: 'light' | 'dark'` в page.tsx
-- Set на `<html>` element: `data-theme="light"` или `data-theme="dark"`
-- Persist в localStorage: `"literary-studio:theme"`
-- Radio indicator (● если active)
-
-## Validation
-
-1. Увеличить/Уменьшить шрифт работает (fontSize меняется)
-2. Шрифт не идёт ниже 12px и выше 24px
-3. Persist: refresh page → same fontSize
-4. Theme toggle работает (● indicator, colors меняются)
-5. Persist: refresh page → same theme
-6. Dark mode colors правильные
-7. Ctrl++ и Ctrl+- работают глобально
-
-## Output
-
-ARP в docs/task-bus/queue/active/:
-1. Скриншоты View меню
-2. Скриншоты Focus Mode вкл/выкл (editor изменения)
-3. Скриншоты Theme toggle (light/dark)
-4. Результат build
-
-## Stop Condition
-
-View меню готово (все 3 пункта работают).
+done_when:
+  - All 4 items wired and functional (except Focus Mode placeholder)
+  - Theme/Font Size persist across sessions
+  - ARP filed with UX decisions
+  - Step Card archived to done/

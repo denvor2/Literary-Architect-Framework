@@ -29,23 +29,23 @@ const ASSISTANT_ROLES = [
 // Shared `include` shape for both the read query and its payload type below
 // — keeps the two in sync by construction instead of by hand.
 const bookInclude = {
-  chapters: {
+  Chapter: {
     orderBy: { order: "asc" },
     include: {
-      scenes: { orderBy: { order: "asc" } },
+      Scene: { orderBy: { order: "asc" } },
     },
   },
   // No explicit `order` column on Character (none exists in the domain
   // model either) — ordering by `id` is a technical judgment call for
   // deterministic reads, not a value carried by the domain data itself.
-  characters: { orderBy: { id: "asc" } },
+  Character: { orderBy: { id: "asc" } },
   // `createdAt` is meaningful domain data for Idea (unlike ChatMessage) —
   // order by it, with `id` as a tiebreaker for ideas created in the same
   // save (see the ChatMessage note below for why a tiebreaker is needed).
-  ideas: { orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
+  Idea: { orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
   // No explicit order field on AssistantThread either — `id` ordering is a
   // judgment call, same reasoning as Character above.
-  assistantThreads: {
+  AssistantThread: {
     orderBy: { id: "asc" },
     include: {
       // Every message written by `saveBooksForUser` in the same call lands
@@ -55,7 +55,7 @@ const bookInclude = {
       // `id` (cuid, generated client-side in call order) is the real
       // ordering signal; `createdAt` is kept first only to order across
       // separate saves correctly.
-      messages: { orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
+      ChatMessage: { orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
     },
   },
 } satisfies Prisma.BookInclude;
@@ -63,9 +63,9 @@ const bookInclude = {
 type BookWithRelations = Prisma.BookGetPayload<{ include: typeof bookInclude }>;
 
 function toDomainAssistantThread(
-  thread: BookWithRelations["assistantThreads"][number],
+  thread: BookWithRelations["AssistantThread"][number],
 ): DomainAssistantThread {
-  const messages: DomainChatMessage[] = thread.messages.map((message) => ({
+  const messages: DomainChatMessage[] = thread.ChatMessage.map((message) => ({
     role: message.role,
     content: message.content,
   }));
@@ -81,7 +81,7 @@ function toDomainAssistantThread(
 }
 
 function toDomainAssistantThreads(
-  threads: BookWithRelations["assistantThreads"],
+  threads: BookWithRelations["AssistantThread"],
 ): DomainAssistantThreads {
   const grouped: Record<
     (typeof ASSISTANT_ROLES)[number],
@@ -108,25 +108,25 @@ function toDomainBook(book: BookWithRelations): DomainBook {
     shortAnnotation: book.shortAnnotation,
     fullAnnotation: book.fullAnnotation,
     tags: book.tags,
-    chapters: book.chapters.map((chapter) => ({
+    chapters: book.Chapter.map((chapter) => ({
       id: chapter.id,
       title: chapter.title,
       subtitle: chapter.subtitle,
-      scenes: chapter.scenes.map((scene) => ({
+      scenes: chapter.Scene.map((scene) => ({
         id: scene.id,
         title: scene.title,
         text: scene.text,
       })),
     })),
-    characters: book.characters.map((character) => ({
+    characters: book.Character.map((character) => ({
       id: character.id,
       name: character.name,
       description: character.description,
       notes: character.notes,
       photoUrl: character.photoUrl,
     })),
-    assistantThreads: toDomainAssistantThreads(book.assistantThreads),
-    ideas: book.ideas.map((idea) => ({
+    assistantThreads: toDomainAssistantThreads(book.AssistantThread),
+    ideas: book.Idea.map((idea) => ({
       id: idea.id,
       text: idea.text,
       createdAt: idea.createdAt.toISOString(),
@@ -207,12 +207,12 @@ export async function saveBooksForUser(
           },
         });
 
-        const incomingChapterIds = book.chapters.map((chapter) => chapter.id);
+        const incomingChapterIds = book.Chapter.map((chapter) => chapter.id);
         await tx.chapter.deleteMany({
           where: { bookId: book.id, id: { notIn: incomingChapterIds } },
         });
 
-        for (const [chapterIndex, chapter] of book.chapters.entries()) {
+        for (const [chapterIndex, chapter] of book.Chapter.entries()) {
           await tx.chapter.upsert({
             where: { id: chapter.id },
             create: {
@@ -253,14 +253,14 @@ export async function saveBooksForUser(
           }
         }
 
-        const incomingCharacterIds = book.characters.map(
+        const incomingCharacterIds = book.Character.map(
           (character) => character.id,
         );
         await tx.character.deleteMany({
           where: { bookId: book.id, id: { notIn: incomingCharacterIds } },
         });
 
-        for (const character of book.characters) {
+        for (const character of book.Character) {
           await tx.character.upsert({
             where: { id: character.id },
             create: {
@@ -280,12 +280,12 @@ export async function saveBooksForUser(
           });
         }
 
-        const incomingIdeaIds = book.ideas.map((idea) => idea.id);
+        const incomingIdeaIds = book.Idea.map((idea) => idea.id);
         await tx.idea.deleteMany({
           where: { bookId: book.id, id: { notIn: incomingIdeaIds } },
         });
 
-        for (const idea of book.ideas) {
+        for (const idea of book.Idea) {
           await tx.idea.upsert({
             where: { id: idea.id },
             create: {
@@ -305,7 +305,7 @@ export async function saveBooksForUser(
         // Prisma model stores `role` as a plain field per row (Step Card
         // field-mapping note).
         const incomingThreads = ASSISTANT_ROLES.flatMap((role) =>
-          book.assistantThreads[role].map((thread) => ({ role, thread })),
+          book.AssistantThread[role].map((thread) => ({ role, thread })),
         );
         const incomingThreadIds = incomingThreads.map(
           ({ thread }) => thread.id,

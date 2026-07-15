@@ -1,82 +1,42 @@
 id: Sprint-35-Menu-Step-01
-name: "File меню: Новая книга, Серия, Экспорт, Выход"
+name: "File menu: New Book, Open, Save, Export, Exit"
 type: implementation
 
-## Objective
+scope:
+  allowed_paths:
+    - apps/studio/src/components/Header.tsx
+    - apps/studio/src/hooks/useWorkspaceController.ts
+    - apps/studio/src/app/page.tsx
+  forbidden_paths:
+    - apps/studio/src/domain/
 
-Реализовать **File** меню с пунктами:
+objective: |
+  Implement File menu with 5 functional items (New Book, Open, Save, Export, Exit).
+  Replace current disabled "Скоро" placeholder with real menu items that trigger workspace actions.
 
-```
-📁 Файл
-├── ➕ Новая книга          → onNewBook()
-├── ➕ Новая серия          → onCreateSeries()
-├── ─────────────────
-├── 💾 Сохранить            → saveWorkspace() (auto-save)
-├── 💾 Сохранить как        → SaveAsDialog (manual save)
-├── 📂 Открыть              → OpenDialog (из архива экспорта)
-├── 📥 Импорт               → ImportDialog (FB2, DOCX)
-├── ─────────────────
-├── 📤 Экспорт              → ExportDialog (defer to Sprint-36)
-├── ─────────────────
-└── 🚪 Выход                → logout()
-```
+inputs:
+  - Sprint-33+ Roadmap (Phase 2, item 4)
+  - Workspace Controller (useWorkspaceController.ts — already has createBook, saveBook)
+  - Sprint-34 Design: ARIA labels, keyboard navigation, z-index fix
 
-## Scope
+outputs:
+  - File menu with 5 items: New Book, Open, Save, Export, Exit
+  - Click handlers wired to workspace controller
+  - Keyboard shortcuts: Ctrl+N (New), Ctrl+S (Save), Ctrl+E (Export)
+  - ARP documenting menu item UX and workspace integration
 
-### Allowed paths:
-- apps/studio/src/components/Header.tsx (добавить меню dropdown)
-- apps/studio/src/app/page.tsx (pass callbacks)
+validation:
+  - npx tsc --noEmit passes
+  - npm run build succeeds
+  - Browser: File menu opens → 5 items visible (not disabled)
+  - Click "New Book" → creates new book in sidebar
+  - Click "Save" → workspace persists to DB/localStorage
+  - Click "Export" → exports active book as JSON/TXT
+  - Ctrl+S triggers Save
+  - Click "Exit" → logout or close (TBD by Product Owner)
 
-### Forbidden:
-- Export логика (отдельный step)
-- API changes
-
-## Implementation
-
-**Header.tsx:**
-- Добавить меню dropdown
-- "Файл" кнопка → toggle menu
-- Клик на пункт → execute callback
-
-**Callbacks из page.tsx:**
-- `onNewBook` — создаёт книгу
-- `onCreateSeries` — создаёт серию
-- `onSave` — saveWorkspace() (уже автосохраняется, но юзер может вызвать вручную)
-- `onSaveAs` — открыть SaveAsDialog (новый)
-- `onOpen` — открыть OpenDialog (новый)
-- `onImport` — открыть ImportDialog (новый)
-- `onExport` — placeholder (defer to Sprint-36)
-- `onLogout` — logout из useAuthController
-
-**Dialogs (новые компоненты):**
-- SaveAsDialog: input название, button "Сохранить" → save snapshot
-- OpenDialog: выбрать файл .zip экспорта → load project
-- ImportDialog: выбрать FB2 или DOCX → parse → create Book
-
-## Validation
-
-1. Меню открывается/закрывается
-2. "Новая книга" → создаёт новую книгу в Sidebar
-3. "Новая серия" → открывает диалог создания серии
-4. "Сохранить" → вызывает save (может быть no-op if auto-save)
-5. "Сохранить как" → открывает SaveAsDialog
-6. "Открыть" → открывает OpenDialog (выбрать .zip)
-7. "Импорт" → открывает ImportDialog (FB2/DOCX)
-8. "Выход" → logout, редирект на login
-
-## Output
-
-ARP в docs/task-bus/queue/active/:
-1. Скриншоты File меню
-2. Скриншоты SaveAsDialog, OpenDialog, ImportDialog
-3. Скриншот создания книги через Импорт (FB2/DOCX)
-4. Результат build
-
-## Notes
-
-- SaveAs/Open/Import диалоги — placeholder (реальная логика в Sprint-36 Export)
-- Импорт FB2/DOCX требует parser (может быть defer или базовый placeholder)
-
-## Stop Condition
-
-File меню готово с всеми пунктами (диалоги могут быть stub, кроме функциональности).
+done_when:
+  - All 5 menu items are functional (not "Скоро")
+  - Keyboard shortcuts work
+  - ARP filed with UX decisions
+  - Step Card archived to done/

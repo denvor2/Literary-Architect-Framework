@@ -241,13 +241,17 @@ export default function Home() {
     useState(false);
 
   function toggleChapterCollapsed(chapterId: string) {
+    console.log("[COLLAPSE] toggleChapterCollapsed called for:", chapterId);
     setCollapsedChapterIds((previous) => {
       const next = new Set(previous);
       if (next.has(chapterId)) {
+        console.log("[COLLAPSE] Removing from collapsed set");
         next.delete(chapterId);
       } else {
+        console.log("[COLLAPSE] Adding to collapsed set");
         next.add(chapterId);
       }
+      console.log("[COLLAPSE] New collapsed IDs:", Array.from(next));
       return next;
     });
   }

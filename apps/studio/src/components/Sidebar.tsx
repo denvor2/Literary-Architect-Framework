@@ -458,7 +458,10 @@ export function Sidebar({
                 <li key={chapter.id}>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => onToggleChapterCollapsed?.(chapter.id)}
+                      onClick={() => {
+                        console.log("[COLLAPSE] Toggling chapter:", chapter.id, "currently collapsed:", isChapterCollapsed);
+                        onToggleChapterCollapsed?.(chapter.id);
+                      }}
                       aria-label={
                         isChapterCollapsed
                           ? "Развернуть главу"

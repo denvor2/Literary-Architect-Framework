@@ -45,6 +45,11 @@ and stop.
    change, disabled-state actually disabled, dark-mode contrast). A tester
    that only confirms the happy path the executor already checked adds no
    value.
+   - **For any object manipulation (CRUD operations):** Always test that
+     changes persist to the database. After creating/updating/deleting an
+     object (book, series, chapter, etc.), perform a full page reload and
+     verify the change is still present. This catches bugs where state
+     updates locally but the database save fails silently or incompletely.
 5. **Clean up after yourself exactly like `literary-studio-live-verify`
    requires** — tear down any scratch server, and if a test touched the
    real local database (dual-mode storage per ADR-0012 means a scratch

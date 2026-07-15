@@ -223,9 +223,6 @@ export default function Home() {
   // персистится. Общее между EditorArea (сам блок) и Sidebar (индикатор в
   // дереве), поэтому поднято сюда, а не в EditorArea/Sidebar по отдельности.
   const [isChaptersCollapsed, setIsChaptersCollapsed] = useState(false);
-  const [collapsedChapterIds, setCollapsedChapterIds] = useState<Set<string>>(
-    new Set(),
-  );
   const [collapsedSceneIds, setCollapsedSceneIds] = useState<Set<string>>(
     new Set(),
   );
@@ -241,19 +238,13 @@ export default function Home() {
     useState(false);
 
   function toggleChapterCollapsed(chapterId: string) {
-    console.log("[COLLAPSE] toggleChapterCollapsed called for:", chapterId);
-    setCollapsedChapterIds((previous) => {
-      const next = new Set(previous);
-      if (next.has(chapterId)) {
-        console.log("[COLLAPSE] Removing from collapsed set");
-        next.delete(chapterId);
-      } else {
-        console.log("[COLLAPSE] Adding to collapsed set");
-        next.add(chapterId);
-      }
-      console.log("[COLLAPSE] New collapsed IDs:", Array.from(next));
-      return next;
-    });
+    // Accordion: if clicking same chapter, collapse it; otherwise expand it
+    if (selectedChapterId === chapterId) {
+      // Can't collapse - need to keep something selected for editor to show content
+      // For now, just keep it open
+    } else {
+      selectChapter(chapterId);
+    }
   }
 
   function toggleSceneCollapsed(sceneId: string) {
@@ -382,7 +373,7 @@ export default function Home() {
   // scene's title bar) the target scene's own collapse.
   function handleSelectSearchMatch(chapterId: string, sceneId?: string) {
     if (isChaptersCollapsed) setIsChaptersCollapsed(false);
-    if (collapsedChapterIds.has(chapterId)) toggleChapterCollapsed(chapterId);
+    if (selectedChapterId !== chapterId) toggleChapterCollapsed(chapterId);
     if (sceneId && collapsedSceneIds.has(sceneId)) {
       toggleSceneCollapsed(sceneId);
     }
@@ -769,7 +760,6 @@ export default function Home() {
                 onDeleteChapter={deleteChapter}
                 onCreateScene={createScene}
                 onDeleteScene={deleteScene}
-                collapsedChapterIds={collapsedChapterIds}
                 onToggleChapterCollapsed={toggleChapterCollapsed}
                 ideas={ideas}
                 onCreateIdea={createIdea}
@@ -823,8 +813,7 @@ export default function Home() {
                   onToggleChaptersCollapsed={() =>
                     setIsChaptersCollapsed((value) => !value)
                   }
-                  collapsedChapterIds={collapsedChapterIds}
-                  onToggleChapterCollapsed={toggleChapterCollapsed}
+                    onToggleChapterCollapsed={toggleChapterCollapsed}
                   collapsedSceneIds={collapsedSceneIds}
                   onToggleSceneCollapsed={toggleSceneCollapsed}
                   onToggleAllScenesInChapter={toggleAllScenesInChapter}
@@ -1083,7 +1072,6 @@ export default function Home() {
               onDeleteChapter={deleteChapter}
               onCreateScene={createScene}
               onDeleteScene={deleteScene}
-              collapsedChapterIds={collapsedChapterIds}
               onToggleChapterCollapsed={toggleChapterCollapsed}
               ideas={ideas}
               onCreateIdea={createIdea}
@@ -1135,7 +1123,6 @@ export default function Home() {
               onToggleChaptersCollapsed={() =>
                 setIsChaptersCollapsed((value) => !value)
               }
-              collapsedChapterIds={collapsedChapterIds}
               onToggleChapterCollapsed={toggleChapterCollapsed}
               collapsedSceneIds={collapsedSceneIds}
               onToggleSceneCollapsed={toggleSceneCollapsed}

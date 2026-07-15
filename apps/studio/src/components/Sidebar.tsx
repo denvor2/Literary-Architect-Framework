@@ -23,10 +23,7 @@ type SidebarProps = {
   onDeleteChapter?: (chapterId: string) => void;
   onCreateScene?: (chapterId: string) => void;
   onDeleteScene?: (chapterId: string, sceneId: string) => void;
-  // Sprint-16-17-Step-03: same collapse state as EditorArea.tsx's chapter
-  // blocks (lifted to page.tsx) — the tree's expand/collapse indicator stays
-  // in sync with the unified view instead of tracking its own copy.
-  collapsedChapterIds?: ReadonlySet<string>;
+  // Accordion: chapter expanded if selectedChapterId === chapter.id
   onToggleChapterCollapsed?: (chapterId: string) => void;
   // Sprint-25-Step-01: Ideas/Notes relocated here from EditorArea.tsx's
   // UnifiedBookView (Sprint 18 Step 03) — pure rendering move, IdeasPanel
@@ -82,7 +79,6 @@ export function Sidebar({
   onDeleteChapter,
   onCreateScene,
   onDeleteScene,
-  collapsedChapterIds,
   onToggleChapterCollapsed,
   ideas = [],
   onCreateIdea,
@@ -452,8 +448,8 @@ export function Sidebar({
         ) : (
           <ul className="flex flex-col gap-2">
             {chapters.map((chapter) => {
-              const isChapterCollapsed =
-                collapsedChapterIds?.has(chapter.id) ?? false;
+              const isChapterExpanded = selectedChapterId === chapter.id;
+              const isChapterCollapsed = !isChapterExpanded;
               return (
                 <li key={chapter.id}>
                   <div className="flex items-center gap-1">

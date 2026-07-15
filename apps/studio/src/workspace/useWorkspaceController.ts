@@ -203,10 +203,16 @@ export function useWorkspaceController() {
   }
 
   function deleteBook(bookId: string) {
-    // Soft delete: call API to mark book as deleted, then update local state
+    // Get book before state changes
+    const bookToDelete = workspace.books.find((book) => book.id === bookId);
+
+    if (bookToDelete) {
+      console.log("[DEBUG] Deleting book:", bookId, bookToDelete.title);
+    }
+
+    // Soft delete: call API to mark book as deleted
     void (async () => {
       try {
-        console.log("[DEBUG] Deleting book:", bookId);
         const response = await fetch(
           `/api/workspace?id=${encodeURIComponent(bookId)}`,
           { method: "DELETE", credentials: "include" },
@@ -225,34 +231,27 @@ export function useWorkspaceController() {
       }
     })();
 
-    setWorkspace((previous) => {
-      const bookToDelete = previous.books.find((book) => book.id === bookId);
-      const remainingBooks = previous.books.filter(
-        (book) => book.id !== bookId,
-      );
-      const newActiveBookId =
+    // Update UI state: remove from books, add to trash
+    setWorkspace((previous) => ({
+      ...previous,
+      books: previous.books.filter((book) => book.id !== bookId),
+      activeBookId:
         previous.activeBookId === bookId
-          ? (remainingBooks[0]?.id ?? null)
-          : previous.activeBookId;
+          ? (previous.books.find((b) => b.id !== bookId)?.id ?? null)
+          : previous.activeBookId,
+      selectedChapterId: null,
+      selectedSceneId: null,
+      selectedCharacterId: null,
+    }));
 
-      // Add book to deletedBooks with deletedAt timestamp
-      if (bookToDelete) {
-        console.log("[DEBUG] Adding to local deletedBooks:", bookToDelete.title);
-        setDeletedBooks((previous) => [
-          { ...bookToDelete, deletedAt: new Date() },
-          ...previous,
-        ]);
-      }
-
-      return {
+    // Add to trash (separate from workspace state)
+    if (bookToDelete) {
+      console.log("[DEBUG] Adding to local deletedBooks:", bookToDelete.title);
+      setDeletedBooks((previous) => [
+        { ...bookToDelete, deletedAt: new Date() },
         ...previous,
-        books: remainingBooks,
-        activeBookId: newActiveBookId,
-        selectedChapterId: null,
-        selectedSceneId: null,
-        selectedCharacterId: null,
-      };
-    });
+      ]);
+    }
   }
 
   function restoreBook(bookId: string): void {

@@ -156,18 +156,30 @@ export async function DELETE(request: NextRequest) {
       // Logging disabled (EventType not defined in schema)
     } else {
       // Default: soft delete
-      // First load the book to get its title for logging
-      const books = await loadBooksForUser(userId);
-      const book = books.find((b) => b.id === bookId);
-      const bookTitle = book?.title || "Unknown";
+      try {
+        // First load the book to get its title for logging
+        console.log("[DELETE] Loading books for user:", userId);
+        const books = await loadBooksForUser(userId);
+        const book = books.find((b) => b.id === bookId);
+        const bookTitle = book?.title || "Unknown";
+        console.log("[DELETE] Soft-deleting book:", bookId, bookTitle);
 
-      await softDeleteBook(bookId);
-      // Log book deleted event
-      await safeLogEvent(userId, "book_deleted", { bookId, title: bookTitle });
+        await softDeleteBook(bookId);
+        console.log("[DELETE] Book soft-deleted successfully");
+
+        // Log book deleted event
+        console.log("[DELETE] Logging event...");
+        await safeLogEvent(userId, "book_deleted", { bookId, title: bookTitle });
+        console.log("[DELETE] Event logged");
+      } catch (err) {
+        console.error("[DELETE] Error during soft delete:", err);
+        throw err;
+      }
     }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error("[DELETE] Catch block:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

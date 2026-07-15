@@ -9,12 +9,22 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-32-Step-06
+id: Sprint-34-Design-Step-06
 status: done
-next: [Sprint-32-Step-07]
+next: [Sprint-35-Menu-Step-01]
 ```
 
-## Sprint 32 — Логирование и аудит (в работе — 6 из 7 Step Card завершены) ⏳
+## Sprint 34 — Design Polish (Icons, Accessibility, Performance) ✅ CLOSED
+
+**All 6 Design Steps completed** (2026-07-15):
+- Step 01-05: Dark Mode, Mobile, Tablet, Responsive layouts ✅
+- Step 06: Icons (emoji → lucide), ARIA labels, Accessibility 95/100 ✅
+
+**Status**: All steps in done/. Sprint closed, moving to Sprint-35 Menu System.
+
+---
+
+## Sprint 32 — Логирование и аудит (завершён) ✅
 
 **Step 03-06 завершены** (2026-07-12):
 - Step 03: Repository слой (7 функций аудита) ✅

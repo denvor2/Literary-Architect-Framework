@@ -88,7 +88,7 @@ export async function loadActiveSubscription(
       userId,
       status: "active",
     },
-    include: { plan: true },
+    include: { Plan: true },
     orderBy: { updatedAt: "desc" },
   });
   if (!subscription) {
@@ -96,7 +96,7 @@ export async function loadActiveSubscription(
   }
   return {
     subscription,
-    plan: subscription.plan,
+    plan: subscription.Plan,
   };
 }
 

@@ -37,9 +37,9 @@ export async function GET(request: NextRequest) {
       payments = await prisma.payment.findMany({
         where: { userId: payload.sub },
         include: {
-          subscription: {
+          UserSubscription: {
             include: {
-              plan: true,
+              Plan: true,
             },
           },
         },
@@ -63,9 +63,9 @@ export async function GET(request: NextRequest) {
       failureReason: payment.failureReason,
       createdAt: payment.createdAt,
       subscription: {
-        planId: payment.subscription.planId,
+        planId: payment.UserSubscription.planId,
         plan: {
-          name: payment.subscription.plan.name,
+          name: payment.UserSubscription.Plan.name,
         },
       },
     }));

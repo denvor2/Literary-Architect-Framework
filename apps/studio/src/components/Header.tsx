@@ -225,7 +225,7 @@ export function Header({
               {menu.label}
             </button>
             {openMenu === menu.key && (
-              <div className="absolute left-0 top-full z-10 mt-1 min-w-32 rounded-md border border-zinc-200 bg-white py-1 shadow-md dark:border-zinc-800 dark:bg-zinc-950">
+              <div className="absolute left-0 top-full z-50 mt-1 min-w-32 rounded-md border border-zinc-200 bg-white py-1 shadow-md dark:border-zinc-800 dark:bg-zinc-950">
                 <button
                   disabled
                   className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"

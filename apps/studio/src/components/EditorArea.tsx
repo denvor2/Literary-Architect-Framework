@@ -321,15 +321,15 @@ function UnifiedBookView({
   }
 
   return (
-    <main className="flex flex-1 flex-col overflow-y-auto p-6">
+    <main className="flex flex-1 flex-col overflow-y-auto p-6 md:p-4">
       <div
-        className={`flex w-full flex-1 flex-col gap-6 ${
+        className={`flex w-full flex-1 flex-col gap-6 md:gap-4 ${
           isFocusMode ? "mx-auto max-w-3xl" : ""
         }`}
       >
         <div
           className={`rounded-md bg-zinc-50 dark:bg-zinc-950 ${
-            isDetailsCollapsed ? "p-3" : "p-6"
+            isDetailsCollapsed ? "p-3 md:p-2" : "p-6 md:p-4"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -361,7 +361,7 @@ function UnifiedBookView({
                     onUpdateBook?.(book.id, { title: event.target.value })
                   }
                   placeholder="Название книги..."
-                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400"
+                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400 md:text-xl"
                 />
               </div>
               <div className="flex flex-wrap gap-1.5">

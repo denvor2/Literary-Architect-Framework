@@ -123,6 +123,9 @@ export default function Home() {
   );
   // Ephemeral UI state only — not part of Workspace, not persisted.
   const [isFocusMode, setIsFocusMode] = useState(false);
+  // Sprint-34-Design-Step-03: Sidebar collapse toggle for tablet layout
+  // (768px-1024px, `md:` breakpoint). Ephemeral state, not persisted.
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   // Sprint-25-Step-02: drives whether the main-content/AssistantPanel split
   // renders as a mouse-draggable divider (desktop, `lg:` and up) or the
   // pre-existing stacked mobile layout. See `useIsDesktopLayout` above.
@@ -394,9 +397,47 @@ export default function Home() {
         onOpenLogin={() => setAuthDialogMode("login")}
       />
       <SyncWarningBanner warning={syncWarning} />
+      {/* Sprint-34-Design-Step-03: Tablet layout (768-1024px) with hamburger menu */}
       <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
+        {/* Hamburger button for tablet (md: 768px+, hidden on lg: 1024px+) */}
         {!isFocusMode && (
-          <Sidebar
+          <button
+            onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+            className="absolute left-4 top-4 z-40 hidden rounded-md border border-zinc-300 p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900 md:block lg:hidden"
+            aria-label={isSidebarCollapsed ? "Открыть боковую панель" : "Закрыть боковую панель"}
+            title="Навигация"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        )}
+        {/* Backdrop overlay for mobile sidebar (md:, closed on lg:) */}
+        {!isFocusMode && !isSidebarCollapsed && (
+          <div
+            className="fixed inset-0 z-20 bg-black bg-opacity-50 md:hidden"
+            onClick={() => setIsSidebarCollapsed(true)}
+            aria-hidden="true"
+          />
+        )}
+        {/* Sidebar: hidden by default on md: (tablet), visible on lg: (desktop) */}
+        {!isFocusMode && (
+          <div
+            className={`fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto bg-zinc-50 dark:bg-zinc-950 md:relative md:inset-auto md:z-auto md:w-auto md:bg-inherit md:dark:bg-inherit ${
+              isSidebarCollapsed ? "hidden md:block" : "block md:block"
+            } lg:static lg:block`}
+          >
+            <Sidebar
             books={books}
             activeBookId={activeBookId}
             chapters={chapters}
@@ -438,7 +479,8 @@ export default function Home() {
             }
             onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
             onEditSeries={setEditingSeriesId}
-          />
+            />
+          </div>
         )}
         {(() => {
           const mainContent = selectedCharacterId ? (

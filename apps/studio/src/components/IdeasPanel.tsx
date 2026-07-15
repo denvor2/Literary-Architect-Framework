@@ -64,7 +64,7 @@ export function IdeasPanel({
         <div className="flex flex-col gap-2">
           {ideas.map((idea) => (
             <div key={idea.id} id={`idea-block-${idea.id}`}>
-              {isExpanded(idea.id) ? (
+              {isExpanded(idea.id) || idea.text === "" ? (
                 // Expanded view
                 <div className="flex flex-col gap-2 p-2">
                   <div className="flex items-center justify-between">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export type ExportFormat = "json" | "markdown-zip" | "docx" | "both";
+export type ExportFormat = "markdown-zip" | "docx";
 
 export interface ExportDialogProps {
   bookTitle: string;
@@ -17,7 +17,7 @@ export function ExportDialog({
   onExport,
   onCancel,
 }: ExportDialogProps) {
-  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("json");
+  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("markdown-zip");
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -40,7 +40,8 @@ export function ExportDialog({
         </h2>
 
         <div className="mb-6 space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer">
+          {/* JSON Format - Hidden for now (TODO: clarify use case) */}
+          {/* <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="radio"
               name="format"
@@ -58,7 +59,7 @@ export function ExportDialog({
                 Single file with full book data
               </div>
             </span>
-          </label>
+          </label> */}
 
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -100,7 +101,8 @@ export function ExportDialog({
             </span>
           </label>
 
-          <label className="flex items-center gap-3 cursor-pointer">
+          {/* Both Formats - Hidden when JSON is hidden */}
+          {/* <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="radio"
               name="format"
@@ -118,7 +120,7 @@ export function ExportDialog({
                 Download JSON and Markdown ZIP together
               </div>
             </span>
-          </label>
+          </label> */}
         </div>
 
         {error && (

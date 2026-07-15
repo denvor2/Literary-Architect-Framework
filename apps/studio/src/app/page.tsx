@@ -781,6 +781,7 @@ export default function Home() {
                 }
                 onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
                 onEditSeries={setEditingSeriesId}
+                onDeleteSeries={deleteSeries}
                 onMoveBookToSeries={moveBookToSeries}
               />
             </div>
@@ -1091,6 +1092,7 @@ export default function Home() {
               }
               onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
               onEditSeries={setEditingSeriesId}
+              onDeleteSeries={deleteSeries}
               onMoveBookToSeries={moveBookToSeries}
             />
           </div>

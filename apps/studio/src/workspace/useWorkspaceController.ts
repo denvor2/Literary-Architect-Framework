@@ -1150,12 +1150,23 @@ export function useWorkspaceController() {
     // Async save to backend — fire-and-forget with error logging
     void (async () => {
       try {
-        await saveWorkspace({
-          ...workspace,
-          books: workspace.books.map((b) =>
+        // Capture current workspace state to avoid stale closure
+        const currentState = workspace;
+        const updatedWorkspace = {
+          ...currentState,
+          books: currentState.books.map((b) =>
             b.id === bookId ? updatedBook : b,
           ),
-        });
+        };
+        const bookToSave = updatedWorkspace.books.find((b) => b.id === bookId);
+        console.log(
+          "moveBookToSeries: saving book",
+          bookId,
+          "with seriesId:",
+          bookToSave?.seriesId,
+        );
+        await saveWorkspace(updatedWorkspace);
+        console.log("moveBookToSeries: save completed successfully");
       } catch (error) {
         const message =
           error instanceof Error

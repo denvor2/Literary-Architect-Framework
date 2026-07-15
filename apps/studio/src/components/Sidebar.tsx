@@ -3,7 +3,11 @@ import type { Book, Chapter, Character, Idea, Series } from "@/domain/model";
 import { IdeasPanel } from "@/components/IdeasPanel";
 import { Trash2 } from "lucide-react";
 
+type SidebarSection = 'chapters' | 'characters' | 'ideas' | 'series' | 'trash';
+
 type SidebarProps = {
+  expandedSidebarSection?: SidebarSection | null;
+  onToggleSidebarSection?: (section: SidebarSection) => void;
   books?: readonly Book[];
   activeBookId?: string | null;
   chapters?: readonly Chapter[];
@@ -60,6 +64,8 @@ function scrollBlockIntoView(elementId: string) {
 }
 
 export function Sidebar({
+  expandedSidebarSection,
+  onToggleSidebarSection,
   books = [],
   activeBookId,
   chapters = [],

@@ -218,6 +218,26 @@ export default function Home() {
       )
     : selectedScene;
 
+  // Sprint-36-Step-02: Global accordion for sidebar sections
+  // Only one section (chapters, characters, ideas, series, trash) can be expanded at a time
+  type SidebarSection = 'chapters' | 'characters' | 'ideas' | 'series' | 'trash';
+  const [expandedSidebarSection, setExpandedSidebarSection] = useState<SidebarSection | null>('chapters');
+
+  // Persist expanded section to localStorage
+  useEffect(() => {
+    if (expandedSidebarSection) {
+      localStorage.setItem('sidebar-expanded-section', expandedSidebarSection);
+    }
+  }, [expandedSidebarSection]);
+
+  // Load expanded section from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('sidebar-expanded-section') as SidebarSection | null;
+    if (stored) {
+      setExpandedSidebarSection(stored);
+    }
+  }, []);
+
   // Sprint-16-17-Step-03: сворачиваемость на всех уровнях единого вида.
   // Эфемерное UI-состояние (как isFocusMode) — не часть Workspace, не
   // персистится. Общее между EditorArea (сам блок) и Sidebar (индикатор в
@@ -236,6 +256,13 @@ export default function Home() {
   } | null>(null);
   const [isFieldSuggestionLoading, setIsFieldSuggestionLoading] =
     useState(false);
+
+  function toggleSidebarSection(section: SidebarSection) {
+    // Global accordion: expand section if not already expanded, collapse if already expanded
+    setExpandedSidebarSection((previous) =>
+      previous === section ? null : section,
+    );
+  }
 
   function toggleChapterCollapsed(chapterId: string) {
     // Accordion: if clicking same chapter, collapse it; otherwise expand it
@@ -738,6 +765,8 @@ export default function Home() {
           {activeMobileTab === "collection" && !isFocusMode && (
             <div className="flex-1 overflow-y-auto">
               <Sidebar
+                expandedSidebarSection={expandedSidebarSection}
+                onToggleSidebarSection={toggleSidebarSection}
                 books={books}
                 activeBookId={activeBookId}
                 chapters={chapters}

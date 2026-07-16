@@ -1079,6 +1079,8 @@ export default function Home() {
             } lg:static lg:block`}
           >
             <Sidebar
+              expandedSidebarSection={expandedSidebarSection}
+              onToggleSidebarSection={toggleSidebarSection}
               books={books}
               activeBookId={activeBookId}
               chapters={chapters}

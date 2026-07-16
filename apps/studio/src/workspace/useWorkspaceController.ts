@@ -58,6 +58,7 @@ export function useWorkspaceController() {
   const [deletedCharacters, setDeletedCharacters] = useState<readonly Character[]>([]);
   const [deletedChapters, setDeletedChapters] = useState<readonly Chapter[]>([]);
   const [deletedIdeas, setDeletedIdeas] = useState<readonly Idea[]>([]);
+  const deletedItemsLoadedRef = useRef(false);
   const {
     books,
     series,
@@ -93,6 +94,13 @@ export function useWorkspaceController() {
       setSyncWarning(getSyncWarning());
 
       // Load deleted items for trash section (Sprint-33-Step-02, Sprint-36: extended)
+      // Guard against double-loading in React.StrictMode or on effect re-run
+      if (deletedItemsLoadedRef.current) {
+        console.log("[TRASH] === STARTUP: Deleted items already loaded, skipping ===");
+        return;
+      }
+      deletedItemsLoadedRef.current = true;
+
       console.log("[TRASH] === STARTUP: Loading all deleted items ===");
 
       // First check localStorage (for client-only deletions), then API

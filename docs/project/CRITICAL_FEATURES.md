@@ -21,12 +21,15 @@
 
 ---
 
-## ⏳ Sprint-36: Текущий
+## ✅ Sprint-36: Завершено
 
 | # | Функция | E2E Тест | Статус | Примечания |
 |---|---------|----------|--------|-----------|
 | 8 | Global Accordion: one section expanded | `e2e/sidebar-accordion.spec.ts` | ✅ VERIFIED (live) | Step-02: only one section at a time |
 | 9 | Global Accordion: persist in localStorage | `e2e/sidebar-accordion.spec.ts` | ✅ VERIFIED (live) | expandedSidebarSection state + localStorage |
+| 10 | Section Counters: Books & Series | `e2e/section-counters.spec.ts` | ✅ VERIFIED (live) | Книги (X), Серии (Y) in Sidebar header |
+| 11 | Section Counters: All sections | `e2e/section-counters.spec.ts` | ✅ VERIFIED (live) | Главы, Персонажи, Идеи, Корзина counters |
+| 12 | Counters: real-time updates | `e2e/section-counters.spec.ts` | ✅ VERIFIED (live) | Counts update when items added/deleted |
 
 ---
 

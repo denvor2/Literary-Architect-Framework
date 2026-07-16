@@ -1,13 +1,13 @@
-export type Locale = 'en' | 'ru';
+export type Locale = "en" | "ru";
 
-export const locales: Locale[] = ['en', 'ru'];
-export const defaultLocale: Locale = 'ru';
+export const locales: Locale[] = ["en", "ru"];
+export const defaultLocale: Locale = "ru";
 
 export interface Messages {
-  [key: string]: any;
+  [key: string]: Record<string, unknown>;
 }
 
-let messagesCache: { [key in Locale]?: Messages } = {};
+const messagesCache: { [key in Locale]?: Messages } = {};
 
 export async function getMessages(locale: Locale): Promise<Messages> {
   if (messagesCache[locale]) {
@@ -32,12 +32,12 @@ export async function getMessages(locale: Locale): Promise<Messages> {
 }
 
 export function getLocaleFromStorage(): Locale {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return defaultLocale;
   }
 
-  const stored = localStorage.getItem('locale');
-  if (stored === 'en' || stored === 'ru') {
+  const stored = localStorage.getItem("locale");
+  if (stored === "en" || stored === "ru") {
     return stored;
   }
 
@@ -45,22 +45,25 @@ export function getLocaleFromStorage(): Locale {
 }
 
 export function setLocaleInStorage(locale: Locale): void {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('locale', locale);
+  if (typeof window !== "undefined") {
+    localStorage.setItem("locale", locale);
   }
 }
 
-export function getMessage(messages: Messages, key: string): string {
-  const keys = key.split('.');
-  let value: any = messages;
+export function getMessage(
+  messages: Messages,
+  key: string
+): string {
+  const keys = key.split(".");
+  let value: Record<string, unknown> | string | undefined = messages;
 
   for (const k of keys) {
-    if (value && typeof value === 'object') {
-      value = value[k];
+    if (value && typeof value === "object") {
+      value = (value as Record<string, unknown>)[k];
     } else {
-      return key; // Return key if not found
+      return key;
     }
   }
 
-  return typeof value === 'string' ? value : key;
+  return typeof value === "string" ? value : key;
 }

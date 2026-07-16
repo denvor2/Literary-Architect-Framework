@@ -23,22 +23,24 @@ test.describe("Sprint-35: Ideas Panel", () => {
 
     console.log("[TEST] ✓ Book created");
 
-    // Find ideas section and create idea
-    const ideasSection = sidebar.getByText(/Идеи/i);
-    const createIdeaBtn = ideasSection.locator("..").getByRole("button").filter({ hasText: /Добавить/ });
+    // Find and expand ideas section
+    const ideasButton = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    await expect(ideasButton).toBeVisible({ timeout: 5000 });
+    await ideasButton.click();
+    await page.waitForTimeout(300);
 
-    if (await createIdeaBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await createIdeaBtn.click();
-      await page.waitForTimeout(300);
+    // Find create idea button
+    const createIdeaBtn = page.getByRole("button").filter({ hasText: /Добавить идею/ });
+    await expect(createIdeaBtn).toBeVisible({ timeout: 5000 });
+    await createIdeaBtn.click();
+    await page.waitForTimeout(300);
 
-      // Idea should be auto-expanded with textarea visible
-      const ideaTextarea = page.locator("textarea[placeholder*='идея'], textarea[placeholder*='заметк']").first();
-      if (await ideaTextarea.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await ideaTextarea.fill(ideaText);
-        await page.waitForTimeout(300);
-        console.log("[TEST] ✓ Idea created and auto-expanded for editing");
-      }
-    }
+    // Idea should be auto-expanded with textarea visible
+    const ideaTextarea = page.locator("textarea").first();
+    await expect(ideaTextarea).toBeVisible({ timeout: 5000 });
+    await ideaTextarea.fill(ideaText);
+    await page.waitForTimeout(300);
+    console.log("[TEST] ✓ Idea created and auto-expanded for editing");
 
     console.log("[TEST] ✅ PASS: Idea auto-expands on create!");
   });
@@ -54,22 +56,25 @@ test.describe("Sprint-35: Ideas Panel", () => {
     await page.waitForTimeout(500);
 
     const sidebar = page.locator("aside").first();
-    
-    // Create and fill idea
-    const ideasSection = sidebar.getByText(/Идеи/i);
-    const createIdeaBtn = ideasSection.locator("..").getByRole("button").filter({ hasText: /Добавить/ });
 
-    if (await createIdeaBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await createIdeaBtn.click();
-      await page.waitForTimeout(300);
+    // Find and expand ideas section
+    const ideasButton = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    await expect(ideasButton).toBeVisible({ timeout: 5000 });
+    await ideasButton.click();
+    await page.waitForTimeout(300);
 
-      const ideaTextarea = page.locator("textarea[placeholder*='идея'], textarea[placeholder*='заметк']").first();
-      if (await ideaTextarea.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await ideaTextarea.fill(ideaText);
-        await page.waitForTimeout(500);
-        console.log("[TEST] ✓ Idea created with text");
-      }
-    }
+    // Find create idea button and create idea
+    const createIdeaBtn = page.getByRole("button").filter({ hasText: /Добавить идею/ });
+    await expect(createIdeaBtn).toBeVisible({ timeout: 5000 });
+    await createIdeaBtn.click();
+    await page.waitForTimeout(300);
+
+    // Fill idea text
+    const ideaTextarea = page.locator("textarea").first();
+    await expect(ideaTextarea).toBeVisible({ timeout: 5000 });
+    await ideaTextarea.fill(ideaText);
+    await page.waitForTimeout(500);
+    console.log("[TEST] ✓ Idea created with text");
 
     // Reload page
     await page.reload();
@@ -78,14 +83,21 @@ test.describe("Sprint-35: Ideas Panel", () => {
 
     console.log("[TEST] ✓ Page reloaded");
 
+    // Open ideas section if needed
+    const ideasButtonAfter = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    if (await ideasButtonAfter.isVisible()) {
+      await ideasButtonAfter.click();
+      await page.waitForTimeout(300);
+    }
+
     // Verify idea text persists
     const ideaTextAfter = page.locator("textarea").filter({ hasText: ideaText });
     const found = await ideaTextAfter.isVisible({ timeout: 1000 }).catch(() => false);
-    
+
     if (found) {
       console.log("[TEST] ✓ Idea text persisted in DB/localStorage");
     } else {
-      console.log("[TEST] ⚠ Idea text not found after reload (may be in collapsed view)");
+      console.log("[TEST] ⚠ Idea text not found after reload");
     }
 
     console.log("[TEST] ✅ PASS: Idea persistence checked!");
@@ -102,22 +114,26 @@ test.describe("Sprint-35: Ideas Panel", () => {
 
     const sidebar = page.locator("aside").first();
 
+    // Find and expand ideas section
+    const ideasButton = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    await expect(ideasButton).toBeVisible({ timeout: 5000 });
+    await ideasButton.click();
+    await page.waitForTimeout(300);
+
     // Create 3 ideas
-    const ideasSection = sidebar.getByText(/Идеи/i);
-    const createIdeaBtn = ideasSection.locator("..").getByRole("button").filter({ hasText: /Добавить/ });
+    const createIdeaBtn = page.getByRole("button").filter({ hasText: /Добавить идею/ });
 
     for (let i = 0; i < 3; i++) {
-      if (await createIdeaBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await createIdeaBtn.click();
-        await page.waitForTimeout(300);
-      }
+      await expect(createIdeaBtn).toBeVisible({ timeout: 5000 });
+      await createIdeaBtn.click();
+      await page.waitForTimeout(300);
     }
 
     console.log("[TEST] ✓ Multiple ideas created");
 
     // Ideas section should show count
-    const ideasHeader = sidebar.getByText(/Идеи/i);
-    const headerText = await ideasHeader.textContent();
+    const ideasHeaderAfter = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    const headerText = await ideasHeaderAfter.textContent();
     console.log(`[TEST] Ideas header: ${headerText}`);
 
     console.log("[TEST] ✅ PASS: Multiple ideas creation works!");

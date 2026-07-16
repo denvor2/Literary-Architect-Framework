@@ -66,18 +66,17 @@ test.describe("Sprint-35: Sidebar Accordion", () => {
 
     console.log("[TEST] ✓ Book created");
 
-    // Check if characters section exists
-    const charSection = sidebar.getByText(/Персонажи/i);
-    if (await charSection.isVisible({ timeout: 1000 }).catch(() => false)) {
-      console.log("[TEST] ✓ Characters section visible");
+    // Find characters section header button and expand it
+    const charButton = sidebar.getByRole("button").filter({ hasText: /^Персонажи/ });
+    await expect(charButton).toBeVisible({ timeout: 5000 });
 
-      // Character section should show/hide based on accordion state
-      // Just verify the section is there and can be interacted with
-      await expect(charSection).toBeVisible();
-      console.log("[TEST] ✓ Characters section is interactive");
-    }
+    // Click to expand if collapsed
+    await charButton.click();
+    await page.waitForTimeout(300);
 
-    console.log("[TEST] ✅ PASS: Character accordion exists!");
+    console.log("[TEST] ✓ Characters section expanded");
+
+    console.log("[TEST] ✅ PASS: Character accordion works!");
   });
 
   test("accordion: ideas expand and collapse", async ({ page }) => {
@@ -94,17 +93,17 @@ test.describe("Sprint-35: Sidebar Accordion", () => {
 
     console.log("[TEST] ✓ Book created");
 
-    // Check if ideas section exists
-    const ideaSection = sidebar.getByText(/Идеи/i);
-    if (await ideaSection.isVisible({ timeout: 1000 }).catch(() => false)) {
-      console.log("[TEST] ✓ Ideas section visible");
+    // Find ideas section header button and expand it
+    const ideaButton = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    await expect(ideaButton).toBeVisible({ timeout: 5000 });
 
-      // Just verify section exists and is interactive
-      await expect(ideaSection).toBeVisible();
-      console.log("[TEST] ✓ Ideas section is interactive");
-    }
+    // Click to expand if collapsed
+    await ideaButton.click();
+    await page.waitForTimeout(300);
 
-    console.log("[TEST] ✅ PASS: Ideas accordion exists!");
+    console.log("[TEST] ✓ Ideas section expanded");
+
+    console.log("[TEST] ✅ PASS: Ideas accordion works!");
   });
 
   test("accordion: multiple chapters toggle independently", async ({ page }) => {

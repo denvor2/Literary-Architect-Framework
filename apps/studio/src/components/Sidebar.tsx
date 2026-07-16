@@ -8,7 +8,14 @@ import type {
   Scene,
 } from "@/domain/model";
 import { IdeasPanel } from "@/components/IdeasPanel";
-import { Trash2 } from "lucide-react";
+import {
+  Trash2,
+  BookOpen,
+  FileText,
+  User,
+  Lightbulb,
+  Trash,
+} from "lucide-react";
 
 type SidebarSection = "chapters" | "characters" | "ideas" | "series" | "trash";
 
@@ -226,9 +233,12 @@ export function Sidebar({
               : "Развернуть серии"
           }
         >
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Серии и книги
-          </h2>
+          <div className="flex items-center gap-2">
+            <BookOpen size={16} className="text-zinc-500" />
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Серии и книги
+            </h2>
+          </div>
           <span className="text-zinc-500 dark:text-zinc-400">
             {expandedSidebarSection === "series" ? "▾" : "▸"}
           </span>
@@ -500,9 +510,12 @@ export function Sidebar({
               : "Развернуть главы"
           }
         >
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Главы ({chapters.length})
-          </h2>
+          <div className="flex items-center gap-2">
+            <FileText size={16} className="text-zinc-500" />
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Главы ({chapters.length})
+            </h2>
+          </div>
           <span className="text-zinc-500 dark:text-zinc-400">
             {expandedSidebarSection === "chapters" ? "▾" : "▸"}
           </span>
@@ -651,9 +664,12 @@ export function Sidebar({
               : "Развернуть персонажей"
           }
         >
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Персонажи ({characters.length})
-          </h2>
+          <div className="flex items-center gap-2">
+            <User size={16} className="text-zinc-500" />
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Персонажи ({characters.length})
+            </h2>
+          </div>
           <span className="text-zinc-500 dark:text-zinc-400">
             {expandedSidebarSection === "characters" ? "▾" : "▸"}
           </span>
@@ -733,9 +749,12 @@ export function Sidebar({
               : "Развернуть идеи"
           }
         >
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Идеи ({ideas.length})
-          </h2>
+          <div className="flex items-center gap-2">
+            <Lightbulb size={16} className="text-zinc-500" />
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Идеи ({ideas.length})
+            </h2>
+          </div>
           <span className="text-zinc-500 dark:text-zinc-400">
             {expandedSidebarSection === "ideas" ? "▾" : "▸"}
           </span>
@@ -761,18 +780,21 @@ export function Sidebar({
               : "Развернуть корзину"
           }
         >
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Корзина{" "}
-            {(() => {
-              const total =
-                deletedBooks.length +
-                deletedChapters.length +
-                deletedScenes.length +
-                deletedCharacters.length +
-                deletedIdeas.length;
-              return total > 0 ? `(${total})` : "";
-            })()}
-          </h2>
+          <div className="flex items-center gap-2">
+            <Trash size={16} className="text-zinc-500" />
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              Корзина{" "}
+              {(() => {
+                const total =
+                  deletedBooks.length +
+                  deletedChapters.length +
+                  deletedScenes.length +
+                  deletedCharacters.length +
+                  deletedIdeas.length;
+                return total > 0 ? `(${total})` : "";
+              })()}
+            </h2>
+          </div>
           <span className="text-zinc-500 dark:text-zinc-400">
             {expandedSidebarSection === "trash" ? "▾" : "▸"}
           </span>

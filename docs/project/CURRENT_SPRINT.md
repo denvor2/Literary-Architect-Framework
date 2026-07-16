@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 37 — Export Localization & i18n Framework** — **pending**
+**Sprint 37 — Export Localization & i18n Framework** — **in progress**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,20 +10,22 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** Pending — ready to start
+- **Status:** In progress — Step-01 (i18n Framework) complete, Step-02 ready
 - **Phase:** Phase 1 (MVP)
 - **Scope:** Implement i18n framework (next-intl), language switching (EN/RU), localize UI & export dialogs
 
-## Sprint 36 — closed
+## Sprint 36 — closed ✅
 
-Section Counters (Sidebar Enhancement) — completed 2026-07-17. Two Step Cards, all completed:
+Section Counters (Sidebar Enhancement) — completed 2026-07-17. Two Step Cards, all completed and verified:
 Section Counters Implementation (added Книги/Серии counters to Sidebar) and Live Verification
 (confirmed all 6 counters render correctly on production build).
 
-- **Step 01:** Implementation ✅ (commit 97aa7d2)
-- **Step 02:** Live verification ✅ (commit 1814783)
+- **Step 01:** Implementation ✅ (commit 97aa7d2) — Scope CLEAN, documentation HONEST
+- **Step 02:** Live verification ✅ (commit 1814783) — Tester independent PASS
 
-All steps live-verified and ready for architect-reviewer/tester. Next: Sprint 37 (i18n Framework).
+All steps live-verified, architect-verified (STATUS: OK), and archived to done/.
+All 6 counters (Books, Series, Chapters, Characters, Ideas, Trash) display with real-time updates.
+Next: Sprint 37 (i18n Framework).
 
 ## Sprint 35 — closed
 

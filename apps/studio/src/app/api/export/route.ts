@@ -1,27 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateMarkdownZip } from "@/lib/exporters/markdownExporter";
 import { generateDOCX } from "@/lib/exporters/docxExporter";
+import { generateHybridArchive } from "@/lib/exporters/hybridArchiveExporter";
 import type { Book, Series } from "@/domain/model";
 
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {
-      format: "json" | "markdown-zip" | "docx";
+      format: "markdown-zip" | "docx" | "pdf" | "fb2";
       book: Book;
       series?: Series | null;
+      filename?: string;
     };
 
-    const { format, book, series = null } = body;
+    const { format, book, series = null, filename } = body;
+
+    const getFilename = (ext: string) => {
+      return filename || `${book.title || "export"}.${ext}`;
+    };
 
     if (format === "markdown-zip") {
-      const zip = generateMarkdownZip(series, book);
+      const zip = generateHybridArchive(series, book);
       const blob = await zip.generateAsync({ type: "blob" });
 
       return new NextResponse(blob, {
         status: 200,
         headers: {
           "Content-Type": "application/zip",
-          "Content-Disposition": `attachment; filename="${book.title || "export"}.zip"`,
+          "Content-Disposition": `attachment; filename="${getFilename("zip")}"`,
         },
       });
     }
@@ -34,26 +40,27 @@ export async function POST(request: NextRequest) {
         headers: {
           "Content-Type":
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "Content-Disposition": `attachment; filename="${book.title || "export"}.docx"`,
+          "Content-Disposition": `attachment; filename="${getFilename("docx")}"`,
         },
       });
     }
 
-    if (format === "json") {
-      const jsonData = JSON.stringify(book, null, 2);
-      const blob = new Blob([jsonData], { type: "application/json" });
+    if (format === "pdf") {
+      return NextResponse.json(
+        { error: "PDF export not yet implemented" },
+        { status: 501 },
+      );
+    }
 
-      return new NextResponse(blob, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Content-Disposition": `attachment; filename="${book.title || "export"}.json"`,
-        },
-      });
+    if (format === "fb2") {
+      return NextResponse.json(
+        { error: "FB2 export not yet implemented" },
+        { status: 501 },
+      );
     }
 
     return NextResponse.json(
-      { error: "Invalid format. Use 'json', 'markdown-zip', or 'docx'." },
+      { error: "Invalid format. Use 'markdown-zip', 'docx', 'pdf', or 'fb2'." },
       { status: 400 },
     );
   } catch (error) {

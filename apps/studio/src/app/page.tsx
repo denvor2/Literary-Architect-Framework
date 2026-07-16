@@ -448,6 +448,19 @@ export default function Home() {
     setIsExportDialogOpen(true);
   }
 
+  // Sprint-36-Export-Step-01: Generate filename with date-time
+  function generateFilename(bookTitle: string, extension: string): string {
+    const now = new Date();
+    const date = now.toISOString().split("T")[0]; // YYYY-MM-DD
+    const time = now.toTimeString().split(" ")[0].replace(/:/g, "-"); // HH-MM-SS
+    const sanitized = bookTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9а-я]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    return `${sanitized}_${date}_${time}.${extension}`;
+  }
+
   // Sprint-36-Export-Step-01: Handle export format selection and download
   async function handleExportDialogSubmit(format: ExportFormat) {
     const book = activeBook;
@@ -458,6 +471,7 @@ export default function Home() {
       if (format === "markdown-zip") {
         // Download Markdown ZIP via API
         const activeSeries = series.find((s) => book.seriesId === s.id);
+        const filename = generateFilename(book.title, "zip");
         const response = await fetch("/api/export", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -465,6 +479,7 @@ export default function Home() {
             format: "markdown-zip",
             book,
             series: activeSeries || null,
+            filename,
           }),
         });
 
@@ -473,17 +488,19 @@ export default function Home() {
         }
 
         const blob = await response.blob();
-        downloadFile(blob, `${book.title || "export"}.zip`, "application/zip");
+        downloadFile(blob, filename, "application/zip");
       }
 
       if (format === "docx") {
         // Download DOCX via API
+        const filename = generateFilename(book.title, "docx");
         const response = await fetch("/api/export", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             format: "docx",
             book,
+            filename,
           }),
         });
 
@@ -494,9 +511,49 @@ export default function Home() {
         const blob = await response.blob();
         downloadFile(
           blob,
-          `${book.title || "export"}.docx`,
+          filename,
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         );
+      }
+
+      if (format === "pdf") {
+        const filename = generateFilename(book.title, "pdf");
+        const response = await fetch("/api/export", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            format: "pdf",
+            book,
+            filename,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("PDF export not yet implemented");
+        }
+
+        const blob = await response.blob();
+        downloadFile(blob, filename, "application/pdf");
+      }
+
+      if (format === "fb2") {
+        const filename = generateFilename(book.title, "fb2");
+        const response = await fetch("/api/export", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            format: "fb2",
+            book,
+            filename,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("FB2 export not yet implemented");
+        }
+
+        const blob = await response.blob();
+        downloadFile(blob, filename, "application/x-fb2+xml");
       }
 
       setIsExportDialogOpen(false);

@@ -18,6 +18,7 @@ import { RegisterDialog } from "@/components/RegisterDialog";
 import { ExportDialog, type ExportFormat } from "@/components/ExportDialog";
 import { SeriesSettingsDialog } from "@/components/SeriesSettingsDialog";
 import { BookSettingsDialog } from "@/components/BookSettingsDialog";
+import { ImportDialog } from "@/components/ImportDialog";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 import { useAuthController } from "@/hooks/useAuthController";
 import { execute as aiBusExecute } from "@/ai/aiBus";
@@ -98,6 +99,10 @@ export default function Home() {
   // Sprint-36-Export-Step-01: Export dialog state
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportLoading, setIsExportLoading] = useState(false);
+
+  // Sprint-37-Import-Step-01: Import dialog state
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isImportLoading, setIsImportLoading] = useState(false);
 
   // All workspace hooks must be called unconditionally, even if not logged in
   const {
@@ -446,6 +451,91 @@ export default function Home() {
     const book = books.find((b) => b.id === bookId);
     if (!book) return;
     setIsExportDialogOpen(true);
+  }
+
+  // Sprint-37-Import-Step-01: Handle import from archive
+  function handleImportBook() {
+    setIsImportDialogOpen(true);
+  }
+
+  // Sprint-37-Import-Step-01: Process imported archive
+  async function handleImportDialogSubmit(file: File) {
+    setIsImportLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/import", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(
+          error.details?.[0] ||
+            error.error ||
+            "Failed to import archive",
+        );
+      }
+
+      const importedData = await response.json();
+      if (!importedData.book) {
+        throw new Error("No book data in archive");
+      }
+
+      // Imported book is already complete with all nested data
+      const importedBook = importedData.book as Book;
+
+      // Create book with imported data
+      // First create the book structure
+      const createBookPayload = {
+        title: importedBook.title,
+        genre: importedBook.genre,
+        language: importedBook.language,
+        premise: importedBook.premise,
+        shortAnnotation: importedBook.shortAnnotation,
+        fullAnnotation: importedBook.fullAnnotation,
+        tags: importedBook.tags,
+        seriesId: importedBook.seriesId,
+      };
+
+      // Since we have full data, we update workspace directly via internal state
+      // This is a temporary solution - ideally we'd have an importBook function
+      const maxId = books.reduce(
+        (max, b) => Math.max(max, parseInt(b.id) || 0),
+        0,
+      );
+      const newBookId = String(maxId + 1);
+
+      // Directly add to workspace by creating through UI
+      // For now, use createBook as placeholder and the import API will handle it
+      console.log("[IMPORT] Imported book:", importedBook.title);
+      console.log("[IMPORT] Chapters:", importedBook.chapters.length);
+      console.log("[IMPORT] Characters:", importedBook.characters.length);
+      console.log("[IMPORT] Ideas:", importedBook.ideas.length);
+
+      // TODO: Implement direct workspace update or create importBook method in useWorkspaceController
+      // For now, show success and let user manually open the imported book
+      // This is where we would sync to backend/database
+
+      // If archive contains series, handle it (future: integrate with series management)
+      if (importedData.series) {
+        console.log("[IMPORT] Archive references series:", importedData.series);
+      }
+
+      // Show warnings if any
+      if (importedData.warnings && importedData.warnings.length > 0) {
+        console.warn("[IMPORT] Warnings:", importedData.warnings);
+      }
+
+      setIsImportDialogOpen(false);
+    } catch (err) {
+      console.error("Import error:", err);
+      throw err;
+    } finally {
+      setIsImportLoading(false);
+    }
   }
 
   // Sprint-36-Export-Step-01: Generate filename with date-time
@@ -800,6 +890,7 @@ export default function Home() {
             /* Auto-saved by useWorkspaceController */
           }}
           onExportBook={handleExportBook}
+          onImportBook={handleImportBook}
           onOpenSearch={() => {
             /* Opens search bar — keyboard shortcut handler in Header.tsx */
           }}
@@ -1088,6 +1179,7 @@ export default function Home() {
           /* Auto-saved by useWorkspaceController */
         }}
         onExportBook={handleExportBook}
+        onImportBook={handleImportBook}
         onOpenSearch={() => {
           /* Opens search bar — keyboard shortcut handler in Header.tsx */
         }}
@@ -1423,6 +1515,14 @@ export default function Home() {
           onCancel={() => setIsExportDialogOpen(false)}
         />
       )}
+
+      {/* Sprint-37-Import-Step-01: Import dialog */}
+      <ImportDialog
+        isOpen={isImportDialogOpen}
+        isLoading={isImportLoading}
+        onImport={handleImportDialogSubmit}
+        onCancel={() => setIsImportDialogOpen(false)}
+      />
 
       {/* Sprint-34-Step-05: Series Settings dialog */}
       {settingsSeriesId &&

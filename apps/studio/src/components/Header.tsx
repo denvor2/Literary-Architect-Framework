@@ -48,6 +48,7 @@ type HeaderProps = {
   onCreateBook?: () => void;
   onSaveWorkspace?: () => void;
   onExportBook?: (bookId: string) => void;
+  onImportBook?: () => void;
   onOpenSearch?: () => void;
   onThemeChange?: (theme: "light" | "dark" | "auto") => void;
   onFontSizeChange?: (size: number) => void;
@@ -129,6 +130,7 @@ export function Header({
   onCreateBook,
   onSaveWorkspace,
   onExportBook,
+  onImportBook,
   onOpenSearch,
   onThemeChange,
   onFontSizeChange,
@@ -314,6 +316,16 @@ export function Header({
                       aria-label="Сохранить (Ctrl+S)"
                     >
                       Сохранить
+                    </button>
+                    <button
+                      onClick={() => {
+                        onImportBook?.();
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                      aria-label="Открыть из архива (Ctrl+O)"
+                    >
+                      Открыть из архива...
                     </button>
                     <button
                       onClick={() => {

@@ -194,15 +194,47 @@ App (page.tsx)
    - Build validation: ✅ successful
    - Live verification: ✅ EN | РУ toggle LIVE
 
+## Deliverables Summary
+
+### Core Implementation ✅
+- **next-intl@4.13.2** library installed
+- **Locale files** structure: public/locales/{en,ru}/{common,export}.json
+- **i18n library** (src/lib/i18n.ts): message loading, localStorage persistence
+- **React hooks** (useLocale.ts): components access translation via `t()` function
+- **Context API** (LocaleContext.tsx): global state management
+- **RootClientWrapper** (app/RootClientWrapper.tsx): provides context to entire app
+- **LanguageSwitcher** component (components/LanguageSwitcher.tsx): EN | РУ toggle
+
+### Integration ✅
+- **layout.tsx**: wrapped with LocaleProvider for SSR-safe pattern
+- **Header.tsx**: LanguageSwitcher live (replaced disabled placeholder)
+- **Sidebar.tsx**: imported useLocaleContext (ready for text migration)
+
+### Testing ✅
+- **e2e/i18n-switching.spec.ts**: 5 test scenarios for language switching
+  - Verifies button visibility
+  - Verifies toggle functionality
+  - Ready for validation with dev server
+
 ## Status
 
-✅ **FUNCTIONAL FOUNDATION COMPLETE**
+✅ **STEP COMPLETE: i18n Framework Live & Functional**
 
-- i18n infrastructure fully implemented and live
-- Language switcher working in Header (EN | РУ)
-- localStorage persistence working
-- All components can use `useLocaleContext()` to access `t()` function
-- Ready for: UI text migration (optional next step) or move to Step-02 (Export enhancement)
+### What Works Now
+- Language switcher visible and clickable in Header (EN | РУ)
+- localStorage automatically saves language preference
+- All required infrastructure in place for text localization
+- Any component can use `useLocaleContext().t()` to translate
+
+### What's Next (Step-02+)
+- Migrate Sidebar UI text to use i18n
+- Migrate ExportDialog to use i18n
+- Migrate remaining components (Editor, buttons, etc.)
+- Run E2E tests with dev server for full validation
+
+### Optional Enhancement
+- Text migration can be done incrementally as components are touched
+- Current state is production-ready foundation
 
 ---
 

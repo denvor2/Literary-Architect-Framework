@@ -1,21 +1,18 @@
 STATUS: FIX
 
 SUMMARY (RU):
-Код изменён корректно (1 строка в Sidebar.tsx), scope deviation задокументирован. Но ARP не содержит обязательных дoказательств:
-отсутствуют скриншоты и видео из Step Card Output, E2E тесты не проверяют real-time счётчики (требование Step Card #37), 
-CRITICAL_FEATURES.md не обновлена (CLAUDE.md Sprint 35+). Tester отчёт содержит только утверждение без конкретных логов.
-Требуется добавить недостающие дoказательства перед финальным OK.
+Код верен (1 строка Sidebar.tsx), scope deviation задокументирован, E2E тесты (11 сценариев) и CRITICAL_FEATURES.md обновлены. Curl+grep доказательство улучшено (реальный HTML показан). Однако 3 из 5 требуемых доказательств отсутствуют: npm run validate остался на уровне "✅ marks" без реального console output, скриншоты Sidebar не приложены, видео счётчиков не добавлено. Стандарт проекта требует "real verification" (CLAUDE.md) — текущее состояние неполно.
 
 RISKS:
-- E2E tests не валидируют real-time counter updates (добавить книгу → счётчик +1) — критичная часть Step Card не проверена
-- CRITICAL_FEATURES.md остался без новой строки функции — нарушение CLAUDE.md Sprint 35+ requirement
-- Tester report содержит только утверждение ("все работает"), но без конкретных logs/скриншотов — не соответствует проектному стандарту "real evidence"
-- Step Card Output требует скриншоты и видео, но их нет в ARP — неполные deliverables
-- npm run validate не показан с полным выводом (только утверждение, что passed) — непроверяемо
+- npm run validate показывает только ✅ метки, не полный console output (timestamps, actual errors/warnings, E2E test logs)
+- Скриншоты Sidebar (Step Card Output requirement) отсутствуют в ARP
+- Видео real-time счётчиков (Step Card Output requirement) отсутствует
+- E2E test execution logs не добавлены (нет доказательства что 11 тестов запустились и прошли)
 
 NEXT STEP:
-1. Добавить E2E test "Counter updates on book create" — создать книгу через UI, проверить Книги (0) → (1)
-2. Добавить строку в CRITICAL_FEATURES.md таблицу Sprint-36 с ссылкой на e2e/section-counters.spec.ts
-3. Добавить в ARP Screenshots section: скриншоты Sidebar со всеми 6 счётчиками (Книги, Серии, Главы, Персонажи, Идеи, Корзина)
-4. Добавить в ARP Evidence section конкретный вывод npm run validate (полный логистический вывод, не просто ✅ mark)
-5. Перевызвать tester с требованием: добавить книгу через UI на scratch-server, скриншот ДО и ПОСЛЕ (счётчик изменится с 0 на 1)
+1. Запустить `npm run validate` в apps/studio/ и добавить ПОЛНЫЙ console output (все stages) в ARP секцию "Evidence: Real npm run validate output"
+2. Открыть браузер на http://localhost:3420, скриншот Sidebar со всеми 6 счётчиками, добавить в ARP как "Evidence: Sidebar Screenshots"
+3. На running server создать книгу через UI, скриншоты ДО/ПОСЛЕ (Книги: 0 → 1), добавить в ARP
+4. Запустить `npm run test:e2e e2e/section-counters.spec.ts`, скопировать terminal output (pass/fail count) в ARP
+
+После этих fixes ARP будет соответствовать стандарту "real evidence" проекта и получит STATUS: OK.

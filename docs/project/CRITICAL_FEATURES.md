@@ -25,8 +25,8 @@
 
 | # | Функция | E2E Тест | Статус | Примечания |
 |---|---------|----------|--------|-----------|
-| 8 | Global Accordion: one section expanded | `TBD` | ⏳ PLANNED | New Step Card Sprint-36-Step-XX |
-| 9 | Global Accordion: persist in localStorage | `TBD` | ⏳ PLANNED | expandedSidebarSection state |
+| 8 | Global Accordion: one section expanded | `e2e/sidebar-accordion.spec.ts` | ✅ VERIFIED (live) | Step-02: only one section at a time |
+| 9 | Global Accordion: persist in localStorage | `e2e/sidebar-accordion.spec.ts` | ✅ VERIFIED (live) | expandedSidebarSection state + localStorage |
 
 ---
 
@@ -81,6 +81,6 @@ npm run test:e2e:debug
 
 ## 🎯 Текущая Coverage
 
-- **E2E tests**: 7 функций (Sprint-35)
-- **Coverage**: ~35% критичного функционала
+- **E2E tests**: 9 функций (Sprint-35: 7 + Sprint-36: 2)
+- **Coverage**: ~45% критичного функционала
 - **Goal**: 100% критичного функционала покрыто тестами к Sprint-40

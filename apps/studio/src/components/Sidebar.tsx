@@ -194,35 +194,45 @@ export function Sidebar({
     <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 md:w-56 md:p-3 md:gap-4">
       {/* SERIES SECTION WITH NESTED BOOKS (NO SEPARATE BOOKS SECTION) */}
       <div className="flex flex-col gap-2">
-        <div className="mb-2 flex items-center justify-between">
+        <button
+          onClick={() => onToggleSidebarSection?.('series')}
+          className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
+          aria-label={expandedSidebarSection === 'series' ? "Свернуть серии" : "Развернуть серии"}
+        >
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Серии и книги
           </h2>
-          <div className="flex gap-1">
-            <button
-              onClick={() => onNewBook?.()}
-              className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              aria-label="Создать новую книгу"
-              title="Новая книга"
-            >
-              📖
-            </button>
-            <button
-              onClick={() => onCreateSeries?.()}
-              className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              aria-label="Создать новую серию"
-              title="Новая серия"
-            >
-              +
-            </button>
-          </div>
-        </div>
+          <span className="text-zinc-500 dark:text-zinc-400">
+            {expandedSidebarSection === 'series' ? '▾' : '▸'}
+          </span>
+        </button>
 
-        {series.length === 0 && books.filter((b) => !b.seriesId).length === 0 ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            Пока нет серий и книг
-          </p>
-        ) : (
+        {expandedSidebarSection === 'series' && (
+          <>
+            <div className="flex gap-1">
+              <button
+                onClick={() => onNewBook?.()}
+                className="flex-1 rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                aria-label="Создать новую книгу"
+                title="Новая книга"
+              >
+                📖 Книга
+              </button>
+              <button
+                onClick={() => onCreateSeries?.()}
+                className="flex-1 rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                aria-label="Создать новую серию"
+                title="Новая серия"
+              >
+                + Серия
+              </button>
+            </div>
+
+            {series.length === 0 && books.filter((b) => !b.seriesId).length === 0 ? (
+              <p className="text-sm text-zinc-400 dark:text-zinc-600">
+                Пока нет серий и книг
+              </p>
+            ) : (
           <ul className="flex flex-col gap-2">
             {/* Series items */}
             {series.map((s) => {
@@ -430,261 +440,314 @@ export function Sidebar({
               );
             })()}
           </ul>
+            )}
+            </>
         )}
       </div>
 
       {/* CHAPTERS SECTION */}
       <div className="flex flex-col gap-2">
-        <div className="mb-2 flex items-center justify-between">
+        <button
+          onClick={() => onToggleSidebarSection?.('chapters')}
+          className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
+          aria-label={expandedSidebarSection === 'chapters' ? "Свернуть главы" : "Развернуть главы"}
+        >
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Главы ({chapters.length})
           </h2>
-          <button
-            onClick={() => onCreateChapter?.()}
-            className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-            aria-label="Создать новую главу"
-          >
-            + Новая глава
-          </button>
-        </div>
-        {chapters.length === 0 ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            Пока нет глав
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {chapters.map((chapter) => {
-              const isChapterExpanded = selectedChapterId === chapter.id;
-              const isChapterCollapsed = !isChapterExpanded;
-              return (
-                <li key={chapter.id}>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        console.log("[COLLAPSE] Toggling chapter:", chapter.id, "currently collapsed:", isChapterCollapsed);
-                        onToggleChapterCollapsed?.(chapter.id);
-                      }}
-                      aria-label={
-                        isChapterCollapsed
-                          ? "Развернуть главу"
-                          : "Свернуть главу"
-                      }
-                      className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                    >
-                      {isChapterCollapsed ? "▸" : "▾"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        onSelectChapter?.(chapter.id);
-                        scrollBlockIntoView(`chapter-block-${chapter.id}`);
-                      }}
-                      className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                        selectedChapterId === chapter.id && !selectedSceneId
-                          ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                          : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                      }`}
-                      aria-label={`Выбрать главу ${chapter.title}`}
-                    >
-                      {chapter.title}
-                    </button>
-                    <button
-                      onClick={() => onCreateScene?.(chapter.id)}
-                      className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                      aria-label={`Создать новую сцену в главе ${chapter.title}`}
-                    >
-                      + Новая сцена
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (
-                          confirm(`Удалить главу "${chapter.title}"?`)
-                        ) {
-                          onDeleteChapter?.(chapter.id);
-                        }
-                      }}
-                      className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                      title="Удалить главу"
-                      aria-label={`Удалить главу ${chapter.title}`}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                  {!isChapterCollapsed && chapter.scenes.length > 0 && (
-                    <ul className="ml-3 mt-1 flex flex-col gap-2 border-l border-zinc-200 pl-2 dark:border-zinc-800">
-                      {chapter.scenes.map((scene) => (
-                        <li key={scene.id}>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => {
-                                onSelectScene?.(chapter.id, scene.id);
-                                scrollBlockIntoView(`scene-block-${scene.id}`);
-                              }}
-                              className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                                selectedChapterId === chapter.id &&
-                                selectedSceneId === scene.id
-                                  ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                                  : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
-                              }`}
-                              aria-label={`Выбрать сцену ${scene.title}`}
-                            >
-                              {scene.title}
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (
-                                  confirm(`Удалить сцену "${scene.title}"?`)
-                                ) {
-                                  onDeleteScene?.(chapter.id, scene.id);
-                                }
-                              }}
-                              className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                              title="Удалить сцену"
-                              aria-label={`Удалить сцену ${scene.title}`}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+          <span className="text-zinc-500 dark:text-zinc-400">
+            {expandedSidebarSection === 'chapters' ? '▾' : '▸'}
+          </span>
+        </button>
+        {expandedSidebarSection === 'chapters' && (
+          <>
+            {chapters.length === 0 ? (
+              <p className="text-sm text-zinc-400 dark:text-zinc-600">
+                Пока нет глав
+              </p>
+            ) : (
+              <>
+                <button
+                  onClick={() => onCreateChapter?.()}
+                  className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  aria-label="Создать новую главу"
+                >
+                  + Новая глава
+                </button>
+                <ul className="flex flex-col gap-2">
+                  {chapters.map((chapter) => {
+                    const isChapterExpanded = selectedChapterId === chapter.id;
+                    const isChapterCollapsed = !isChapterExpanded;
+                    return (
+                      <li key={chapter.id}>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              console.log("[COLLAPSE] Toggling chapter:", chapter.id, "currently collapsed:", isChapterCollapsed);
+                              onToggleChapterCollapsed?.(chapter.id);
+                            }}
+                            aria-label={
+                              isChapterCollapsed
+                                ? "Развернуть главу"
+                                : "Свернуть главу"
+                            }
+                            className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                          >
+                            {isChapterCollapsed ? "▸" : "▾"}
+                          </button>
+                          <button
+                            onClick={() => {
+                              onSelectChapter?.(chapter.id);
+                              scrollBlockIntoView(`chapter-block-${chapter.id}`);
+                            }}
+                            className={`w-full rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                              selectedChapterId === chapter.id && !selectedSceneId
+                                ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                            }`}
+                            aria-label={`Выбрать главу ${chapter.title}`}
+                          >
+                            {chapter.title}
+                          </button>
+                          <button
+                            onClick={() => onCreateScene?.(chapter.id)}
+                            className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                            aria-label={`Создать новую сцену в главе ${chapter.title}`}
+                          >
+                            + Новая сцена
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (
+                                confirm(`Удалить главу "${chapter.title}"?`)
+                              ) {
+                                onDeleteChapter?.(chapter.id);
+                              }
+                            }}
+                            className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                            title="Удалить главу"
+                            aria-label={`Удалить главу ${chapter.title}`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        {!isChapterCollapsed && chapter.scenes.length > 0 && (
+                          <ul className="ml-3 mt-1 flex flex-col gap-2 border-l border-zinc-200 pl-2 dark:border-zinc-800">
+                            {chapter.scenes.map((scene) => (
+                              <li key={scene.id}>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => {
+                                      onSelectScene?.(chapter.id, scene.id);
+                                      scrollBlockIntoView(`scene-block-${scene.id}`);
+                                    }}
+                                    className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                                      selectedChapterId === chapter.id &&
+                                      selectedSceneId === scene.id
+                                        ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                                        : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
+                                    }`}
+                                    aria-label={`Выбрать сцену ${scene.title}`}
+                                  >
+                                    {scene.title}
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (
+                                        confirm(`Удалить сцену "${scene.title}"?`)
+                                      ) {
+                                        onDeleteScene?.(chapter.id, scene.id);
+                                      }
+                                    }}
+                                    className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                                    title="Удалить сцену"
+                                    aria-label={`Удалить сцену ${scene.title}`}
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
+          </>
         )}
       </div>
 
       {/* CHARACTERS SECTION */}
       <div className="flex flex-col gap-2">
-        <div className="mb-2 flex items-center justify-between">
+        <button
+          onClick={() => onToggleSidebarSection?.('characters')}
+          className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
+          aria-label={expandedSidebarSection === 'characters' ? "Свернуть персонажей" : "Развернуть персонажей"}
+        >
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Персонажи ({characters.length})
           </h2>
-          <button
-            onClick={() => onCreateCharacter?.()}
-            className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-            aria-label="Создать нового персонажа"
-          >
-            + Новый персонаж
-          </button>
-        </div>
-        {characters.length === 0 ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            Пока нет персонажей
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {characters.map((character) => {
-              const isCharacterSelected = selectedCharacterId === character.id;
-              return (
-              <li key={character.id}>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => {
-                      if (isCharacterSelected) {
-                        // Already selected, keep it selected (no collapse)
-                      } else {
-                        onSelectCharacter?.(character.id);
-                      }
-                    }}
-                    className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
-                      isCharacterSelected
-                        ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
-                        : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                    }`}
-                    aria-label={`Выбрать персонажа ${character.name || "Без имени"}`}
-                  >
-                    {character.name || "Без имени"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (
-                        confirm(`Удалить персонажа "${character.name || "Без имени"}"?`)
-                      ) {
-                        onDeleteCharacter?.(character.id);
-                      }
-                    }}
-                    className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                    title="Удалить персонажа"
-                    aria-label={`Удалить персонажа ${character.name || "Без имени"}`}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </li>
-            );
-            })}
-          </ul>
+          <span className="text-zinc-500 dark:text-zinc-400">
+            {expandedSidebarSection === 'characters' ? '▾' : '▸'}
+          </span>
+        </button>
+        {expandedSidebarSection === 'characters' && (
+          <>
+            {characters.length === 0 ? (
+              <p className="text-sm text-zinc-400 dark:text-zinc-600">
+                Пока нет персонажей
+              </p>
+            ) : (
+              <>
+                <button
+                  onClick={() => onCreateCharacter?.()}
+                  className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  aria-label="Создать нового персонажа"
+                >
+                  + Новый персонаж
+                </button>
+                <ul className="flex flex-col gap-2">
+                  {characters.map((character) => {
+                    const isCharacterSelected = selectedCharacterId === character.id;
+                    return (
+                    <li key={character.id}>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            if (isCharacterSelected) {
+                              // Already selected, keep it selected (no collapse)
+                            } else {
+                              onSelectCharacter?.(character.id);
+                            }
+                          }}
+                          className={`flex-1 rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                            isCharacterSelected
+                              ? "bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white"
+                              : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                          }`}
+                          aria-label={`Выбрать персонажа ${character.name || "Без имени"}`}
+                        >
+                          {character.name || "Без имени"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (
+                              confirm(`Удалить персонажа "${character.name || "Без имени"}"?`)
+                            ) {
+                              onDeleteCharacter?.(character.id);
+                            }
+                          }}
+                          className="rounded-md p-1 text-zinc-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                          title="Удалить персонажа"
+                          aria-label={`Удалить персонажа ${character.name || "Без имени"}`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                  })}
+                </ul>
+              </>
+            )}
+          </>
         )}
       </div>
 
       {/* IDEAS SECTION */}
-      <div>
-        <IdeasPanel
-          ideas={ideas}
-          onCreate={onCreateIdea}
-          onUpdate={onUpdateIdea}
-          onDelete={onDeleteIdea}
-        />
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={() => onToggleSidebarSection?.('ideas')}
+          className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
+          aria-label={expandedSidebarSection === 'ideas' ? "Свернуть идеи" : "Развернуть идеи"}
+        >
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Идеи ({ideas.length})
+          </h2>
+          <span className="text-zinc-500 dark:text-zinc-400">
+            {expandedSidebarSection === 'ideas' ? '▾' : '▸'}
+          </span>
+        </button>
+        {expandedSidebarSection === 'ideas' && (
+          <IdeasPanel
+            ideas={ideas}
+            onCreate={onCreateIdea}
+            onUpdate={onUpdateIdea}
+            onDelete={onDeleteIdea}
+          />
+        )}
       </div>
 
       {/* TRASH SECTION (REORDERED TO BOTTOM) */}
       <div className="flex flex-col gap-2">
-        <div className="mb-2 flex items-center justify-between">
+        <button
+          onClick={() => onToggleSidebarSection?.('trash')}
+          className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
+          aria-label={expandedSidebarSection === 'trash' ? "Свернуть корзину" : "Развернуть корзину"}
+        >
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Корзина {deletedBooks.length > 0 && `(${deletedBooks.length})`}
           </h2>
-        </div>
-        {deletedBooks.length === 0 ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-600">
-            Корзина пуста
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {deletedBooks.map((book) => (
-              <li key={book.id}>
-                <div className="flex items-center gap-1">
-                  <div className="flex-1">
-                    <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
-                      <div className="truncate">
-                        {book.title || "Без названия"}
-                      </div>
-                      {book.deletedAt && (
-                        <div className="text-xs text-zinc-500 dark:text-zinc-700">
-                          {new Date(book.deletedAt).toLocaleDateString("ru-RU")}
+          <span className="text-zinc-500 dark:text-zinc-400">
+            {expandedSidebarSection === 'trash' ? '▾' : '▸'}
+          </span>
+        </button>
+        {expandedSidebarSection === 'trash' && (
+          <>
+            {deletedBooks.length === 0 ? (
+              <p className="text-sm text-zinc-400 dark:text-zinc-600">
+                Корзина пуста
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {deletedBooks.map((book) => (
+                  <li key={book.id}>
+                    <div className="flex items-center gap-1">
+                      <div className="flex-1">
+                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                          <div className="truncate">
+                            {book.title || "Без названия"}
+                          </div>
+                          {book.deletedAt && (
+                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                              {new Date(book.deletedAt).toLocaleDateString("ru-RU")}
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
+                      <button
+                        onClick={() => onRestoreBook?.(book.id)}
+                        className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                        title="Восстановить"
+                        aria-label={`Восстановить книгу ${book.title || "Без названия"}`}
+                      >
+                        ↩️
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Безвозвратно удалить "${book.title || "Без названия"}"?`,
+                            )
+                          ) {
+                            onPermanentlyDeleteBook?.(book.id);
+                          }
+                        }}
+                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                        title="Удалить безвозвратно"
+                        aria-label={`Безвозвратно удалить книгу ${book.title || "Без названия"}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    onClick={() => onRestoreBook?.(book.id)}
-                    className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
-                    title="Восстановить"
-                    aria-label={`Восстановить книгу ${book.title || "Без названия"}`}
-                  >
-                    ↩️
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (
-                        confirm(
-                          `Безвозвратно удалить "${book.title || "Без названия"}"?`,
-                        )
-                      ) {
-                        onPermanentlyDeleteBook?.(book.id);
-                      }
-                    }}
-                    className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                    title="Удалить безвозвратно"
-                    aria-label={`Безвозвратно удалить книгу ${book.title || "Без названия"}`}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </div>
     </aside>

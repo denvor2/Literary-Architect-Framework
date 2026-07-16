@@ -115,6 +115,10 @@ export default function Home() {
     updateBook,
     deleteBook,
     deletedBooks,
+    deletedChapters,
+    deletedScenes,
+    deletedCharacters,
+    deletedIdeas,
     restoreBook,
     permanentlyDeleteBook,
     createChapter,
@@ -783,6 +787,10 @@ export default function Home() {
                 onNewBook={() => setIsDialogOpen(true)}
                 onDeleteBook={deleteBook}
                 deletedBooks={deletedBooks}
+                deletedChapters={deletedChapters}
+                deletedScenes={deletedScenes}
+                deletedCharacters={deletedCharacters}
+                deletedIdeas={deletedIdeas}
                 onRestoreBook={restoreBook}
                 onPermanentlyDeleteBook={permanentlyDeleteBook}
                 onCreateChapter={createChapter}
@@ -1097,6 +1105,10 @@ export default function Home() {
               onNewBook={() => setIsDialogOpen(true)}
               onDeleteBook={deleteBook}
               deletedBooks={deletedBooks}
+              deletedChapters={deletedChapters}
+              deletedScenes={deletedScenes}
+              deletedCharacters={deletedCharacters}
+              deletedIdeas={deletedIdeas}
               onRestoreBook={restoreBook}
               onPermanentlyDeleteBook={permanentlyDeleteBook}
               onCreateChapter={createChapter}

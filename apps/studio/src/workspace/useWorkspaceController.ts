@@ -56,6 +56,8 @@ export function useWorkspaceController() {
   const [deletedBooks, setDeletedBooks] = useState<readonly Book[]>([]);
   const [deletedScenes, setDeletedScenes] = useState<readonly Scene[]>([]);
   const [deletedCharacters, setDeletedCharacters] = useState<readonly Character[]>([]);
+  const [deletedChapters, setDeletedChapters] = useState<readonly Chapter[]>([]);
+  const [deletedIdeas, setDeletedIdeas] = useState<readonly Idea[]>([]);
   const {
     books,
     series,
@@ -159,8 +161,8 @@ export function useWorkspaceController() {
       .catch(() => {})
       .finally(() => setSyncWarning(getSyncWarning()));
     // Persist all deleted items to localStorage so they survive page reloads
-    writeLocalEphemeralState(workspace, deletedBooks, deletedScenes, deletedCharacters);
-  }, [workspace, deletedBooks, deletedScenes, deletedCharacters, isLoaded]);
+    writeLocalEphemeralState(workspace, deletedBooks, deletedScenes, deletedCharacters, deletedChapters, deletedIdeas);
+  }, [workspace, deletedBooks, deletedScenes, deletedCharacters, deletedChapters, deletedIdeas, isLoaded]);
 
   const activeBook = books.find((book) => book.id === activeBookId);
   const chapters = activeBook?.chapters ?? [];
@@ -532,6 +534,21 @@ export function useWorkspaceController() {
       );
       if (!activeBook) return previous;
 
+      const chapterToDelete = activeBook.chapters.find(
+        (c) => c.id === chapterId,
+      );
+
+      // Add to trash
+      if (chapterToDelete) {
+        console.log("[TRASH] === deleteChapter START ===");
+        console.log("[TRASH] Deleting chapter:", chapterId, chapterToDelete.title);
+        setDeletedChapters((previous) => {
+          const updated = [{ ...chapterToDelete, deletedAt: new Date() }, ...previous];
+          console.log("[TRASH] deletedChapters after add:", updated.map(c => c.title));
+          return updated;
+        });
+      }
+
       const remainingChapters = activeBook.chapters.filter(
         (c) => c.id !== chapterId,
       );
@@ -776,6 +793,20 @@ export function useWorkspaceController() {
         (book) => book.id === previous.activeBookId,
       );
       if (!activeBook) return previous;
+
+      const ideaToDelete = activeBook.ideas.find((i) => i.id === ideaId);
+
+      // Add to trash
+      if (ideaToDelete) {
+        console.log("[TRASH] === deleteIdea START ===");
+        console.log("[TRASH] Deleting idea:", ideaId);
+        setDeletedIdeas((previous) => {
+          const updated = [{ ...ideaToDelete, deletedAt: new Date() }, ...previous];
+          console.log("[TRASH] deletedIdeas after add:", updated.length);
+          return updated;
+        });
+      }
+
       return {
         ...previous,
         books: previous.books.map((book) =>
@@ -1307,6 +1338,8 @@ export function useWorkspaceController() {
     deletedBooks,
     deletedScenes,
     deletedCharacters,
+    deletedChapters,
+    deletedIdeas,
     series,
     activeBookId,
     chapters,

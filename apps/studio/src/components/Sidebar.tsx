@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Book, Chapter, Character, Idea, Series } from "@/domain/model";
+import type { Book, Chapter, Character, Idea, Series, Scene } from "@/domain/model";
 import { IdeasPanel } from "@/components/IdeasPanel";
 import { Trash2 } from "lucide-react";
 
@@ -45,6 +45,10 @@ type SidebarProps = {
   onDeleteSeries?: (seriesId: string) => void;
   // Sprint-33-Step-02: Trash system
   deletedBooks?: readonly Book[];
+  deletedChapters?: readonly Chapter[];
+  deletedScenes?: readonly Scene[];
+  deletedCharacters?: readonly Character[];
+  deletedIdeas?: readonly Idea[];
   onRestoreBook?: (bookId: string) => void;
   onPermanentlyDeleteBook?: (bookId: string) => void;
   // Sprint-33-Step-07: Drag-drop support for moving books between series
@@ -97,6 +101,10 @@ export function Sidebar({
   onEditSeries,
   onDeleteSeries,
   deletedBooks = [],
+  deletedChapters = [],
+  deletedScenes = [],
+  deletedCharacters = [],
+  deletedIdeas = [],
   onRestoreBook,
   onPermanentlyDeleteBook,
   onMoveBookToSeries,
@@ -689,7 +697,10 @@ export function Sidebar({
           aria-label={expandedSidebarSection === 'trash' ? "Свернуть корзину" : "Развернуть корзину"}
         >
           <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Корзина {deletedBooks.length > 0 && `(${deletedBooks.length})`}
+            Корзина {(() => {
+              const total = deletedBooks.length + deletedChapters.length + deletedScenes.length + deletedCharacters.length + deletedIdeas.length;
+              return total > 0 ? `(${total})` : '';
+            })()}
           </h2>
           <span className="text-zinc-500 dark:text-zinc-400">
             {expandedSidebarSection === 'trash' ? '▾' : '▸'}
@@ -697,19 +708,18 @@ export function Sidebar({
         </button>
         {expandedSidebarSection === 'trash' && (
           <>
-            {deletedBooks.length === 0 ? (
+            {deletedBooks.length + deletedChapters.length + deletedScenes.length + deletedCharacters.length + deletedIdeas.length === 0 ? (
               <p className="text-sm text-zinc-400 dark:text-zinc-600">
                 Корзина пуста
               </p>
             ) : (
               <ul className="flex flex-col gap-2">
                 {deletedBooks.map((book) => (
-                  <li key={book.id}>
+                  <li key={`book-${book.id}`}>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
                         <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
-                          <div className="truncate">
-                            {book.title || "Без названия"}
+                          <div className="truncate">📖 {book.title || "Без названия"}
                           </div>
                           {book.deletedAt && (
                             <div className="text-xs text-zinc-500 dark:text-zinc-700">
@@ -742,6 +752,78 @@ export function Sidebar({
                       >
                         <Trash2 size={16} />
                       </button>
+                    </div>
+                  </li>
+                ))}
+                {deletedChapters.map((chapter) => (
+                  <li key={`chapter-${chapter.id}`}>
+                    <div className="flex items-center gap-1">
+                      <div className="flex-1">
+                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                          <div className="truncate">
+                            📄 {chapter.title || "Без названия"}
+                          </div>
+                          {chapter.deletedAt && (
+                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                              {new Date(chapter.deletedAt).toLocaleDateString("ru-RU")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+                {deletedScenes.map((scene) => (
+                  <li key={`scene-${scene.id}`}>
+                    <div className="flex items-center gap-1">
+                      <div className="flex-1">
+                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                          <div className="truncate">
+                            🎬 {scene.title || "Без названия"}
+                          </div>
+                          {scene.deletedAt && (
+                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                              {new Date(scene.deletedAt).toLocaleDateString("ru-RU")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+                {deletedCharacters.map((character) => (
+                  <li key={`character-${character.id}`}>
+                    <div className="flex items-center gap-1">
+                      <div className="flex-1">
+                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                          <div className="truncate">
+                            👤 {character.name || "Без имени"}
+                          </div>
+                          {character.deletedAt && (
+                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                              {new Date(character.deletedAt).toLocaleDateString("ru-RU")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+                {deletedIdeas.map((idea) => (
+                  <li key={`idea-${idea.id}`}>
+                    <div className="flex items-center gap-1">
+                      <div className="flex-1">
+                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                          <div className="truncate">
+                            💡 Идея
+                          </div>
+                          {idea.deletedAt && (
+                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                              {new Date(idea.deletedAt).toLocaleDateString("ru-RU")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </li>
                 ))}

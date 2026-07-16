@@ -13,6 +13,7 @@ export type Scene = {
   readonly id: string;
   readonly title: string;
   readonly text: string;
+  readonly deletedAt?: Date; // Sprint-36: soft delete timestamp for trash
 };
 
 export type Chapter = {
@@ -20,12 +21,14 @@ export type Chapter = {
   readonly title: string;
   readonly subtitle: string;
   readonly scenes: readonly Scene[];
+  readonly deletedAt?: Date; // Sprint-36: soft delete timestamp for trash
 };
 
 export type Idea = {
   readonly id: string;
   readonly text: string;
   readonly createdAt: string;
+  readonly deletedAt?: Date; // Sprint-36: soft delete timestamp for trash
 };
 
 // Sprint-34-Step-03: BookStatus enum for story bible tracking.
@@ -71,6 +74,7 @@ export type Character = {
   readonly description: string;
   readonly notes: string;
   readonly photoUrl: string;
+  readonly deletedAt?: Date; // Sprint-36: soft delete timestamp for trash
 };
 
 export type ChatMessage = {

@@ -29,6 +29,7 @@ import type {
   Chapter,
   Character,
   Scene,
+  Idea,
 } from "@/domain/model";
 import type { Workspace } from "@/domain/workspace";
 
@@ -165,6 +166,8 @@ export function readLocalEphemeralState(): Partial<Workspace> & {
   deletedBooks?: readonly Book[];
   deletedScenes?: readonly Scene[];
   deletedCharacters?: readonly Character[];
+  deletedChapters?: readonly Chapter[];
+  deletedIdeas?: readonly Idea[];
 } {
   try {
     const raw = window.localStorage.getItem(EPHEMERAL_STATE_KEY);
@@ -182,6 +185,8 @@ export function readLocalEphemeralState(): Partial<Workspace> & {
       deletedBooks?: unknown;
       deletedScenes?: unknown;
       deletedCharacters?: unknown;
+      deletedChapters?: unknown;
+      deletedIdeas?: unknown;
     };
     return {
       activeBookId:
@@ -212,6 +217,12 @@ export function readLocalEphemeralState(): Partial<Workspace> & {
       deletedCharacters: Array.isArray(data.deletedCharacters)
         ? (data.deletedCharacters as Character[])
         : [],
+      deletedChapters: Array.isArray(data.deletedChapters)
+        ? (data.deletedChapters as Chapter[])
+        : [],
+      deletedIdeas: Array.isArray(data.deletedIdeas)
+        ? (data.deletedIdeas as Idea[])
+        : [],
     };
   } catch {
     return {
@@ -223,6 +234,8 @@ export function readLocalEphemeralState(): Partial<Workspace> & {
       deletedBooks: [],
       deletedScenes: [],
       deletedCharacters: [],
+      deletedChapters: [],
+      deletedIdeas: [],
     };
   }
 }
@@ -237,6 +250,8 @@ export function writeLocalEphemeralState(
   deletedBooks?: readonly Book[],
   deletedScenes?: readonly Scene[],
   deletedCharacters?: readonly Character[],
+  deletedChapters?: readonly Chapter[],
+  deletedIdeas?: readonly Idea[],
 ): void {
   try {
     const ephemeralState = {
@@ -248,10 +263,14 @@ export function writeLocalEphemeralState(
       deletedBooks: deletedBooks ?? [],
       deletedScenes: deletedScenes ?? [],
       deletedCharacters: deletedCharacters ?? [],
+      deletedChapters: deletedChapters ?? [],
+      deletedIdeas: deletedIdeas ?? [],
     };
     console.log("[TRASH] writeLocalEphemeralState - saving deletedBooks count:", deletedBooks?.length ?? 0);
     console.log("[TRASH] writeLocalEphemeralState - saving deletedScenes count:", deletedScenes?.length ?? 0);
     console.log("[TRASH] writeLocalEphemeralState - saving deletedCharacters count:", deletedCharacters?.length ?? 0);
+    console.log("[TRASH] writeLocalEphemeralState - saving deletedChapters count:", deletedChapters?.length ?? 0);
+    console.log("[TRASH] writeLocalEphemeralState - saving deletedIdeas count:", deletedIdeas?.length ?? 0);
     window.localStorage.setItem(
       EPHEMERAL_STATE_KEY,
       JSON.stringify(ephemeralState),

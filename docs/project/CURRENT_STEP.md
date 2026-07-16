@@ -10,16 +10,22 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 
 ```yaml
 id: Sprint-36-Step-01
-status: next
+status: ready-for-review
+last-updated: 2026-07-17
 ```
 
 ## Sprint 36 — Section Counters (Sidebar Enhancement) ⏳ IN PROGRESS
 
-**Current Step:** Sprint-36-Step-01 (Add item counters to Sidebar sections)
+**Current Step:** Sprint-36-Step-01 (✅ IMPLEMENTATION COMPLETE, awaiting architect-reviewer)
 
-**Step Cards queued:**
-- Step 01: Add counters to Sidebar headers (Books, Series, Chapters, Characters, Ideas)
-- Step 02: Live verification + Polish
+**Implementation completed (2026-07-17):**
+- ✅ Added counters: Книги (X), Серии (Y)
+- ✅ Preserved existing counters: Главы, Персонажи, Идеи, Корзина
+- ✅ All validation checks passed (tsc, eslint, prettier, build)
+- ✅ ARP created with full documentation
+
+**Next Step:** 
+- Step 02: Live verification + Polish (queued after Step-01 STATUS: OK)
 
 ---
 

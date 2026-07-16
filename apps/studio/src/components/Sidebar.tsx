@@ -612,20 +612,19 @@ export function Sidebar({
         </button>
         {expandedSidebarSection === 'characters' && (
           <>
+            <button
+              onClick={() => onCreateCharacter?.()}
+              className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+              aria-label="Создать нового персонажа"
+            >
+              + Новый персонаж
+            </button>
             {characters.length === 0 ? (
               <p className="text-sm text-zinc-400 dark:text-zinc-600">
                 Пока нет персонажей
               </p>
             ) : (
-              <>
-                <button
-                  onClick={() => onCreateCharacter?.()}
-                  className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                  aria-label="Создать нового персонажа"
-                >
-                  + Новый персонаж
-                </button>
-                <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-2">
                   {characters.map((character) => {
                     const isCharacterSelected = selectedCharacterId === character.id;
                     return (
@@ -667,7 +666,6 @@ export function Sidebar({
                   );
                   })}
                 </ul>
-              </>
             )}
           </>
         )}
@@ -780,6 +778,17 @@ export function Sidebar({
                       </div>
                       <button
                         onClick={() => {
+                          console.log("[TRASH] TODO: Restore chapter", chapter.id);
+                          // TODO: Implement chapter restore
+                        }}
+                        className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                        title="Восстановить"
+                        aria-label={`Восстановить главу ${chapter.title || "Без названия"}`}
+                      >
+                        ↩️
+                      </button>
+                      <button
+                        onClick={() => {
                           if (confirm(`Безвозвратно удалить главу "${chapter.title || "Без названия"}"?`)) {
                             onPermanentlyDeleteChapter?.(chapter.id);
                           }
@@ -788,7 +797,7 @@ export function Sidebar({
                         title="Удалить безвозвратно"
                         aria-label={`Безвозвратно удалить главу ${chapter.title || "Без названия"}`}
                       >
-                        <Trash2 size={16} />
+                        ✕
                       </button>
                     </div>
                   </li>
@@ -870,6 +879,17 @@ export function Sidebar({
                       </div>
                       <button
                         onClick={() => {
+                          console.log("[TRASH] TODO: Restore idea", idea.id);
+                          // TODO: Implement idea restore
+                        }}
+                        className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                        title="Восстановить"
+                        aria-label="Восстановить идею"
+                      >
+                        ↩️
+                      </button>
+                      <button
+                        onClick={() => {
                           if (confirm(`Безвозвратно удалить идею?`)) {
                             onPermanentlyDeleteIdea?.(idea.id);
                           }
@@ -878,7 +898,7 @@ export function Sidebar({
                         title="Удалить безвозвратно"
                         aria-label="Безвозвратно удалить идею"
                       >
-                        <Trash2 size={16} />
+                        ✕
                       </button>
                     </div>
                   </li>

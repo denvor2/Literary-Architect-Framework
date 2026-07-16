@@ -369,9 +369,18 @@ export function useWorkspaceController() {
     }));
 
     // Add to trash (separate from workspace state)
+    // Prevent duplicate: check if book with this ID already exists in deletedBooks
     if (bookToDelete) {
       console.log("[TRASH] Adding to local deletedBooks:", bookToDelete.title);
       setDeletedBooks((previous) => {
+        // Don't add if already exists (prevent duplicates)
+        if (previous.some((b) => b.id === bookId)) {
+          console.log(
+            "[TRASH] Book already in trash, skipping duplicate:",
+            bookToDelete.title,
+          );
+          return previous;
+        }
         const updated = [
           { ...bookToDelete, deletedAt: new Date() },
           ...previous,
@@ -669,6 +678,14 @@ export function useWorkspaceController() {
           chapterToDelete.title,
         );
         setDeletedChapters((previous) => {
+          // Prevent duplicate: check if chapter with this ID already exists
+          if (previous.some((c) => c.id === chapterId)) {
+            console.log(
+              "[TRASH] Chapter already in trash, skipping duplicate:",
+              chapterToDelete.title,
+            );
+            return previous;
+          }
           const updated = [
             { ...chapterToDelete, deletedAt: new Date() },
             ...previous,
@@ -725,6 +742,14 @@ export function useWorkspaceController() {
         console.log("[TRASH] === deleteScene START ===");
         console.log("[TRASH] Deleting scene:", sceneId, sceneToDelete.title);
         setDeletedScenes((previous) => {
+          // Prevent duplicate: check if scene with this ID already exists
+          if (previous.some((s) => s.id === sceneId)) {
+            console.log(
+              "[TRASH] Scene already in trash, skipping duplicate:",
+              sceneToDelete.title,
+            );
+            return previous;
+          }
           const updated = [
             { ...sceneToDelete, deletedAt: new Date() },
             ...previous,
@@ -849,6 +874,14 @@ export function useWorkspaceController() {
           characterToDelete.name,
         );
         setDeletedCharacters((previous) => {
+          // Prevent duplicate: check if character with this ID already exists
+          if (previous.some((c) => c.id === characterId)) {
+            console.log(
+              "[TRASH] Character already in trash, skipping duplicate:",
+              characterToDelete.name,
+            );
+            return previous;
+          }
           const updated = [
             { ...characterToDelete, deletedAt: new Date() },
             ...previous,
@@ -944,6 +977,14 @@ export function useWorkspaceController() {
         console.log("[TRASH] === deleteIdea START ===");
         console.log("[TRASH] Deleting idea:", ideaId);
         setDeletedIdeas((previous) => {
+          // Prevent duplicate: check if idea with this ID already exists
+          if (previous.some((i) => i.id === ideaId)) {
+            console.log(
+              "[TRASH] Idea already in trash, skipping duplicate:",
+              ideaId,
+            );
+            return previous;
+          }
           const updated = [
             { ...ideaToDelete, deletedAt: new Date() },
             ...previous,

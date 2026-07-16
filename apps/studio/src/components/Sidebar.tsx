@@ -221,7 +221,7 @@ export function Sidebar({
   }
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 md:w-56 md:p-3 md:gap-4">
+    <aside className="flex min-h-screen w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 md:w-56 md:p-3 md:gap-4">
       {/* SERIES SECTION WITH NESTED BOOKS (NO SEPARATE BOOKS SECTION) */}
       <div className="flex flex-col gap-2">
         <button

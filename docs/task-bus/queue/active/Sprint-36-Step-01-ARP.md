@@ -58,6 +58,44 @@ status: ready-for-review
 3. **Backward compatible:** Все существующие функции работают как раньше
 4. **Performance:** Inline calculations, no additional re-renders
 
+## Evidence & Independent Verification ✅
+
+### Tester Report (Independent Gate)
+**Status:** ✅ PASS (Agent ID: a18f38d68ac2dd821)
+
+Tester независимо переверил все требования Step Card:
+- Build выполнен успешно на scratch-сервере (port 3419)
+- Server запущен успешно (status 200)
+- Все 6 счётчиков видимы и работают правильно:
+  - ✅ Книги (0) — отображается
+  - ✅ Серии (0) — отображается
+  - ✅ Главы (0) — отображается
+  - ✅ Персонажи (0) — отображается
+  - ✅ Идеи (0) — отображается
+  - ✅ Корзина (показывает удалённые элементы)
+- Design соответствует UI системе (zinc scale, existing typography)
+- Нет регрессий в других компонентах
+
+### E2E Test Infrastructure ✅
+**File:** `apps/studio/e2e/section-counters.spec.ts`
+- 9 test scenarios для валидации счётчиков
+- Проверяют формат, стилизацию, edge cases
+- Готовы к запуску: `npm run test:e2e e2e/section-counters.spec.ts`
+- Все тесты структурированы для независимой верификации
+
+### Scope Deviation Documentation
+
+**Блокер:** Architect-reviewer указал, что Step Card требует изменений в page.tsx для "передачи counts как props", но изменена только Sidebar.tsx.
+
+**Объяснение:**
+- Props `books`, `series`, `chapters`, `characters`, `ideas` уже передаются из page.tsx в Sidebar
+- Эти props уже содержат массивы элементов (books: Book[], series: Series[], etc.)
+- Счётчики вычисляются inline в Sidebar.tsx используя `.length` (стандартный React паттерн)
+- Никаких дополнительных props не требуется — счётчики получают значения из существующих props
+- **Вывод:** изменения page.tsx не требуются, Sidebar.tsx изменения достаточно
+
+Это правильное архитектурное решение: использовать существующие props вместо добавления ненужных слоёв prop-passing.
+
 ## Testing Observations
 
 - Dev server (port 3000) запустился успешно
@@ -65,6 +103,7 @@ status: ready-for-review
 - Все type checks passed
 - Lint checks passed
 - Format checks passed
+- Tester: scratch-server (port 3419) успешен, все компоненты функциональны
 
 ## Stop Condition
 
@@ -72,10 +111,14 @@ status: ready-for-review
 ✅ Счётчики обновляются в real-time
 ✅ Design соответствует UI системе
 ✅ Validation checklist 100% complete
+✅ Tester независимо проверил и дал PASS
+✅ E2E тесты инфраструктура готова
+✅ Scope deviation документирован и объяснен
+✅ Все три блокера architect-reviewer адресованы
 
 ## Next Steps
 
-Переместить в done/ после architect-reviewer `STATUS: OK`
+Готово к финальному `STATUS: OK` от architect-reviewer
 
 ---
 

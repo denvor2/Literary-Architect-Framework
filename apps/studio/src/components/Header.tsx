@@ -328,6 +328,23 @@ export function Header({
                           ? "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                           : "cursor-not-allowed text-zinc-400 dark:text-zinc-600"
                       }`}
+                      aria-label="Сохранить как (Ctrl+Shift+S)"
+                    >
+                      Сохранить как...
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (activeBookId) {
+                          onExportBook?.(activeBookId);
+                        }
+                        setOpenMenu(null);
+                      }}
+                      disabled={!activeBookId}
+                      className={`w-full px-3 py-1.5 text-left text-sm ${
+                        activeBookId
+                          ? "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                          : "cursor-not-allowed text-zinc-400 dark:text-zinc-600"
+                      }`}
                       aria-label="Экспортировать (Ctrl+E)"
                     >
                       Экспортировать

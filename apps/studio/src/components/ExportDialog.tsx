@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-export type ExportFormat = "markdown-zip" | "docx";
+export type ExportFormat =
+  | "markdown-zip"
+  | "docx"
+  | "pdf"
+  | "fb2";
 
 export interface ExportDialogProps {
   bookTitle: string;
@@ -8,6 +12,19 @@ export interface ExportDialogProps {
   isLoading?: boolean;
   onExport: (format: ExportFormat) => Promise<void>;
   onCancel: () => void;
+}
+
+// Generate filename with date-time: "book-title_2026-07-16_14-30-45"
+function generateFilename(bookTitle: string, extension: string): string {
+  const now = new Date();
+  const date = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  const time = now.toTimeString().split(" ")[0].replace(/:/g, "-"); // HH-MM-SS
+  const sanitized = bookTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9а-я]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return `${sanitized}_${date}_${time}.${extension}`;
 }
 
 export function ExportDialog({
@@ -29,99 +46,76 @@ export function ExportDialog({
       await onExport(selectedFormat);
       onCancel(); // Close dialog after successful export
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to export book");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Ошибка при экспорте книги",
+      );
     }
   }
+
+  const formatDescriptions: Record<
+    ExportFormat,
+    { name: string; description: string }
+  > = {
+    "markdown-zip": {
+      name: "Markdown ZIP архив",
+      description:
+        "Структурированная папка с главами, персонажами, идеями и метаданными",
+    },
+    docx: {
+      name: "DOCX (Word документ)",
+      description: "Отформатированный документ, готовый к печати и публикации",
+    },
+    pdf: {
+      name: "PDF (Портативный документ)",
+      description: "Профессионально отформатированный PDF для чтения",
+    },
+    fb2: {
+      name: "FB2 (E-book формат)",
+      description: "Стандартный формат для электронных книг и читалок",
+    },
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">
-          Export {bookTitle}
+          Экспорт «{bookTitle}»
         </h2>
 
         <div className="mb-6 space-y-3">
-          {/* JSON Format - Hidden for now (TODO: clarify use case) */}
-          {/* <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              name="format"
-              value="json"
-              checked={selectedFormat === "json"}
-              onChange={() => setSelectedFormat("json")}
-              disabled={isLoading}
-              className="h-4 w-4"
-            />
-            <span className="flex-1 text-sm">
-              <div className="font-medium text-black dark:text-white">
-                JSON Format
-              </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                Single file with full book data
-              </div>
-            </span>
-          </label> */}
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              name="format"
-              value="markdown-zip"
-              checked={selectedFormat === "markdown-zip"}
-              onChange={() => setSelectedFormat("markdown-zip")}
-              disabled={isLoading}
-              className="h-4 w-4"
-            />
-            <span className="flex-1 text-sm">
-              <div className="font-medium text-black dark:text-white">
-                Markdown ZIP Archive
-              </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                Structured folder with chapters, characters, notes
-              </div>
-            </span>
-          </label>
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              name="format"
-              value="docx"
-              checked={selectedFormat === "docx"}
-              onChange={() => setSelectedFormat("docx")}
-              disabled={isLoading}
-              className="h-4 w-4"
-            />
-            <span className="flex-1 text-sm">
-              <div className="font-medium text-black dark:text-white">
-                DOCX (Word Document)
-              </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                Formatted document ready for print and publishing
-              </div>
-            </span>
-          </label>
-
-          {/* Both Formats - Hidden when JSON is hidden */}
-          {/* <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="radio"
-              name="format"
-              value="both"
-              checked={selectedFormat === "both"}
-              onChange={() => setSelectedFormat("both")}
-              disabled={isLoading}
-              className="h-4 w-4"
-            />
-            <span className="flex-1 text-sm">
-              <div className="font-medium text-black dark:text-white">
-                Both Formats
-              </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                Download JSON and Markdown ZIP together
-              </div>
-            </span>
-          </label> */}
+          {Object.entries(formatDescriptions).map(
+            ([format, { name, description }]) => (
+              <label
+                key={format}
+                className="flex cursor-pointer items-center gap-3"
+              >
+                <input
+                  type="radio"
+                  name="format"
+                  value={format}
+                  checked={selectedFormat === (format as ExportFormat)}
+                  onChange={() => setSelectedFormat(format as ExportFormat)}
+                  disabled={isLoading}
+                  className="h-4 w-4"
+                />
+                <span className="flex-1 text-sm">
+                  <div className="font-medium text-black dark:text-white">
+                    {name}
+                  </div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {description}
+                  </div>
+                  {format !== "markdown-zip" && (
+                    <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-600">
+                      📝 {generateFilename(bookTitle, format === "docx" ? "docx" : format === "pdf" ? "pdf" : "fb2")}
+                    </div>
+                  )}
+                </span>
+              </label>
+            ),
+          )}
         </div>
 
         {error && (
@@ -136,14 +130,14 @@ export function ExportDialog({
             disabled={isLoading}
             className="flex-1 rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
           >
-            Cancel
+            Отмена
           </button>
           <button
             onClick={handleExport}
             disabled={isLoading}
             className="flex-1 rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {isLoading ? "Exporting..." : "Export"}
+            {isLoading ? "Экспортируется..." : "Экспорт"}
           </button>
         </div>
       </div>

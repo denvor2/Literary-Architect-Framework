@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateMarkdownZip } from "@/lib/exporters/markdownExporter";
 import { generateDOCX } from "@/lib/exporters/docxExporter";
 import { generateHybridArchive } from "@/lib/exporters/hybridArchiveExporter";
+import { generatePDF } from "@/lib/exporters/pdfExporter";
+import { generateFB2 } from "@/lib/exporters/fb2Exporter";
 import type { Book, Series } from "@/domain/model";
 
 export async function POST(request: NextRequest) {
@@ -46,17 +48,35 @@ export async function POST(request: NextRequest) {
     }
 
     if (format === "pdf") {
-      return NextResponse.json(
-        { error: "PDF export not yet implemented" },
-        { status: 501 },
+      const pdfBuffer = await generatePDF(
+        book,
+        book.chapters,
+        {
+          includeMetadata: true,
+          includeTableOfContents: book.chapters.length > 0,
+        },
       );
+
+      return new NextResponse(new Uint8Array(pdfBuffer), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${getFilename("pdf")}"`,
+        },
+      });
     }
 
     if (format === "fb2") {
-      return NextResponse.json(
-        { error: "FB2 export not yet implemented" },
-        { status: 501 },
-      );
+      const fb2Content = generateFB2(book);
+      const fb2Bytes = new TextEncoder().encode(fb2Content);
+
+      return new NextResponse(new Uint8Array(fb2Bytes), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/x-fb2+xml",
+          "Content-Disposition": `attachment; filename="${getFilename("fb2")}"`,
+        },
+      });
     }
 
     return NextResponse.json(

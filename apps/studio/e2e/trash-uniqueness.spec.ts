@@ -33,7 +33,9 @@ test.describe("Sprint-36: Trash Uniqueness", () => {
     const trashSection = sidebar.getByText(/Корзина/);
     await expect(trashSection).toBeVisible();
 
-    const bookCopies = sidebar.getByText(bookTitle).filter({ hasText: bookTitle });
+    const bookCopies = sidebar
+      .getByText(bookTitle)
+      .filter({ hasText: bookTitle });
     const count = await bookCopies.count();
 
     console.log(`[TEST] Book appears ${count} time(s) in trash`);
@@ -104,7 +106,9 @@ test.describe("Sprint-36: Trash Uniqueness", () => {
     const trashSection = sidebar.getByText(/Корзина/);
     await expect(trashSection).toBeVisible();
 
-    const bookCopies = sidebar.getByText(bookTitle).filter({ hasText: bookTitle });
+    const bookCopies = sidebar
+      .getByText(bookTitle)
+      .filter({ hasText: bookTitle });
     const count = await bookCopies.count();
 
     console.log(`[TEST] After double-click, book appears ${count} time(s)`);

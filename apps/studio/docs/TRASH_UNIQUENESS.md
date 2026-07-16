@@ -3,6 +3,7 @@
 ## Problem
 
 Deleted items were appearing multiple times in trash due to:
+
 1. Duplicate additions to state arrays
 2. Items loaded twice from localStorage (React.StrictMode)
 3. Display issues in UI rendering
@@ -10,9 +11,11 @@ Deleted items were appearing multiple times in trash due to:
 ## Solution: Three-Layer Defense
 
 ### Layer 1: Prevention at Source (useWorkspaceController.ts)
+
 **Location:** `deleteBook()`, `deleteScene()`, `deleteChapter()`, `deleteCharacter()`, `deleteIdea()`
 
 Before adding item to trash, check if it already exists:
+
 ```typescript
 setDeletedBooks((previous) => {
   // Don't add if already exists (prevent duplicates)
@@ -27,9 +30,11 @@ setDeletedBooks((previous) => {
 **Defense against:** Accidental double-click, rapid deletion calls, race conditions
 
 ### Layer 2: Database Deduplication (bookRepository.ts)
+
 **Location:** `loadDeletedBooksForUser()`
 
 When loading deleted items from database, filter out duplicates:
+
 ```typescript
 // Deduplicate by ID (defense against data corruption)
 const seen = new Set<string>();
@@ -39,7 +44,10 @@ for (const book of books) {
     seen.add(book.id);
     uniqueBooks.push(book);
   } else {
-    console.warn("[loadDeletedBooksForUser] Duplicate book ID in trash:", book.id);
+    console.warn(
+      "[loadDeletedBooksForUser] Duplicate book ID in trash:",
+      book.id,
+    );
   }
 }
 ```
@@ -47,19 +55,23 @@ for (const book of books) {
 **Defense against:** Data corruption, stale data from multiple instances
 
 ### Layer 3: Display Deduplication (Sidebar.tsx)
+
 **Location:** Trash section rendering with IIFE
 
 Before rendering deleted items, deduplicate by ID:
+
 ```typescript
-{(() => {
-  const seenIds = new Set<string>();
-  const uniqueBooks = deletedBooks.filter((book) => {
-    if (seenIds.has(`book-${book.id}`)) return false;
-    seenIds.add(`book-${book.id}`);
-    return true;
-  });
-  // Render using uniqueBooks, uniqueChapters, etc...
-})()}
+{
+  (() => {
+    const seenIds = new Set<string>();
+    const uniqueBooks = deletedBooks.filter((book) => {
+      if (seenIds.has(`book-${book.id}`)) return false;
+      seenIds.add(`book-${book.id}`);
+      return true;
+    });
+    // Render using uniqueBooks, uniqueChapters, etc...
+  })();
+}
 ```
 
 **Defense against:** State corruption, orphaned UI elements
@@ -67,12 +79,14 @@ Before rendering deleted items, deduplicate by ID:
 ## Testing
 
 ### E2E Tests (trash-uniqueness.spec.ts)
+
 - `no duplicates when deleting book` - Immediate deletion shows single item
 - `no duplicates when deleting scene` - Works for all element types
 - `no duplicates after fast double-click delete` - Handles rapid user actions
 - `trash items persist uniquely after reload` - Data consistency after page reload
 
 **Run:**
+
 ```bash
 npm run test:e2e e2e/trash-uniqueness.spec.ts
 ```
@@ -87,17 +101,21 @@ npm run test:e2e e2e/trash-uniqueness.spec.ts
 ## Implementation Details
 
 ### Unique Identifier Strategy
+
 - Each deleted item identified by `{type}-{id}` in UI (e.g., `book-uuid-123`)
 - All checks use the item's native `.id` field
 - No additional database columns needed
 
 ### Performance
+
 - Layer 1 (source prevention): O(n) check per deletion (acceptable - happens on user action)
 - Layer 2 (DB deduplication): O(n) filter during load (acceptable - runs once at startup)
 - Layer 3 (display): O(n) Set-based filter per render (optimized with Set lookup)
 
 ### Logging
+
 All three layers log when duplicates are detected:
+
 ```
 [TRASH] Book already in trash, skipping duplicate
 [loadDeletedBooksForUser] Duplicate book ID in trash: [id]

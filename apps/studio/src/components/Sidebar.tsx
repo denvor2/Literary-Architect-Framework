@@ -822,236 +822,239 @@ export function Sidebar({
               ) : (
                 <ul className="flex flex-col gap-2">
                   {uniqueBooks.map((book) => (
-                  <li key={`book-${book.id}`}>
-                    <div className="flex items-center gap-1">
-                      <div className="flex-1">
-                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
-                          <div className="truncate">
-                            📖 {book.title || "Без названия"}
-                          </div>
-                          {book.deletedAt && (
-                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
-                              {new Date(book.deletedAt).toLocaleDateString(
-                                "ru-RU",
-                              )}
+                    <li key={`book-${book.id}`}>
+                      <div className="flex items-center gap-1">
+                        <div className="flex-1">
+                          <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                            <div className="truncate">
+                              📖 {book.title || "Без названия"}
                             </div>
-                          )}
+                            {book.deletedAt && (
+                              <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                                {new Date(book.deletedAt).toLocaleDateString(
+                                  "ru-RU",
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <button
+                          onClick={() => onRestoreBook?.(book.id)}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                          title="Восстановить"
+                          aria-label={`Восстановить книгу ${book.title || "Без названия"}`}
+                        >
+                          ↩️
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Безвозвратно удалить "${book.title || "Без названия"}"?`,
+                              )
+                            ) {
+                              onPermanentlyDeleteBook?.(book.id);
+                            }
+                          }}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                          title="Удалить безвозвратно"
+                          aria-label={`Безвозвратно удалить книгу ${book.title || "Без названия"}`}
+                        >
+                          ✕
+                        </button>
                       </div>
-                      <button
-                        onClick={() => onRestoreBook?.(book.id)}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
-                        title="Восстановить"
-                        aria-label={`Восстановить книгу ${book.title || "Без названия"}`}
-                      >
-                        ↩️
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `Безвозвратно удалить "${book.title || "Без названия"}"?`,
-                            )
-                          ) {
-                            onPermanentlyDeleteBook?.(book.id);
-                          }
-                        }}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                        title="Удалить безвозвратно"
-                        aria-label={`Безвозвратно удалить книгу ${book.title || "Без названия"}`}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  ))}
                   {uniqueChapters.map((chapter) => (
-                  <li key={`chapter-${chapter.id}`}>
-                    <div className="flex items-center gap-1">
-                      <div className="flex-1">
-                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
-                          <div className="truncate">
-                            📄 {chapter.title || "Без названия"}
-                          </div>
-                          {chapter.deletedAt && (
-                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
-                              {new Date(chapter.deletedAt).toLocaleDateString(
-                                "ru-RU",
-                              )}
+                    <li key={`chapter-${chapter.id}`}>
+                      <div className="flex items-center gap-1">
+                        <div className="flex-1">
+                          <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                            <div className="truncate">
+                              📄 {chapter.title || "Без названия"}
                             </div>
-                          )}
+                            {chapter.deletedAt && (
+                              <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                                {new Date(chapter.deletedAt).toLocaleDateString(
+                                  "ru-RU",
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <button
+                          onClick={() => {
+                            console.log(
+                              "[TRASH] TODO: Restore chapter",
+                              chapter.id,
+                            );
+                            // TODO: Implement chapter restore
+                          }}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                          title="Восстановить"
+                          aria-label={`Восстановить главу ${chapter.title || "Без названия"}`}
+                        >
+                          ↩️
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Безвозвратно удалить главу "${chapter.title || "Без названия"}"?`,
+                              )
+                            ) {
+                              onPermanentlyDeleteChapter?.(chapter.id);
+                            }
+                          }}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                          title="Удалить безвозвратно"
+                          aria-label={`Безвозвратно удалить главу ${chapter.title || "Без названия"}`}
+                        >
+                          ✕
+                        </button>
                       </div>
-                      <button
-                        onClick={() => {
-                          console.log(
-                            "[TRASH] TODO: Restore chapter",
-                            chapter.id,
-                          );
-                          // TODO: Implement chapter restore
-                        }}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
-                        title="Восстановить"
-                        aria-label={`Восстановить главу ${chapter.title || "Без названия"}`}
-                      >
-                        ↩️
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `Безвозвратно удалить главу "${chapter.title || "Без названия"}"?`,
-                            )
-                          ) {
-                            onPermanentlyDeleteChapter?.(chapter.id);
-                          }
-                        }}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                        title="Удалить безвозвратно"
-                        aria-label={`Безвозвратно удалить главу ${chapter.title || "Без названия"}`}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  ))}
                   {uniqueScenes.map((scene) => (
-                  <li key={`scene-${scene.id}`}>
-                    <div className="flex items-center gap-1">
-                      <div className="flex-1">
-                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
-                          <div className="truncate">
-                            🎬 {scene.title || "Без названия"}
-                          </div>
-                          {scene.deletedAt && (
-                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
-                              {new Date(scene.deletedAt).toLocaleDateString(
-                                "ru-RU",
-                              )}
+                    <li key={`scene-${scene.id}`}>
+                      <div className="flex items-center gap-1">
+                        <div className="flex-1">
+                          <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                            <div className="truncate">
+                              🎬 {scene.title || "Без названия"}
                             </div>
-                          )}
+                            {scene.deletedAt && (
+                              <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                                {new Date(scene.deletedAt).toLocaleDateString(
+                                  "ru-RU",
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <button
+                          onClick={() => {
+                            console.log(
+                              "[TRASH] TODO: Restore scene",
+                              scene.id,
+                            );
+                            // TODO: Implement scene restore
+                          }}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                          title="Восстановить"
+                          aria-label={`Восстановить сцену ${scene.title || "Без названия"}`}
+                        >
+                          ↩️
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Безвозвратно удалить сцену "${scene.title || "Без названия"}"?`,
+                              )
+                            ) {
+                              onPermanentlyDeleteScene?.(scene.id);
+                            }
+                          }}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                          title="Удалить безвозвратно"
+                          aria-label={`Безвозвратно удалить сцену ${scene.title || "Без названия"}`}
+                        >
+                          ✕
+                        </button>
                       </div>
-                      <button
-                        onClick={() => {
-                          console.log("[TRASH] TODO: Restore scene", scene.id);
-                          // TODO: Implement scene restore
-                        }}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
-                        title="Восстановить"
-                        aria-label={`Восстановить сцену ${scene.title || "Без названия"}`}
-                      >
-                        ↩️
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `Безвозвратно удалить сцену "${scene.title || "Без названия"}"?`,
-                            )
-                          ) {
-                            onPermanentlyDeleteScene?.(scene.id);
-                          }
-                        }}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                        title="Удалить безвозвратно"
-                        aria-label={`Безвозвратно удалить сцену ${scene.title || "Без названия"}`}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  ))}
                   {uniqueCharacters.map((character) => (
-                  <li key={`character-${character.id}`}>
-                    <div className="flex items-center gap-1">
-                      <div className="flex-1">
-                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
-                          <div className="truncate">
-                            👤 {character.name || "Без имени"}
+                    <li key={`character-${character.id}`}>
+                      <div className="flex items-center gap-1">
+                        <div className="flex-1">
+                          <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                            <div className="truncate">
+                              👤 {character.name || "Без имени"}
+                            </div>
+                            {character.deletedAt && (
+                              <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                                {new Date(
+                                  character.deletedAt,
+                                ).toLocaleDateString("ru-RU")}
+                              </div>
+                            )}
                           </div>
-                          {character.deletedAt && (
-                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
-                              {new Date(character.deletedAt).toLocaleDateString(
-                                "ru-RU",
-                              )}
-                            </div>
-                          )}
                         </div>
+                        <button
+                          onClick={() => {
+                            console.log(
+                              "[TRASH] TODO: Restore character",
+                              character.id,
+                            );
+                            // TODO: Implement character restore
+                          }}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                          title="Восстановить"
+                          aria-label={`Восстановить персонажа ${character.name || "Без имени"}`}
+                        >
+                          ↩️
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Безвозвратно удалить персонажа "${character.name || "Без имени"}"?`,
+                              )
+                            ) {
+                              onPermanentlyDeleteCharacter?.(character.id);
+                            }
+                          }}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                          title="Удалить безвозвратно"
+                          aria-label={`Безвозвратно удалить персонажа ${character.name || "Без имени"}`}
+                        >
+                          ✕
+                        </button>
                       </div>
-                      <button
-                        onClick={() => {
-                          console.log(
-                            "[TRASH] TODO: Restore character",
-                            character.id,
-                          );
-                          // TODO: Implement character restore
-                        }}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
-                        title="Восстановить"
-                        aria-label={`Восстановить персонажа ${character.name || "Без имени"}`}
-                      >
-                        ↩️
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `Безвозвратно удалить персонажа "${character.name || "Без имени"}"?`,
-                            )
-                          ) {
-                            onPermanentlyDeleteCharacter?.(character.id);
-                          }
-                        }}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                        title="Удалить безвозвратно"
-                        aria-label={`Безвозвратно удалить персонажа ${character.name || "Без имени"}`}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  ))}
                   {uniqueIdeas.map((idea) => (
-                  <li key={`idea-${idea.id}`}>
-                    <div className="flex items-center gap-1">
-                      <div className="flex-1">
-                        <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
-                          <div className="truncate">💡 Идея</div>
-                          {idea.deletedAt && (
-                            <div className="text-xs text-zinc-500 dark:text-zinc-700">
-                              {new Date(idea.deletedAt).toLocaleDateString(
-                                "ru-RU",
-                              )}
-                            </div>
-                          )}
+                    <li key={`idea-${idea.id}`}>
+                      <div className="flex items-center gap-1">
+                        <div className="flex-1">
+                          <div className="rounded-md px-2 py-1 text-sm text-zinc-400 dark:text-zinc-600">
+                            <div className="truncate">💡 Идея</div>
+                            {idea.deletedAt && (
+                              <div className="text-xs text-zinc-500 dark:text-zinc-700">
+                                {new Date(idea.deletedAt).toLocaleDateString(
+                                  "ru-RU",
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <button
+                          onClick={() => {
+                            console.log("[TRASH] TODO: Restore idea", idea.id);
+                            // TODO: Implement idea restore
+                          }}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
+                          title="Восстановить"
+                          aria-label="Восстановить идею"
+                        >
+                          ↩️
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Безвозвратно удалить идею?`)) {
+                              onPermanentlyDeleteIdea?.(idea.id);
+                            }
+                          }}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                          title="Удалить безвозвратно"
+                          aria-label="Безвозвратно удалить идею"
+                        >
+                          ✕
+                        </button>
                       </div>
-                      <button
-                        onClick={() => {
-                          console.log("[TRASH] TODO: Restore idea", idea.id);
-                          // TODO: Implement idea restore
-                        }}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900 dark:hover:text-green-300"
-                        title="Восстановить"
-                        aria-label="Восстановить идею"
-                      >
-                        ↩️
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Безвозвратно удалить идею?`)) {
-                            onPermanentlyDeleteIdea?.(idea.id);
-                          }
-                        }}
-                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
-                        title="Удалить безвозвратно"
-                        aria-label="Безвозвратно удалить идею"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </li>
+                    </li>
                   ))}
                 </ul>
               );

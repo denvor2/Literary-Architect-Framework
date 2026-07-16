@@ -779,18 +779,49 @@ export function Sidebar({
         </button>
         {expandedSidebarSection === "trash" && (
           <>
-            {deletedBooks.length +
-              deletedChapters.length +
-              deletedScenes.length +
-              deletedCharacters.length +
-              deletedIdeas.length ===
-            0 ? (
-              <p className="text-sm text-zinc-400 dark:text-zinc-600">
-                Корзина пуста
-              </p>
-            ) : (
-              <ul className="flex flex-col gap-2">
-                {deletedBooks.map((book) => (
+            {/* Deduplicate deleted items by ID to prevent duplicates in trash display */}
+            {(() => {
+              const seenIds = new Set<string>();
+              const uniqueBooks = deletedBooks.filter((book) => {
+                if (seenIds.has(`book-${book.id}`)) return false;
+                seenIds.add(`book-${book.id}`);
+                return true;
+              });
+              const uniqueChapters = deletedChapters.filter((chapter) => {
+                if (seenIds.has(`chapter-${chapter.id}`)) return false;
+                seenIds.add(`chapter-${chapter.id}`);
+                return true;
+              });
+              const uniqueScenes = deletedScenes.filter((scene) => {
+                if (seenIds.has(`scene-${scene.id}`)) return false;
+                seenIds.add(`scene-${scene.id}`);
+                return true;
+              });
+              const uniqueCharacters = deletedCharacters.filter((character) => {
+                if (seenIds.has(`character-${character.id}`)) return false;
+                seenIds.add(`character-${character.id}`);
+                return true;
+              });
+              const uniqueIdeas = deletedIdeas.filter((idea) => {
+                if (seenIds.has(`idea-${idea.id}`)) return false;
+                seenIds.add(`idea-${idea.id}`);
+                return true;
+              });
+
+              const totalUnique =
+                uniqueBooks.length +
+                uniqueChapters.length +
+                uniqueScenes.length +
+                uniqueCharacters.length +
+                uniqueIdeas.length;
+
+              return totalUnique === 0 ? (
+                <p className="text-sm text-zinc-400 dark:text-zinc-600">
+                  Корзина пуста
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {uniqueBooks.map((book) => (
                   <li key={`book-${book.id}`}>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
@@ -834,7 +865,7 @@ export function Sidebar({
                     </div>
                   </li>
                 ))}
-                {deletedChapters.map((chapter) => (
+                  {uniqueChapters.map((chapter) => (
                   <li key={`chapter-${chapter.id}`}>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
@@ -884,7 +915,7 @@ export function Sidebar({
                     </div>
                   </li>
                 ))}
-                {deletedScenes.map((scene) => (
+                  {uniqueScenes.map((scene) => (
                   <li key={`scene-${scene.id}`}>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
@@ -931,7 +962,7 @@ export function Sidebar({
                     </div>
                   </li>
                 ))}
-                {deletedCharacters.map((character) => (
+                  {uniqueCharacters.map((character) => (
                   <li key={`character-${character.id}`}>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
@@ -981,7 +1012,7 @@ export function Sidebar({
                     </div>
                   </li>
                 ))}
-                {deletedIdeas.map((idea) => (
+                  {uniqueIdeas.map((idea) => (
                   <li key={`idea-${idea.id}`}>
                     <div className="flex items-center gap-1">
                       <div className="flex-1">
@@ -1021,9 +1052,10 @@ export function Sidebar({
                       </button>
                     </div>
                   </li>
-                ))}
-              </ul>
-            )}
+                  ))}
+                </ul>
+              );
+            })()}
           </>
         )}
       </div>

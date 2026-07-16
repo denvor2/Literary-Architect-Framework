@@ -16,6 +16,7 @@ import {
   Lightbulb,
   Trash,
 } from "lucide-react";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 type SidebarSection = "chapters" | "characters" | "ideas" | "series" | "trash";
 

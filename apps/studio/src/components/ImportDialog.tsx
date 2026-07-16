@@ -32,9 +32,7 @@ export function ImportDialog({
         onCancel();
       }, 1500);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Ошибка при импорте файла",
-      );
+      setError(err instanceof Error ? err.message : "Ошибка при импорте файла");
     }
   }
 
@@ -133,7 +131,9 @@ export function ImportDialog({
             {error && (
               <div className="mb-4 flex items-start gap-2 rounded-md bg-red-100 p-3 dark:bg-red-900">
                 <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-700 dark:text-red-300" />
-                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                <p className="text-sm text-red-700 dark:text-red-300">
+                  {error}
+                </p>
               </div>
             )}
           </>

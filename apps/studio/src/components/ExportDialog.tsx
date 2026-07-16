@@ -1,10 +1,6 @@
 import { useState } from "react";
 
-export type ExportFormat =
-  | "markdown-zip"
-  | "docx"
-  | "pdf"
-  | "fb2";
+export type ExportFormat = "markdown-zip" | "docx" | "pdf" | "fb2";
 
 export interface ExportDialogProps {
   bookTitle: string;
@@ -47,9 +43,7 @@ export function ExportDialog({
       onCancel(); // Close dialog after successful export
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Ошибка при экспорте книги",
+        err instanceof Error ? err.message : "Ошибка при экспорте книги",
       );
     }
   }
@@ -69,7 +63,8 @@ export function ExportDialog({
     },
     pdf: {
       name: "PDF (Портативный документ)",
-      description: "Профессионально отформатированный PDF с иллюстрациями, обложкой и метаданными для чтения",
+      description:
+        "Профессионально отформатированный PDF с иллюстрациями, обложкой и метаданными для чтения",
     },
     fb2: {
       name: "FB2 (E-book формат)",
@@ -109,7 +104,15 @@ export function ExportDialog({
                   </div>
                   {format !== "markdown-zip" && (
                     <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-600">
-                      📝 {generateFilename(bookTitle, format === "docx" ? "docx" : format === "pdf" ? "pdf" : "fb2")}
+                      📝{" "}
+                      {generateFilename(
+                        bookTitle,
+                        format === "docx"
+                          ? "docx"
+                          : format === "pdf"
+                            ? "pdf"
+                            : "fb2",
+                      )}
                     </div>
                   )}
                 </span>

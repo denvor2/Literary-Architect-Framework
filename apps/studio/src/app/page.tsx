@@ -473,9 +473,7 @@ export default function Home() {
       if (!response.ok) {
         const error = await response.json();
         throw new Error(
-          error.details?.[0] ||
-            error.error ||
-            "Failed to import archive",
+          error.details?.[0] || error.error || "Failed to import archive",
         );
       }
 

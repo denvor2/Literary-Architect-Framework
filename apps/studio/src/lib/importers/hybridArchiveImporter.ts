@@ -210,9 +210,10 @@ export async function importHybridArchive(
   }
 }
 
-export function validateImportResult(
-  result: ImportResult,
-): { isValid: boolean; message: string } {
+export function validateImportResult(result: ImportResult): {
+  isValid: boolean;
+  message: string;
+} {
   if (!result.success) {
     return {
       isValid: false,

@@ -1,24 +1,24 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('i18n Language Switching', () => {
+test.describe("i18n Language Switching", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to app
-    await page.goto('http://localhost:3000');
-    await page.waitForLoadState('networkidle');
+    await page.goto("http://localhost:3000");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('Language switcher buttons visible in Header', async ({ page }) => {
+  test("Language switcher buttons visible in Header", async ({ page }) => {
     // Check for EN button (by text)
-    const enButton = page.getByRole('button', { name: 'EN' });
-    const ruButton = page.getByRole('button', { name: 'РУ' });
+    const enButton = page.getByRole("button", { name: "EN" });
+    const ruButton = page.getByRole("button", { name: "РУ" });
 
     await expect(enButton).toBeVisible();
     await expect(ruButton).toBeVisible();
   });
 
-  test('Can click EN button to switch language', async ({ page }) => {
+  test("Can click EN button to switch language", async ({ page }) => {
     // Get the EN button by text
-    const enButton = page.locator('button', { hasText: 'EN' });
+    const enButton = page.locator("button", { hasText: "EN" });
 
     // Button should be visible
     await expect(enButton).toBeVisible();
@@ -30,9 +30,9 @@ test.describe('i18n Language Switching', () => {
     await expect(enButton).toBeVisible();
   });
 
-  test('Can click РУ button to switch language', async ({ page }) => {
+  test("Can click РУ button to switch language", async ({ page }) => {
     // Get the РУ button by text
-    const ruButton = page.locator('button', { hasText: 'РУ' });
+    const ruButton = page.locator("button", { hasText: "РУ" });
 
     // Button should be visible
     await expect(ruButton).toBeVisible();
@@ -44,9 +44,9 @@ test.describe('i18n Language Switching', () => {
     await expect(ruButton).toBeVisible();
   });
 
-  test('Language buttons toggle active state', async ({ page }) => {
-    const enButton = page.locator('button', { hasText: 'EN' });
-    const ruButton = page.locator('button', { hasText: 'РУ' });
+  test("Language buttons toggle active state", async ({ page }) => {
+    const enButton = page.locator("button", { hasText: "EN" });
+    const ruButton = page.locator("button", { hasText: "РУ" });
 
     // Click EN
     await enButton.click();
@@ -65,15 +65,15 @@ test.describe('i18n Language Switching', () => {
     await expect(ruButton).toBeVisible();
   });
 
-  test('Header title visible in both languages', async ({ page }) => {
+  test("Header title visible in both languages", async ({ page }) => {
     // Title should be same in both: "Literary Studio"
-    const title = page.getByText('Literary Studio');
+    const title = page.getByText("Literary Studio");
 
     // Initially visible
     await expect(title).toBeVisible();
 
     // Click EN
-    const enButton = page.locator('button', { hasText: 'EN' });
+    const enButton = page.locator("button", { hasText: "EN" });
     await enButton.click();
     await page.waitForTimeout(300);
 
@@ -81,7 +81,7 @@ test.describe('i18n Language Switching', () => {
     await expect(title).toBeVisible();
 
     // Click back to РУ
-    const ruButton = page.locator('button', { hasText: 'РУ' });
+    const ruButton = page.locator("button", { hasText: "РУ" });
     await ruButton.click();
     await page.waitForTimeout(300);
 

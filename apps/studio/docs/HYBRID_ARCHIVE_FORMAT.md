@@ -109,7 +109,7 @@ Full chapter text with scene structure:
 ```markdown
 # Chapter 01: The Beginning
 
-*Subtitle if present*
+_Subtitle if present_
 
 ## First Scene
 
@@ -159,6 +159,7 @@ All exported files use timestamped naming:
 ```
 
 Example:
+
 - `my-story_2026-07-16_14-30-45.zip`
 - `chronicle-one_2026-07-15_09-15-22.docx`
 - `novel-draft_2026-07-14_18-45-33.pdf`
@@ -166,24 +167,31 @@ Example:
 ## Use Cases
 
 ### Local Backup
+
 Save your project state with a timestamped archive:
+
 1. File → Save As (Сохранить как)
 2. Choose "Markdown ZIP архив"
 3. Archive saved to Downloads folder with date-time
 
 ### Transfer Between Machines
+
 1. Export on machine A → transfer file
 2. On machine B: Future import feature (coming Sprint-37+)
 3. Complete project restored
 
 ### Version Control
+
 ZIP archives can be committed to git with timestamps to track project evolution:
+
 - `novel_2026-07-01_initial-draft.zip`
 - `novel_2026-07-08_post-revision.zip`
 - `novel_2026-07-15_final-for-publishing.zip`
 
 ### Manual Inspection
+
 Extract archive on any machine to:
+
 - Read chapters as plain text
 - Audit character profiles
 - Review project structure via metadata.json
@@ -197,6 +205,7 @@ File → Open from Archive
 ```
 
 Will:
+
 1. Read `metadata.json` for structure validation
 2. Load `book.json` into domain model
 3. Restore all chapters, characters, ideas in correct hierarchy
@@ -205,11 +214,13 @@ Will:
 ## Implementation Details
 
 ### Encoding
+
 - JSON files: UTF-8 with 2-space indentation
 - Markdown files: UTF-8, GitHub-flavored syntax
 - ZIP compression: deflate (standard)
 
 ### Filename Sanitization
+
 - Lowercase conversion
 - Cyrillic characters preserved
 - Spaces/special chars → hyphens
@@ -217,13 +228,17 @@ Will:
 - Leading/trailing hyphens removed
 
 ### Character Filenames
+
 File names based on character name (sanitized):
+
 - "Alice" → `alice.md`
 - "Иван" → `иван.md` (Cyrillic preserved)
 - "Mary-Jane" → `mary-jane.md`
 
 ### Chapter Ordering
+
 Chapters numbered with zero-padding:
+
 - Chapter 1 → `01-chapter-one.md`
 - Chapter 10 → `10-chapter-ten.md`
 - Chapter 100 → `100-chapter-hundred.md`
@@ -231,6 +246,7 @@ Chapters numbered with zero-padding:
 ## Limits
 
 Current implementation handles:
+
 - ✅ Books with unlimited chapters
 - ✅ Chapters with unlimited scenes
 - ✅ Unlimited characters
@@ -241,6 +257,7 @@ Current implementation handles:
 ## Validation
 
 After export:
+
 1. Archive should be readable with any ZIP tool
 2. All JSON files should be valid (use `jq` or JSON validator)
 3. Markdown files should render correctly
@@ -249,16 +266,19 @@ After export:
 ## Troubleshooting
 
 **Archive won't extract:**
+
 - Try different ZIP tool (7-Zip, WinRAR, etc.)
 - Check file permissions
 - Verify file is not truncated
 
 **JSON parsing errors:**
+
 - Ensure UTF-8 encoding
 - Check for unescaped quotes in content
 - Validate with online JSON validator
 
 **Missing chapters/characters:**
+
 - Verify they were visible in UI before export
 - Check `structure.json` for expected count
 - Inspect `book.json` for complete data

@@ -176,17 +176,17 @@ Save As → PDF (Портативный документ)
 
 FB2 uses standardized genre codes:
 
-| User Genre | FB2 Code | E-Reader Category |
-|---|---|---|
-| Fantasy | sf_fantasy | Science Fiction |
-| Science Fiction | sf_science | Science Fiction |
-| Mystery | det_classic | Detective |
-| Thriller | thriller | Thriller |
-| Action | sf_action | Action |
-| Adventure | sf_adventure | Adventure |
-| Romance | love | Romance |
-| Historical | historical | Historical Fiction |
-| Fiction | sf | Science Fiction |
+| User Genre      | FB2 Code     | E-Reader Category  |
+| --------------- | ------------ | ------------------ |
+| Fantasy         | sf_fantasy   | Science Fiction    |
+| Science Fiction | sf_science   | Science Fiction    |
+| Mystery         | det_classic  | Detective          |
+| Thriller        | thriller     | Thriller           |
+| Action          | sf_action    | Action             |
+| Adventure       | sf_adventure | Adventure          |
+| Romance         | love         | Romance            |
+| Historical      | historical   | Historical Fiction |
+| Fiction         | sf           | Science Fiction    |
 
 ### Features
 
@@ -200,16 +200,19 @@ FB2 uses standardized genre codes:
 ### FB2 Reader Support
 
 **Excellent:**
+
 - FBReader (all platforms)
 - Kindle (via calibre conversion)
 - Kobo e-readers (some versions)
 
 **Good:**
+
 - Aldiko (Android)
 - Bookmate (online reader)
 - Moon+ Reader (Android)
 
 **Via Conversion:**
+
 - Apple Books (using calibre)
 - Google Play Books (via conversion)
 
@@ -249,17 +252,17 @@ Save As → FB2 (E-book формат)
 
 ## Format Comparison
 
-| Feature | ZIP | DOCX | PDF | FB2 |
-|---|:---:|:---:|:---:|:---:|
-| **Editable** | ❌ | ✅ | ❌ | ❌ |
-| **Readable Anywhere** | ✅ | ✅ | ✅ | ⚠️ (e-readers) |
-| **Print-Ready** | ❌ | ✅ | ✅ | ❌ |
-| **Importable** | ✅ (future) | ❌ | ❌ | ❌ |
-| **E-Reader Compatible** | ❌ | ❌ | ✅ | ✅ |
-| **Human-Readable Source** | ✅ | ❌ | ❌ | ✅ (XML) |
-| **Ideas/Notes Included** | ✅ | ❌ | ❌ | ❌ |
-| **Metadata Included** | ✅ | ✅ | ✅ | ✅ |
-| **File Size** | Small | Medium | Large | Small |
+| Feature                   |     ZIP     |  DOCX  |  PDF  |      FB2       |
+| ------------------------- | :---------: | :----: | :---: | :------------: |
+| **Editable**              |     ❌      |   ✅   |  ❌   |       ❌       |
+| **Readable Anywhere**     |     ✅      |   ✅   |  ✅   | ⚠️ (e-readers) |
+| **Print-Ready**           |     ❌      |   ✅   |  ✅   |       ❌       |
+| **Importable**            | ✅ (future) |   ❌   |  ❌   |       ❌       |
+| **E-Reader Compatible**   |     ❌      |   ❌   |  ✅   |       ✅       |
+| **Human-Readable Source** |     ✅      |   ❌   |  ❌   |    ✅ (XML)    |
+| **Ideas/Notes Included**  |     ✅      |   ❌   |  ❌   |       ❌       |
+| **Metadata Included**     |     ✅      |   ✅   |  ✅   |       ✅       |
+| **File Size**             |    Small    | Medium | Large |     Small      |
 
 ---
 
@@ -285,6 +288,7 @@ my-tale_2026-07-16_14-30-45.fb2
 ```
 
 This allows you to:
+
 - Keep multiple versions
 - Track when each export was created
 - Organize by date in your file system
@@ -311,16 +315,19 @@ pandoc chapters/01-*.md -o book.docx
 ### DOCX to PDF
 
 **Using Microsoft Word:**
+
 1. Open .docx file
 2. File → Print → Print to PDF
 
 **Using LibreOffice:**
+
 1. Open .docx file
 2. File → Export as PDF
 
 ### FB2 to Other Formats
 
 **Using Calibre (recommended):**
+
 ```bash
 ebook-convert book.fb2 book.epub
 ebook-convert book.fb2 book.mobi
@@ -368,27 +375,32 @@ ebook-convert book.fb2 book.pdf
 ### For Different Use Cases
 
 **Editing & Collaboration:**
+
 - Export as DOCX
 - Share with editors/collaborators
 - Collect feedback in Word
 - Import changes back to Literary Studio
 
 **Publishing Preparation:**
+
 - Export as PDF for formatting review
 - Export as DOCX for final edits
 - Use DOCX as source for publisher
 
 **E-Book Distribution:**
+
 - Export as FB2 for FictionBook platforms
 - Convert to EPUB/MOBI using Calibre
 - Distribute via Amazon KDP, Smashwords, etc.
 
 **Backup & Version Control:**
+
 - Export as ZIP archive regularly
 - Commit archives to git with timestamps
 - Maintain offline backups
 
 **Long-Term Archiving:**
+
 - ZIP archive (metadata preserved)
 - PDF (professional formatting)
 - FB2 (standard format)

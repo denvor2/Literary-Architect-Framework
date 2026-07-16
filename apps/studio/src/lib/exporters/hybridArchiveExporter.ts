@@ -45,7 +45,10 @@ function padOrder(order: number): string {
   return String(order).padStart(2, "0");
 }
 
-function generateChapterMarkdown(chapter: Chapter, chapterIndex: number): string {
+function generateChapterMarkdown(
+  chapter: Chapter,
+  chapterIndex: number,
+): string {
   const chapterOrder = chapterIndex + 1;
   let content = `# Chapter ${padOrder(chapterOrder)}: ${chapter.title}\n\n`;
 
@@ -92,7 +95,10 @@ function generateHybridMetadata(
   series: Series | null,
   book: Book,
 ): HybridMetadata {
-  const sceneCount = book.chapters.reduce((sum, ch) => sum + ch.scenes.length, 0);
+  const sceneCount = book.chapters.reduce(
+    (sum, ch) => sum + ch.scenes.length,
+    0,
+  );
 
   return {
     version: "1.0",

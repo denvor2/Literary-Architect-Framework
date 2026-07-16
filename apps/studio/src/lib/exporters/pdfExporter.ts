@@ -19,7 +19,10 @@ function createPDFDocument(): PDFDocumentType {
 }
 
 function addTitle(doc: PDFDocumentType, title: string, fontSize = 24): void {
-  doc.fontSize(fontSize).font("Helvetica-Bold").text(title, { align: "center" });
+  doc
+    .fontSize(fontSize)
+    .font("Helvetica-Bold")
+    .text(title, { align: "center" });
   doc.moveDown(0.5);
 }
 
@@ -51,7 +54,10 @@ function addMetadata(doc: PDFDocumentType, book: Book): void {
     );
   }, 0);
 
-  const sceneCount = book.chapters.reduce((sum, ch) => sum + ch.scenes.length, 0);
+  const sceneCount = book.chapters.reduce(
+    (sum, ch) => sum + ch.scenes.length,
+    0,
+  );
 
   doc.text(`Chapters: ${book.chapters.length}`);
   doc.text(`Scenes: ${sceneCount}`);
@@ -70,10 +76,7 @@ function addMetadata(doc: PDFDocumentType, book: Book): void {
 function addPremise(doc: PDFDocumentType, book: Book): void {
   if (!book.premise) return;
 
-  doc
-    .fontSize(14)
-    .font("Helvetica-Bold")
-    .text("Premise", { underline: true });
+  doc.fontSize(14).font("Helvetica-Bold").text("Premise", { underline: true });
   doc.moveDown(0.3);
   doc.fontSize(11).font("Helvetica").text(book.premise);
   doc.moveDown(1);
@@ -184,10 +187,7 @@ function addCharacters(doc: PDFDocumentType, book: Book): void {
       doc.addPage();
     }
 
-    doc
-      .fontSize(13)
-      .font("Helvetica-Bold")
-      .text(character.name);
+    doc.fontSize(13).font("Helvetica-Bold").text(character.name);
     doc.moveDown(0.2);
 
     if (character.description) {
@@ -215,10 +215,7 @@ export async function generatePDF(
   chapters: readonly Chapter[],
   options: PDFOptions = {},
 ): Promise<Buffer> {
-  const {
-    includeMetadata = true,
-    includeTableOfContents = true,
-  } = options;
+  const { includeMetadata = true, includeTableOfContents = true } = options;
 
   return new Promise((resolve, reject) => {
     try {
@@ -239,7 +236,10 @@ export async function generatePDF(
       });
 
       // Title page
-      doc.fontSize(32).font("Helvetica-Bold").text(book.title, { align: "center" });
+      doc
+        .fontSize(32)
+        .font("Helvetica-Bold")
+        .text(book.title, { align: "center" });
       doc.moveDown(1);
 
       if (includeMetadata) {

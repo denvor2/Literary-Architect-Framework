@@ -48,14 +48,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (format === "pdf") {
-      const pdfBuffer = await generatePDF(
-        book,
-        book.chapters,
-        {
-          includeMetadata: true,
-          includeTableOfContents: book.chapters.length > 0,
-        },
-      );
+      const pdfBuffer = await generatePDF(book, book.chapters, {
+        includeMetadata: true,
+        includeTableOfContents: book.chapters.length > 0,
+      });
 
       return new NextResponse(new Uint8Array(pdfBuffer), {
         status: 200,

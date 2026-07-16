@@ -236,7 +236,7 @@ export function Sidebar({
           <div className="flex items-center gap-2">
             <BookOpen size={16} className="text-zinc-500" />
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Серии и книги
+              Книги ({books.length}), Серии ({series.length})
             </h2>
           </div>
           <span className="text-zinc-500 dark:text-zinc-400">

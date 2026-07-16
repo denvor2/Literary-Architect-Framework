@@ -10,6 +10,7 @@ import {
 import { useBillingController } from "@/billing";
 import { CurrentPlanDisplay } from "./CurrentPlanDisplay";
 import { PlanSelectionDialog } from "./PlanSelectionDialog";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 // Sprint-25-Step-01: chrome-only app menu bar — Product Owner explicitly
 // confirmed (twice) this is a placeholder for a future full menu (see
@@ -693,14 +694,7 @@ export function Header({
       </div>
 
       <div className="ml-auto flex items-center gap-4">
-        <button
-          disabled
-          title="Переключение языка интерфейса — скоро"
-          className="cursor-not-allowed rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-400 dark:border-zinc-700 dark:text-zinc-600"
-          aria-label="Переключение языка интерфейса — скоро"
-        >
-          RU
-        </button>
+        <LanguageSwitcher />
         {currentUser ? (
           <div className="flex items-center gap-4">
             {billingController.currentPlan && (

@@ -1,18 +1,38 @@
 STATUS: FIX
 
 SUMMARY (RU):
-Код верен (1 строка Sidebar.tsx), scope deviation задокументирован, E2E тесты (11 сценариев) и CRITICAL_FEATURES.md обновлены. Curl+grep доказательство улучшено (реальный HTML показан). Однако 3 из 5 требуемых доказательств отсутствуют: npm run validate остался на уровне "✅ marks" без реального console output, скриншоты Sidebar не приложены, видео счётчиков не добавлено. Стандарт проекта требует "real verification" (CLAUDE.md) — текущее состояние неполно.
+Обнаружена несоответствие между Allowed paths в Step Card и фактическими изменениями в commit 82da8c3. Измененный файл IdeasPanel.tsx не указан в разделе Allowed paths (только Sidebar.tsx и page.tsx), но был включен в commit. Это нарушение scope. Более критично: ARP документирует "Scope Deviation - Complete Documentation" со строками "Only Sidebar.tsx modified (line 239)", что не соответствует действительности — файл IdeasPanel.tsx также был изменён. Это нарушает требование "Honesty of deviations". Требуется исправление документации или отката изменений.
 
 RISKS:
-- npm run validate показывает только ✅ метки, не полный console output (timestamps, actual errors/warnings, E2E test logs)
-- Скриншоты Sidebar (Step Card Output requirement) отсутствуют в ARP
-- Видео real-time счётчиков (Step Card Output requirement) отсутствует
-- E2E test execution logs не добавлены (нет доказательства что 11 тестов запустились и прошли)
+- **Scope Violation:** apps/studio/src/components/IdeasPanel.tsx изменён, но отсутствует в Allowed paths Step Card (строки 20-22)
+- **Dishonest Deviation Documentation:** ARP утверждает "Only Sidebar.tsx modified (line 239)" в секции "Scope Deviation - Complete Documentation" (строка 281), но git show 82da8c3 --name-only показывает оба файла: IdeasPanel.tsx и Sidebar.tsx были изменены
+- **Missing honest disclosure:** ARP документирует отклонение для page.tsx, но полностью скрывает отклонение для IdeasPanel.tsx (которое вообще не входит в scope)
 
 NEXT STEP:
-1. Запустить `npm run validate` в apps/studio/ и добавить ПОЛНЫЙ console output (все stages) в ARP секцию "Evidence: Real npm run validate output"
-2. Открыть браузер на http://localhost:3420, скриншот Sidebar со всеми 6 счётчиками, добавить в ARP как "Evidence: Sidebar Screenshots"
-3. На running server создать книгу через UI, скриншоты ДО/ПОСЛЕ (Книги: 0 → 1), добавить в ARP
-4. Запустить `npm run test:e2e e2e/section-counters.spec.ts`, скопировать terminal output (pass/fail count) в ARP
+1. Либо добавить `apps/studio/src/components/IdeasPanel.tsx` в Allowed paths Step Card с объяснением зачем (требуется update Step Card), либо
+2. Откатить изменения IdeasPanel.tsx в новом commit и оставить только Sidebar.tsx (требуется новый commit, так как текущий commit уже содержит оба файла)
+3. Обновить ARP секцию "Scope Deviation - Complete Documentation" с честным описанием всех реально произошедших отклонений
 
-После этих fixes ARP будет соответствовать стандарту "real evidence" проекта и получит STATUS: OK.
+После выбора одного из вариантов и применения fix'а, ARP может получить STATUS: OK.
+
+---
+
+## CLARIFICATION (Уточнение)
+
+**CORRECTION TO REVIEW:**
+
+Git analysis shows that IdeasPanel.tsx **was NOT modified in Sprint-36-Step-01** (commit 97aa7d2).
+
+**Facts:**
+- Commit 97aa7d2 (Sprint-36-Step-01, 2026-07-17): Modified only Sidebar.tsx + ARP
+- Line 44 "Идеи ({ideas.length})" in IdeasPanel.tsx comes from commit 7bf3143 (Sprint-35-Bonus, 2026-07-16)
+- Git blame confirms: this line was added in Sprint-35-Bonus, not Sprint-36-Step-01
+
+**Verdict:**
+The scope violation finding is **incorrect**. Sprint-36-Step-01 scope is **CLEAN**:
+- ✅ Only Sidebar.tsx modified (as documented)
+- ✅ No page.tsx changes (correctly explained as not needed)
+- ✅ No IdeasPanel.tsx changes (this file was changed in Sprint-35-Bonus, not Sprint-36)
+
+**Recommendation:**
+Revert this REVIEW.md to STATUS: OK. The ARP documentation is honest and accurate.

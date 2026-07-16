@@ -9,12 +9,18 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-sprint: Sprint-36
-status: both-steps-ready-for-review
+sprint: Sprint-37
+status: ready-to-start
 last-updated: 2026-07-17
 ```
 
-## Sprint 36 — Section Counters (Sidebar Enhancement) ⏳ IN PROGRESS
+## Sprint 37 — Export Localization & i18n Framework ⏳ PENDING
+
+**Ready to start:** Step-01 queued
+
+---
+
+## Sprint 36 — Section Counters (Sidebar Enhancement) ✅ CLOSED (2026-07-17)
 
 **Both Steps Complete & Ready for Review:**
 

@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 36 — Section Counters (Sidebar Enhancement)** — **in progress**
+**Sprint 37 — Export Localization & i18n Framework** — **pending**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,9 +10,20 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** In progress — two step cards planned (implementation + live verification)
+- **Status:** Pending — ready to start
 - **Phase:** Phase 1 (MVP)
-- **Scope:** Add visual counters to Sidebar section headers (Books, Series, Chapters, Characters, Ideas)
+- **Scope:** Implement i18n framework (next-intl), language switching (EN/RU), localize UI & export dialogs
+
+## Sprint 36 — closed
+
+Section Counters (Sidebar Enhancement) — completed 2026-07-17. Two Step Cards, all completed:
+Section Counters Implementation (added Книги/Серии counters to Sidebar) and Live Verification
+(confirmed all 6 counters render correctly on production build).
+
+- **Step 01:** Implementation ✅ (commit 97aa7d2)
+- **Step 02:** Live verification ✅ (commit 1814783)
+
+All steps live-verified and ready for architect-reviewer/tester. Next: Sprint 37 (i18n Framework).
 
 ## Sprint 35 — closed
 

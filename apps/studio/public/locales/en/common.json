@@ -1,0 +1,50 @@
+{
+  "header": {
+    "title": "Literary Studio",
+    "search_placeholder": "Search in book... (Ctrl+K)",
+    "language": "Language",
+    "login": "Sign In"
+  },
+  "sidebar": {
+    "books": "Books",
+    "series": "Series",
+    "chapters": "Chapters",
+    "characters": "Characters",
+    "ideas": "Ideas",
+    "trash": "Trash",
+    "new_book": "New Book",
+    "new_series": "New Series",
+    "new_chapter": "New Chapter",
+    "new_scene": "New Scene",
+    "new_character": "New Character",
+    "new_idea": "New Idea",
+    "empty_books": "No books yet",
+    "empty_series": "No series yet",
+    "empty_chapters": "No chapters yet",
+    "empty_characters": "No characters yet",
+    "empty_ideas": "No ideas yet",
+    "empty_trash": "Trash is empty"
+  },
+  "editor": {
+    "create_book": "Create a book to start",
+    "talk_to_assistant": "Create a book to talk to an assistant"
+  },
+  "buttons": {
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "delete": "Delete",
+    "create": "Create",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "restore": "Restore",
+    "permanent_delete": "Delete permanently"
+  },
+  "menu": {
+    "file": "File",
+    "edit": "Edit",
+    "view": "View",
+    "help": "Help",
+    "about": "About"
+  }
+}

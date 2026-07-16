@@ -1,0 +1,50 @@
+{
+  "header": {
+    "title": "Literary Studio",
+    "search_placeholder": "Поиск по книге... (Ctrl+K)",
+    "language": "Язык",
+    "login": "Войти"
+  },
+  "sidebar": {
+    "books": "Книги",
+    "series": "Серии",
+    "chapters": "Главы",
+    "characters": "Персонажи",
+    "ideas": "Идеи",
+    "trash": "Корзина",
+    "new_book": "Новая книга",
+    "new_series": "Новая серия",
+    "new_chapter": "Новая глава",
+    "new_scene": "Новая сцена",
+    "new_character": "Новый персонаж",
+    "new_idea": "Новая идея",
+    "empty_books": "Пока нет книг",
+    "empty_series": "Пока нет серий",
+    "empty_chapters": "Пока нет глав",
+    "empty_characters": "Пока нет персонажей",
+    "empty_ideas": "Пока нет идей",
+    "empty_trash": "Корзина пуста"
+  },
+  "editor": {
+    "create_book": "Создайте первую книгу, чтобы начать",
+    "talk_to_assistant": "Создайте первую книгу, чтобы поговорить с помощником"
+  },
+  "buttons": {
+    "expand": "Развернуть",
+    "collapse": "Свернуть",
+    "delete": "Удалить",
+    "create": "Создать",
+    "cancel": "Отменить",
+    "save": "Сохранить",
+    "edit": "Редактировать",
+    "restore": "Восстановить",
+    "permanent_delete": "Удалить безвозвратно"
+  },
+  "menu": {
+    "file": "Файл",
+    "edit": "Правка",
+    "view": "Вид",
+    "help": "Руководство",
+    "about": "О программе"
+  }
+}

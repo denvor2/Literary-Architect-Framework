@@ -1,0 +1,28 @@
+{
+  "title": "Export Book",
+  "select_format": "Select export format",
+  "format": {
+    "json": "JSON (Backup)",
+    "pdf": "PDF (Document)",
+    "fb2": "FB2 (E-book)",
+    "markdown": "Markdown",
+    "plaintext": "Plain Text"
+  },
+  "options": {
+    "include_metadata": "Include book metadata",
+    "include_characters": "Include character list",
+    "include_notes": "Include notes and ideas",
+    "with_timestamps": "Add export timestamp",
+    "compression": "Compress archive"
+  },
+  "buttons": {
+    "export": "Export",
+    "cancel": "Cancel"
+  },
+  "messages": {
+    "exporting": "Exporting...",
+    "success": "Book exported successfully",
+    "error": "Export failed",
+    "choose_format": "Please select an export format"
+  }
+}

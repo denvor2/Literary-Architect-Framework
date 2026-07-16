@@ -121,6 +121,10 @@ export default function Home() {
     deletedIdeas,
     restoreBook,
     permanentlyDeleteBook,
+    permanentlyDeleteChapter,
+    permanentlyDeleteScene,
+    permanentlyDeleteCharacter,
+    permanentlyDeleteIdea,
     createChapter,
     updateChapter,
     deleteChapter,
@@ -793,6 +797,10 @@ export default function Home() {
                 deletedIdeas={deletedIdeas}
                 onRestoreBook={restoreBook}
                 onPermanentlyDeleteBook={permanentlyDeleteBook}
+                onPermanentlyDeleteChapter={permanentlyDeleteChapter}
+                onPermanentlyDeleteScene={permanentlyDeleteScene}
+                onPermanentlyDeleteCharacter={permanentlyDeleteCharacter}
+                onPermanentlyDeleteIdea={permanentlyDeleteIdea}
                 onCreateChapter={createChapter}
                 onDeleteChapter={deleteChapter}
                 onCreateScene={createScene}
@@ -1111,6 +1119,10 @@ export default function Home() {
               deletedIdeas={deletedIdeas}
               onRestoreBook={restoreBook}
               onPermanentlyDeleteBook={permanentlyDeleteBook}
+              onPermanentlyDeleteChapter={permanentlyDeleteChapter}
+              onPermanentlyDeleteScene={permanentlyDeleteScene}
+              onPermanentlyDeleteCharacter={permanentlyDeleteCharacter}
+              onPermanentlyDeleteIdea={permanentlyDeleteIdea}
               onCreateChapter={createChapter}
               onDeleteChapter={deleteChapter}
               onCreateScene={createScene}

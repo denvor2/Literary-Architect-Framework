@@ -92,17 +92,25 @@ export function useWorkspaceController() {
       setIsLoaded(true);
       setSyncWarning(getSyncWarning());
 
-      // Load deleted books for trash section (Sprint-33-Step-02)
-      console.log("[TRASH] === STARTUP: Loading deletedBooks ===");
+      // Load deleted items for trash section (Sprint-33-Step-02, Sprint-36: extended)
+      console.log("[TRASH] === STARTUP: Loading all deleted items ===");
 
       // First check localStorage (for client-only deletions), then API
       const ephemeralState = readLocalEphemeralState();
       console.log("[TRASH] Ephemeral state deletedBooks count:", ephemeralState.deletedBooks?.length ?? 0);
+      console.log("[TRASH] Ephemeral state deletedChapters count:", ephemeralState.deletedChapters?.length ?? 0);
+      console.log("[TRASH] Ephemeral state deletedScenes count:", ephemeralState.deletedScenes?.length ?? 0);
+      console.log("[TRASH] Ephemeral state deletedCharacters count:", ephemeralState.deletedCharacters?.length ?? 0);
+      console.log("[TRASH] Ephemeral state deletedIdeas count:", ephemeralState.deletedIdeas?.length ?? 0);
+
       if (ephemeralState.deletedBooks && ephemeralState.deletedBooks.length > 0) {
         console.log("[TRASH] Setting deletedBooks from localStorage:", ephemeralState.deletedBooks.map(b => b.title));
         setDeletedBooks(ephemeralState.deletedBooks);
-      } else {
-        console.log("[TRASH] No deletedBooks in localStorage, fetching from API");
+      }
+
+      if (ephemeralState.deletedChapters && ephemeralState.deletedChapters.length > 0) {
+        console.log("[TRASH] Setting deletedChapters from localStorage:", ephemeralState.deletedChapters.map(c => c.title));
+        setDeletedChapters(ephemeralState.deletedChapters);
       }
 
       if (ephemeralState.deletedScenes && ephemeralState.deletedScenes.length > 0) {
@@ -113,6 +121,11 @@ export function useWorkspaceController() {
       if (ephemeralState.deletedCharacters && ephemeralState.deletedCharacters.length > 0) {
         console.log("[TRASH] Setting deletedCharacters from localStorage:", ephemeralState.deletedCharacters.map(c => c.name));
         setDeletedCharacters(ephemeralState.deletedCharacters);
+      }
+
+      if (ephemeralState.deletedIdeas && ephemeralState.deletedIdeas.length > 0) {
+        console.log("[TRASH] Setting deletedIdeas from localStorage:", ephemeralState.deletedIdeas.length);
+        setDeletedIdeas(ephemeralState.deletedIdeas);
       }
 
       try {
@@ -157,11 +170,9 @@ export function useWorkspaceController() {
   // behavior.
   useEffect(() => {
     if (!isLoaded) return;
-    saveWorkspace(workspace, deletedBooks)
+    saveWorkspace(workspace, deletedBooks, deletedScenes, deletedCharacters, deletedChapters, deletedIdeas)
       .catch(() => {})
       .finally(() => setSyncWarning(getSyncWarning()));
-    // Persist all deleted items to localStorage so they survive page reloads
-    writeLocalEphemeralState(workspace, deletedBooks, deletedScenes, deletedCharacters, deletedChapters, deletedIdeas);
   }, [workspace, deletedBooks, deletedScenes, deletedCharacters, deletedChapters, deletedIdeas, isLoaded]);
 
   const activeBook = books.find((book) => book.id === activeBookId);
@@ -347,6 +358,34 @@ export function useWorkspaceController() {
         throw error;
       }
     })();
+  }
+
+  function permanentlyDeleteChapter(chapterId: string): void {
+    // Remove from deletedChapters (no API for chapters yet - local only)
+    setDeletedChapters((previous) =>
+      previous.filter((chapter) => chapter.id !== chapterId),
+    );
+  }
+
+  function permanentlyDeleteScene(sceneId: string): void {
+    // Remove from deletedScenes (no API for scenes yet - local only)
+    setDeletedScenes((previous) =>
+      previous.filter((scene) => scene.id !== sceneId),
+    );
+  }
+
+  function permanentlyDeleteCharacter(characterId: string): void {
+    // Remove from deletedCharacters (no API for characters yet - local only)
+    setDeletedCharacters((previous) =>
+      previous.filter((character) => character.id !== characterId),
+    );
+  }
+
+  function permanentlyDeleteIdea(ideaId: string): void {
+    // Remove from deletedIdeas (no API for ideas yet - local only)
+    setDeletedIdeas((previous) =>
+      previous.filter((idea) => idea.id !== ideaId),
+    );
   }
 
   function updateBook(
@@ -1356,6 +1395,10 @@ export function useWorkspaceController() {
     deleteBook,
     restoreBook,
     permanentlyDeleteBook,
+    permanentlyDeleteChapter,
+    permanentlyDeleteScene,
+    permanentlyDeleteCharacter,
+    permanentlyDeleteIdea,
     createChapter,
     updateChapter,
     deleteChapter,

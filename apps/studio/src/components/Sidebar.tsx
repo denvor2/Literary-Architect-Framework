@@ -51,6 +51,10 @@ type SidebarProps = {
   deletedIdeas?: readonly Idea[];
   onRestoreBook?: (bookId: string) => void;
   onPermanentlyDeleteBook?: (bookId: string) => void;
+  onPermanentlyDeleteChapter?: (chapterId: string) => void;
+  onPermanentlyDeleteScene?: (sceneId: string) => void;
+  onPermanentlyDeleteCharacter?: (characterId: string) => void;
+  onPermanentlyDeleteIdea?: (ideaId: string) => void;
   // Sprint-33-Step-07: Drag-drop support for moving books between series
   onMoveBookToSeries?: (bookId: string, targetSeriesId: string | null) => void;
 };
@@ -107,6 +111,10 @@ export function Sidebar({
   deletedIdeas = [],
   onRestoreBook,
   onPermanentlyDeleteBook,
+  onPermanentlyDeleteChapter,
+  onPermanentlyDeleteScene,
+  onPermanentlyDeleteCharacter,
+  onPermanentlyDeleteIdea,
   onMoveBookToSeries,
 }: SidebarProps) {
   // Sprint-33-Step-07: Drag-drop state tracking
@@ -770,6 +778,18 @@ export function Sidebar({
                           )}
                         </div>
                       </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Безвозвратно удалить главу "${chapter.title || "Без названия"}"?`)) {
+                            onPermanentlyDeleteChapter?.(chapter.id);
+                          }
+                        }}
+                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                        title="Удалить безвозвратно"
+                        aria-label={`Безвозвратно удалить главу ${chapter.title || "Без названия"}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -788,6 +808,18 @@ export function Sidebar({
                           )}
                         </div>
                       </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Безвозвратно удалить сцену "${scene.title || "Без названия"}"?`)) {
+                            onPermanentlyDeleteScene?.(scene.id);
+                          }
+                        }}
+                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                        title="Удалить безвозвратно"
+                        aria-label={`Безвозвратно удалить сцену ${scene.title || "Без названия"}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -806,6 +838,18 @@ export function Sidebar({
                           )}
                         </div>
                       </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Безвозвратно удалить персонажа "${character.name || "Без имени"}"?`)) {
+                            onPermanentlyDeleteCharacter?.(character.id);
+                          }
+                        }}
+                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                        title="Удалить безвозвратно"
+                        aria-label={`Безвозвратно удалить персонажа ${character.name || "Без имени"}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -824,6 +868,18 @@ export function Sidebar({
                           )}
                         </div>
                       </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Безвозвратно удалить идею?`)) {
+                            onPermanentlyDeleteIdea?.(idea.id);
+                          }
+                        }}
+                        className="rounded-md p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-300"
+                        title="Удалить безвозвратно"
+                        aria-label="Безвозвратно удалить идею"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </li>
                 ))}

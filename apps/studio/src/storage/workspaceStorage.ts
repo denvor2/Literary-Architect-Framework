@@ -448,7 +448,14 @@ export async function loadWorkspace(): Promise<Workspace> {
   return localWorkspace;
 }
 
-export async function saveWorkspace(workspace: Workspace, deletedBooks?: readonly Book[]): Promise<void> {
+export async function saveWorkspace(
+  workspace: Workspace,
+  deletedBooks?: readonly Book[],
+  deletedScenes?: readonly Scene[],
+  deletedCharacters?: readonly Character[],
+  deletedChapters?: readonly Chapter[],
+  deletedIdeas?: readonly Idea[],
+): Promise<void> {
   // Sprint-37-Step-03 (ADR-0017 database-primary): Try to save `books` to
   // the database first. If successful, persist ephemeral UI state to
   // localStorage. If the database is unavailable, fall back to localStorage
@@ -461,7 +468,14 @@ export async function saveWorkspace(workspace: Workspace, deletedBooks?: readonl
     // Database write succeeded — save ephemeral state to localStorage and
     // clear any offline warning (the next successful API call will clear
     // syncWarning if it was set).
-    writeLocalEphemeralState(workspace, deletedBooks);
+    writeLocalEphemeralState(
+      workspace,
+      deletedBooks,
+      deletedScenes,
+      deletedCharacters,
+      deletedChapters,
+      deletedIdeas,
+    );
   } else {
     // Database write failed — fall back to localStorage. This stores both
     // books and ephemeral state, so the next loadWorkspace() after

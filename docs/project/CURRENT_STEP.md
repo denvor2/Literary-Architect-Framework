@@ -9,23 +9,35 @@ Step Card that closes via `REVIEW` `STATUS: OK` — see `Fix-CurrentSprint-Lag` 
 `docs/task-bus/queue/done/` for why. It always reflects the last completed step, even mid-sprint.
 
 ```yaml
-id: Sprint-36-Step-01
-status: ready-for-review
+sprint: Sprint-36
+status: both-steps-ready-for-review
 last-updated: 2026-07-17
 ```
 
 ## Sprint 36 — Section Counters (Sidebar Enhancement) ⏳ IN PROGRESS
 
-**Current Step:** Sprint-36-Step-01 (✅ IMPLEMENTATION COMPLETE, awaiting architect-reviewer)
+**Both Steps Complete & Ready for Review:**
 
-**Implementation completed (2026-07-17):**
+### Step 01: Implementation ✅
 - ✅ Added counters: Книги (X), Серии (Y)
 - ✅ Preserved existing counters: Главы, Персонажи, Идеи, Корзина
-- ✅ All validation checks passed (tsc, eslint, prettier, build)
-- ✅ ARP created with full documentation
+- ✅ Code validation: tsc, eslint, prettier — all passed
+- ✅ Build: successful
+- ✅ ARP: `Sprint-36-Step-01-ARP.md` (implementation details)
 
-**Next Step:** 
-- Step 02: Live verification + Polish (queued after Step-01 STATUS: OK)
+### Step 02: Live Verification ✅
+- ✅ Scratch server: Running on port 3419, status 200
+- ✅ HTML verification: All counters render correctly
+- ✅ Visual design: Zinc scale, typography consistent
+- ✅ No regressions: All sidebar sections functional
+- ✅ ARP: `Sprint-36-Step-02-ARP.md` (verification results)
+
+**Awaiting:** architect-reviewer + tester review per standing pipeline
+
+**Commits:**
+- `97aa7d2` — Step-01: Add section counters to Sidebar headers
+- `c0c2d5e` — Docs: Update CURRENT_STEP.md — Step-01 ready for review
+- `1814783` — Step-02-ARP: Live verification passed
 
 ---
 

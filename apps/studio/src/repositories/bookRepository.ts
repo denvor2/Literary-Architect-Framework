@@ -186,7 +186,24 @@ export async function loadDeletedBooksForUser(
     orderBy: { deletedAt: "desc" },
     include: bookInclude,
   });
-  return books.map(toDomainBook);
+
+  // Deduplicate by ID (defense against data corruption)
+  const seen = new Set<string>();
+  const uniqueBooks: typeof books = [];
+  for (const book of books) {
+    if (!seen.has(book.id)) {
+      seen.add(book.id);
+      uniqueBooks.push(book);
+    } else {
+      console.warn(
+        "[loadDeletedBooksForUser] Duplicate book ID in trash:",
+        book.id,
+        book.title,
+      );
+    }
+  }
+
+  return uniqueBooks.map(toDomainBook);
 }
 
 export async function saveBooksForUser(

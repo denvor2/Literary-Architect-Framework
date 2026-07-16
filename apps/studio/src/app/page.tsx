@@ -221,7 +221,7 @@ export default function Home() {
   // Sprint-36-Step-02: Global accordion for sidebar sections
   // Only one section (chapters, characters, ideas, series, trash) can be expanded at a time
   type SidebarSection = 'chapters' | 'characters' | 'ideas' | 'series' | 'trash';
-  const [expandedSidebarSection, setExpandedSidebarSection] = useState<SidebarSection | null>('chapters');
+  const [expandedSidebarSection, setExpandedSidebarSection] = useState<SidebarSection | null>('series');
 
   // Persist expanded section to localStorage
   useEffect(() => {

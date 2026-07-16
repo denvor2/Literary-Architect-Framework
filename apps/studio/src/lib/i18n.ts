@@ -50,12 +50,9 @@ export function setLocaleInStorage(locale: Locale): void {
   }
 }
 
-export function getMessage(
-  messages: Messages,
-  key: string
-): string {
+export function getMessage(messages: Messages, key: string): string {
   const keys = key.split(".");
-  let value: Record<string, unknown> | string | undefined = messages;
+  let value: unknown = messages;
 
   for (const k of keys) {
     if (value && typeof value === "object") {

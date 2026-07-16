@@ -37,7 +37,7 @@ export function useLocale() {
 
   const t = (key: string): string => {
     const keys = key.split(".");
-    let value: Record<string, unknown> | string | undefined = messages;
+    let value: unknown = messages;
 
     for (const k of keys) {
       if (value && typeof value === "object") {

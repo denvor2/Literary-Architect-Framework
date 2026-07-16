@@ -174,11 +174,7 @@ export function RegisterDialog({
                 aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
                 title={showPassword ? "Скрыть пароль" : "Показать пароль"}
               >
-                {showPassword ? (
-                  <EyeOff size={18} />
-                ) : (
-                  <Eye size={18} />
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             {passwordErrors.length > 0 && (
@@ -225,11 +221,7 @@ export function RegisterDialog({
                   showPasswordConfirm ? "Скрыть пароль" : "Показать пароль"
                 }
               >
-                {showPasswordConfirm ? (
-                  <EyeOff size={18} />
-                ) : (
-                  <Eye size={18} />
-                )}
+                {showPasswordConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             {passwordMismatch && (

@@ -34,7 +34,6 @@ export type Idea = {
 // Sprint-34-Step-03: BookStatus enum for story bible tracking.
 export type BookStatus = "outline" | "draft" | "editing" | "beta" | "published";
 
-
 export type Book = {
   readonly id: string;
   readonly title: string;
@@ -223,8 +222,7 @@ export function normalizeBook(data: any): Book {
         : undefined,
     principle: data.principle ?? undefined,
     escalation: data.escalation ?? undefined,
-    themes:
-      data.themes && Array.isArray(data.themes) ? data.themes : undefined,
+    themes: data.themes && Array.isArray(data.themes) ? data.themes : undefined,
     bookConstraints:
       data.bookConstraints && Array.isArray(data.bookConstraints)
         ? data.bookConstraints

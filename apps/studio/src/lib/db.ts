@@ -36,11 +36,8 @@ function createPrismaClient(): PrismaClient | undefined {
     // The app will use localStorage fallback.
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    const errorStack =
-      error instanceof Error ? error.stack : "";
-    console.error(
-      `[db] Failed to initialize Prisma client: ${errorMessage}`,
-    );
+    const errorStack = error instanceof Error ? error.stack : "";
+    console.error(`[db] Failed to initialize Prisma client: ${errorMessage}`);
     console.error(`[db] Stack: ${errorStack}`);
     return undefined;
   }

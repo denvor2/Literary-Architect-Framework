@@ -32,9 +32,7 @@ export function IdeasPanel({
 
   const toggleExpanded = (ideaId: string) => {
     // Accordion: toggle selected idea
-    setExpandedIdeaId((previous) =>
-      previous === ideaId ? null : ideaId,
-    );
+    setExpandedIdeaId((previous) => (previous === ideaId ? null : ideaId));
   };
 
   const isExpanded = (ideaId: string) => expandedIdeaId === ideaId;

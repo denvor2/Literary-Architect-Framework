@@ -148,7 +148,12 @@ export async function DELETE(request: NextRequest) {
 
     console.log("[DELETE ROUTE] Verifying JWT...");
     const payload = await verifyJWT(token);
-    console.log("[DELETE ROUTE] JWT verified:", !!payload, "sub:", payload?.sub);
+    console.log(
+      "[DELETE ROUTE] JWT verified:",
+      !!payload,
+      "sub:",
+      payload?.sub,
+    );
 
     if (!payload || !payload.sub) {
       console.log("[DELETE ROUTE] Invalid payload");
@@ -175,10 +180,18 @@ export async function DELETE(request: NextRequest) {
         const books = await loadBooksForUser(userId);
         const book = books.find((b) => b.id === bookId);
         const bookTitle = book?.title || "Unknown";
-        console.log("[DELETE] Found book:", bookId, bookTitle, "exists:", !!book);
+        console.log(
+          "[DELETE] Found book:",
+          bookId,
+          bookTitle,
+          "exists:",
+          !!book,
+        );
 
         if (!book) {
-          console.warn("[DELETE] Book not found, but continuing with soft delete");
+          console.warn(
+            "[DELETE] Book not found, but continuing with soft delete",
+          );
         }
 
         console.log("[DELETE] Soft-deleting book:", bookId, bookTitle);
@@ -187,7 +200,10 @@ export async function DELETE(request: NextRequest) {
 
         // Log book deleted event
         console.log("[DELETE] Logging event...");
-        await safeLogEvent(userId, "book_deleted", { bookId, title: bookTitle });
+        await safeLogEvent(userId, "book_deleted", {
+          bookId,
+          title: bookTitle,
+        });
         console.log("[DELETE] Event logged");
       } catch (err) {
         console.error("[DELETE] Error during soft delete:", err);

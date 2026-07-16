@@ -4,7 +4,9 @@ import * as bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
 
 async function seedAdmin() {
-  const connectionString = process.env.DATABASE_URL || "postgresql://literary:literary@127.0.0.1:5432/literary_studio?schema=public";
+  const connectionString =
+    process.env.DATABASE_URL ||
+    "postgresql://literary:literary@127.0.0.1:5432/literary_studio?schema=public";
 
   const adapter = new PrismaPg({ connectionString });
   const prisma = new PrismaClient({ adapter });
@@ -40,7 +42,10 @@ async function seedAdmin() {
     console.log("");
     console.log("🌐 Откройте http://localhost:3000 и войдите");
   } catch (error) {
-    console.error("❌ Ошибка:", error instanceof Error ? error.message : String(error));
+    console.error(
+      "❌ Ошибка:",
+      error instanceof Error ? error.message : String(error),
+    );
   } finally {
     await prisma.$disconnect();
   }

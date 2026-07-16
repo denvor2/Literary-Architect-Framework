@@ -5,9 +5,12 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
 });
 
-test("DIAGNOSTIC: Trash persistence - full flow with logs", async ({ page }) => {
+test("DIAGNOSTIC: Trash persistence - full flow with logs", async ({
+  page,
+}) => {
   const testTitle = `TrashTest ${Date.now()}`;
 
   console.log("\n" + "=".repeat(60));
@@ -27,6 +30,7 @@ test("DIAGNOSTIC: Trash persistence - full flow with logs", async ({ page }) => 
   // Step 1: Create book
   console.log("\n[TEST] STEP 1: Creating book...");
   await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
   await page.waitForTimeout(500);
 
   // Find button more robustly
@@ -65,7 +69,9 @@ test("DIAGNOSTIC: Trash persistence - full flow with logs", async ({ page }) => 
   // Step 3: Check trash BEFORE reload
   console.log("\n[TEST] STEP 3: Checking trash BEFORE reload...");
   const trashSection = sidebar.getByText(/Корзина/);
-  const trashVisible = await trashSection.isVisible({ timeout: 2000 }).catch(() => false);
+  const trashVisible = await trashSection
+    .isVisible({ timeout: 2000 })
+    .catch(() => false);
   console.log("[TEST] Trash section visible before reload:", trashVisible);
 
   // Step 4: Inspect localStorage before reload
@@ -91,6 +97,7 @@ test("DIAGNOSTIC: Trash persistence - full flow with logs", async ({ page }) => 
   console.log("\n[TEST] STEP 5: Reloading page...");
   await page.reload();
   await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
   await page.waitForTimeout(1500);
   console.log("[TEST] ✓ Page reloaded");
 
@@ -117,15 +124,23 @@ test("DIAGNOSTIC: Trash persistence - full flow with logs", async ({ page }) => 
   console.log("\n[TEST] STEP 7: Checking trash AFTER reload...");
   const sidebarAfter = page.locator("aside").first();
   const trashAfter = sidebarAfter.getByText(/Корзина/);
-  const trashVisibleAfter = await trashAfter.isVisible({ timeout: 2000 }).catch(() => false);
+  const trashVisibleAfter = await trashAfter
+    .isVisible({ timeout: 2000 })
+    .catch(() => false);
   console.log("[TEST] Trash section visible after reload:", trashVisibleAfter);
 
   // Step 8: Summary
   console.log("\n" + "=".repeat(60));
   console.log("SUMMARY:");
   console.log("=".repeat(60));
-  console.log("Before reload: deletedBooks count =", localStorageBefore.deletedBooksCount);
-  console.log("After reload:  deletedBooks count =", localStorageAfter.deletedBooksCount);
+  console.log(
+    "Before reload: deletedBooks count =",
+    localStorageBefore.deletedBooksCount,
+  );
+  console.log(
+    "After reload:  deletedBooks count =",
+    localStorageAfter.deletedBooksCount,
+  );
 
   if (
     localStorageBefore.deletedBooksCount > 0 &&

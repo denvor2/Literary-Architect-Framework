@@ -68,20 +68,31 @@ async function verifyDarkMode() {
 
     console.log("Light Mode CSS Variables:");
     Object.entries(lightVars).forEach(([key, value]) => {
-      console.log(`  --${key.replace(/([A-Z])/g, "-$1").toLowerCase()}: ${value}`);
+      console.log(
+        `  --${key.replace(/([A-Z])/g, "-$1").toLowerCase()}: ${value}`,
+      );
     });
 
     // Verify light mode colors
-    const lightMatch = lightVars.background === "#ffffff" &&
-                        lightVars.foreground === "#171717" &&
-                        lightVars.accent === "#2563eb";
-    console.log(`\nLight Mode Colors Match ARP: ${lightMatch ? "✓ PASS" : "✗ FAIL"}`);
+    const lightMatch =
+      lightVars.background === "#ffffff" &&
+      lightVars.foreground === "#171717" &&
+      lightVars.accent === "#2563eb";
+    console.log(
+      `\nLight Mode Colors Match ARP: ${lightMatch ? "✓ PASS" : "✗ FAIL"}`,
+    );
 
     // Calculate light mode contrast
     const lightContrasts = {
-      "main-text": calculateContrast(lightVars.foreground, lightVars.background),
+      "main-text": calculateContrast(
+        lightVars.foreground,
+        lightVars.background,
+      ),
       "accent-on-bg": calculateContrast(lightVars.accent, lightVars.background),
-      "muted-text": calculateContrast(lightVars.mutedForeground, lightVars.muted),
+      "muted-text": calculateContrast(
+        lightVars.mutedForeground,
+        lightVars.muted,
+      ),
       "input-text": calculateContrast(lightVars.foreground, lightVars.inputBg),
     };
 
@@ -122,19 +133,24 @@ async function verifyDarkMode() {
 
     console.log("Dark Mode CSS Variables:");
     Object.entries(darkVars).forEach(([key, value]) => {
-      console.log(`  --${key.replace(/([A-Z])/g, "-$1").toLowerCase()}: ${value}`);
+      console.log(
+        `  --${key.replace(/([A-Z])/g, "-$1").toLowerCase()}: ${value}`,
+      );
     });
 
     // Verify dark mode colors
-    const darkColorMatch = darkVars.background === "#09090b" &&
-                            darkVars.foreground === "#f4f4f5" &&
-                            darkVars.accent === "#3b82f6" &&
-                            darkVars.inputBg === "#18181b" &&
-                            darkVars.inputBorder === "#3f3f46" &&
-                            darkVars.success === "#22c55e" &&
-                            darkVars.error === "#ef4444";
+    const darkColorMatch =
+      darkVars.background === "#09090b" &&
+      darkVars.foreground === "#f4f4f5" &&
+      darkVars.accent === "#3b82f6" &&
+      darkVars.inputBg === "#18181b" &&
+      darkVars.inputBorder === "#3f3f46" &&
+      darkVars.success === "#22c55e" &&
+      darkVars.error === "#ef4444";
 
-    console.log(`\nDark Mode Colors Match ARP: ${darkColorMatch ? "✓ PASS" : "✗ FAIL"}`);
+    console.log(
+      `\nDark Mode Colors Match ARP: ${darkColorMatch ? "✓ PASS" : "✗ FAIL"}`,
+    );
 
     if (!darkColorMatch) {
       console.log("\nExpected vs Actual:");
@@ -182,8 +198,12 @@ async function verifyDarkMode() {
     });
 
     console.log("Component Check:");
-    console.log(`  Header present: ${componentVisibility.headerVisible ? "✓" : "✗"}`);
-    console.log(`  Main present: ${componentVisibility.mainVisible ? "✓" : "✗"}`);
+    console.log(
+      `  Header present: ${componentVisibility.headerVisible ? "✓" : "✗"}`,
+    );
+    console.log(
+      `  Main present: ${componentVisibility.mainVisible ? "✓" : "✗"}`,
+    );
     console.log(`  Body background-color: ${componentVisibility.bodyBgColor}`);
     console.log(`  Body text color: ${componentVisibility.bodyTextColor}`);
 
@@ -201,7 +221,7 @@ async function verifyDarkMode() {
         window
           .getComputedStyle(document.documentElement)
           .getPropertyValue("--background")
-          .trim()
+          .trim(),
       );
 
       // Dark
@@ -212,12 +232,14 @@ async function verifyDarkMode() {
         window
           .getComputedStyle(document.documentElement)
           .getPropertyValue("--background")
-          .trim()
+          .trim(),
       );
 
       const pass = lightBg === "#ffffff" && darkBg === "#09090b";
       switchPass = switchPass && pass;
-      console.log(`  Switch ${i + 1}: Light=${lightBg} Dark=${darkBg} ${pass ? "✓" : "✗"}`);
+      console.log(
+        `  Switch ${i + 1}: Light=${lightBg} Dark=${darkBg} ${pass ? "✓" : "✗"}`,
+      );
     }
 
     // Final Report
@@ -231,10 +253,18 @@ async function verifyDarkMode() {
       darkContrastPass &&
       switchPass;
 
-    console.log(`\nLight Mode CSS Variables: ${lightMatch ? "✓ PASS" : "✗ FAIL"}`);
-    console.log(`Light Mode Contrast: ${lightContrastPass ? "✓ PASS" : "✗ FAIL"}`);
-    console.log(`Dark Mode CSS Variables: ${darkColorMatch ? "✓ PASS" : "✗ FAIL"}`);
-    console.log(`Dark Mode Contrast: ${darkContrastPass ? "✓ PASS" : "✗ FAIL"}`);
+    console.log(
+      `\nLight Mode CSS Variables: ${lightMatch ? "✓ PASS" : "✗ FAIL"}`,
+    );
+    console.log(
+      `Light Mode Contrast: ${lightContrastPass ? "✓ PASS" : "✗ FAIL"}`,
+    );
+    console.log(
+      `Dark Mode CSS Variables: ${darkColorMatch ? "✓ PASS" : "✗ FAIL"}`,
+    );
+    console.log(
+      `Dark Mode Contrast: ${darkContrastPass ? "✓ PASS" : "✗ FAIL"}`,
+    );
     console.log(`Rapid Switching: ${switchPass ? "✓ PASS" : "✗ FAIL"}`);
 
     console.log(`\nOverall Status: ${overallPass ? "✓ PASS" : "✗ FAIL"}`);
@@ -242,9 +272,11 @@ async function verifyDarkMode() {
     if (!overallPass) {
       console.log("\nFailure details:");
       if (!lightMatch) console.log("  - Light mode colors don't match ARP");
-      if (!lightContrastPass) console.log("  - Light mode contrast below WCAG AA");
+      if (!lightContrastPass)
+        console.log("  - Light mode contrast below WCAG AA");
       if (!darkColorMatch) console.log("  - Dark mode colors don't match ARP");
-      if (!darkContrastPass) console.log("  - Dark mode contrast below WCAG AA");
+      if (!darkContrastPass)
+        console.log("  - Dark mode contrast below WCAG AA");
       if (!switchPass) console.log("  - Theme switching failed");
     }
 

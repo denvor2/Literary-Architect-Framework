@@ -31,7 +31,11 @@ type NewBookDialogProps = {
   ) => void;
 };
 
-export function NewBookDialog({ onCancel, series = [], onCreate }: NewBookDialogProps) {
+export function NewBookDialog({
+  onCancel,
+  series = [],
+  onCreate,
+}: NewBookDialogProps) {
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState(GENRES[0]);
   const [language, setLanguage] = useState("Russian");

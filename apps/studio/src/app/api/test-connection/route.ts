@@ -13,7 +13,11 @@ export async function POST() {
     const text = block && block.type === "text" ? block.text : "";
     return NextResponse.json({ ok: true, text });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ ok: false, error: errorMessage }, { status: 500 });
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json(
+      { ok: false, error: errorMessage },
+      { status: 500 },
+    );
   }
 }

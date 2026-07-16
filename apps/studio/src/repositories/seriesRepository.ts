@@ -183,9 +183,7 @@ export async function listSeriesWithStoryBible(
 }
 
 // Helper: Convert Prisma series to domain series with all Story Bible fields
-function toDomainSeriesWithStoryBible(
-  prismaSeries: any,
-): DomainSeries {
+function toDomainSeriesWithStoryBible(prismaSeries: any): DomainSeries {
   return {
     id: prismaSeries.id,
     userId: prismaSeries.userId,
@@ -195,11 +193,8 @@ function toDomainSeriesWithStoryBible(
     createdAt: prismaSeries.createdAt.toISOString(),
     updatedAt: prismaSeries.updatedAt.toISOString(),
     targetAudience: prismaSeries.targetAudience ?? undefined,
-    genre: prismaSeries.genre
-      ? (prismaSeries.genre as string[])
-      : undefined,
-    estimatedTotalWordCount:
-      prismaSeries.estimatedTotalWordCount ?? undefined,
+    genre: prismaSeries.genre ? (prismaSeries.genre as string[]) : undefined,
+    estimatedTotalWordCount: prismaSeries.estimatedTotalWordCount ?? undefined,
     status: prismaSeries.status ?? undefined,
     decisions: prismaSeries.decisions ?? undefined,
     throughlineElements: prismaSeries.throughlineElements

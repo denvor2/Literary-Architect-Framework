@@ -6,7 +6,7 @@ async function main() {
   try {
     // Find admin user
     let user = await prisma.user.findFirst();
-    
+
     if (!user) {
       console.log("No users found, creating admin...");
       user = await prisma.user.create({
@@ -33,16 +33,17 @@ async function main() {
 
     console.log("\n=== BOOKS ===");
     console.log("Total:", allBooks.length);
-    
-    const active = allBooks.filter(b => !b.deletedAt);
-    const deleted = allBooks.filter(b => b.deletedAt);
-    
+
+    const active = allBooks.filter((b) => !b.deletedAt);
+    const deleted = allBooks.filter((b) => b.deletedAt);
+
     console.log(`\nActive (${active.length}):`);
-    active.forEach(b => console.log(`  • ${b.title}`));
-    
+    active.forEach((b) => console.log(`  • ${b.title}`));
+
     console.log(`\nDeleted/Trash (${deleted.length}):`);
-    deleted.forEach(b => console.log(`  • ${b.title} (deleted at: ${b.deletedAt})`));
-    
+    deleted.forEach((b) =>
+      console.log(`  • ${b.title} (deleted at: ${b.deletedAt})`),
+    );
   } finally {
     await prisma.$disconnect();
   }

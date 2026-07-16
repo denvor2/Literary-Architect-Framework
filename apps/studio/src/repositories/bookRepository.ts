@@ -371,7 +371,10 @@ export async function saveBooksForUser(
           await tx.chatMessage.deleteMany({ where: { threadId: thread.id } });
           for (const message of thread.messages) {
             const { customAlphabet } = await import("nanoid");
-            const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
+            const nanoid = customAlphabet(
+              "0123456789abcdefghijklmnopqrstuvwxyz",
+              21,
+            );
             await tx.chatMessage.create({
               data: {
                 id: nanoid(),
@@ -502,7 +505,9 @@ export async function updateBookStoryBible(
  * Get Book with all Story Bible fields
  * Sprint-34-Step-03: Retrieve complete book metadata for planning and display
  */
-export async function getBookWithStoryBible(bookId: string): Promise<DomainBook> {
+export async function getBookWithStoryBible(
+  bookId: string,
+): Promise<DomainBook> {
   if (!prisma) {
     throw new Error(
       "Database connection unavailable. Cannot get book story bible.",
@@ -529,9 +534,7 @@ export async function getBookWithStoryBible(bookId: string): Promise<DomainBook>
  * if the book-level fields are empty. Enables series-level defaults while
  * allowing per-book overrides.
  */
-export async function getBookWithSeriesContext(
-  bookId: string,
-): Promise<{
+export async function getBookWithSeriesContext(bookId: string): Promise<{
   book: DomainBook;
   inherited: {
     targetAudience?: string;

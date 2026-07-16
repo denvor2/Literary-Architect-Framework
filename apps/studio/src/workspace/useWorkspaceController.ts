@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   AssistantThread,
   Book,
@@ -55,8 +55,12 @@ export function useWorkspaceController() {
   const [syncWarning, setSyncWarning] = useState<SyncWarning | null>(null);
   const [deletedBooks, setDeletedBooks] = useState<readonly Book[]>([]);
   const [deletedScenes, setDeletedScenes] = useState<readonly Scene[]>([]);
-  const [deletedCharacters, setDeletedCharacters] = useState<readonly Character[]>([]);
-  const [deletedChapters, setDeletedChapters] = useState<readonly Chapter[]>([]);
+  const [deletedCharacters, setDeletedCharacters] = useState<
+    readonly Character[]
+  >([]);
+  const [deletedChapters, setDeletedChapters] = useState<readonly Chapter[]>(
+    [],
+  );
   const [deletedIdeas, setDeletedIdeas] = useState<readonly Idea[]>([]);
   const deletedItemsLoadedRef = useRef(false);
   const {
@@ -96,7 +100,9 @@ export function useWorkspaceController() {
       // Load deleted items for trash section (Sprint-33-Step-02, Sprint-36: extended)
       // Guard against double-loading in React.StrictMode or on effect re-run
       if (deletedItemsLoadedRef.current) {
-        console.log("[TRASH] === STARTUP: Deleted items already loaded, skipping ===");
+        console.log(
+          "[TRASH] === STARTUP: Deleted items already loaded, skipping ===",
+        );
         return;
       }
       deletedItemsLoadedRef.current = true;
@@ -105,34 +111,79 @@ export function useWorkspaceController() {
 
       // First check localStorage (for client-only deletions), then API
       const ephemeralState = readLocalEphemeralState();
-      console.log("[TRASH] Ephemeral state deletedBooks count:", ephemeralState.deletedBooks?.length ?? 0);
-      console.log("[TRASH] Ephemeral state deletedChapters count:", ephemeralState.deletedChapters?.length ?? 0);
-      console.log("[TRASH] Ephemeral state deletedScenes count:", ephemeralState.deletedScenes?.length ?? 0);
-      console.log("[TRASH] Ephemeral state deletedCharacters count:", ephemeralState.deletedCharacters?.length ?? 0);
-      console.log("[TRASH] Ephemeral state deletedIdeas count:", ephemeralState.deletedIdeas?.length ?? 0);
+      console.log(
+        "[TRASH] Ephemeral state deletedBooks count:",
+        ephemeralState.deletedBooks?.length ?? 0,
+      );
+      console.log(
+        "[TRASH] Ephemeral state deletedChapters count:",
+        ephemeralState.deletedChapters?.length ?? 0,
+      );
+      console.log(
+        "[TRASH] Ephemeral state deletedScenes count:",
+        ephemeralState.deletedScenes?.length ?? 0,
+      );
+      console.log(
+        "[TRASH] Ephemeral state deletedCharacters count:",
+        ephemeralState.deletedCharacters?.length ?? 0,
+      );
+      console.log(
+        "[TRASH] Ephemeral state deletedIdeas count:",
+        ephemeralState.deletedIdeas?.length ?? 0,
+      );
 
-      if (ephemeralState.deletedBooks && ephemeralState.deletedBooks.length > 0) {
-        console.log("[TRASH] Setting deletedBooks from localStorage:", ephemeralState.deletedBooks.map(b => b.title));
+      if (
+        ephemeralState.deletedBooks &&
+        ephemeralState.deletedBooks.length > 0
+      ) {
+        console.log(
+          "[TRASH] Setting deletedBooks from localStorage:",
+          ephemeralState.deletedBooks.map((b) => b.title),
+        );
         setDeletedBooks(ephemeralState.deletedBooks);
       }
 
-      if (ephemeralState.deletedChapters && ephemeralState.deletedChapters.length > 0) {
-        console.log("[TRASH] Setting deletedChapters from localStorage:", ephemeralState.deletedChapters.map(c => c.title));
+      if (
+        ephemeralState.deletedChapters &&
+        ephemeralState.deletedChapters.length > 0
+      ) {
+        console.log(
+          "[TRASH] Setting deletedChapters from localStorage:",
+          ephemeralState.deletedChapters.map((c) => c.title),
+        );
         setDeletedChapters(ephemeralState.deletedChapters);
       }
 
-      if (ephemeralState.deletedScenes && ephemeralState.deletedScenes.length > 0) {
-        console.log("[TRASH] Setting deletedScenes from localStorage:", ephemeralState.deletedScenes.map(s => s.title));
+      if (
+        ephemeralState.deletedScenes &&
+        ephemeralState.deletedScenes.length > 0
+      ) {
+        console.log(
+          "[TRASH] Setting deletedScenes from localStorage:",
+          ephemeralState.deletedScenes.map((s) => s.title),
+        );
         setDeletedScenes(ephemeralState.deletedScenes);
       }
 
-      if (ephemeralState.deletedCharacters && ephemeralState.deletedCharacters.length > 0) {
-        console.log("[TRASH] Setting deletedCharacters from localStorage:", ephemeralState.deletedCharacters.map(c => c.name));
+      if (
+        ephemeralState.deletedCharacters &&
+        ephemeralState.deletedCharacters.length > 0
+      ) {
+        console.log(
+          "[TRASH] Setting deletedCharacters from localStorage:",
+          ephemeralState.deletedCharacters.map((c) => c.name),
+        );
         setDeletedCharacters(ephemeralState.deletedCharacters);
       }
 
-      if (ephemeralState.deletedIdeas && ephemeralState.deletedIdeas.length > 0) {
-        console.log("[TRASH] Setting deletedIdeas from localStorage:", ephemeralState.deletedIdeas.length);
+      if (
+        ephemeralState.deletedIdeas &&
+        ephemeralState.deletedIdeas.length > 0
+      ) {
+        console.log(
+          "[TRASH] Setting deletedIdeas from localStorage:",
+          ephemeralState.deletedIdeas.length,
+        );
         setDeletedIdeas(ephemeralState.deletedIdeas);
       }
 
@@ -146,9 +197,15 @@ export function useWorkspaceController() {
             ok: boolean;
             deletedBooks?: Book[];
           };
-          console.log("[TRASH] API deletedBooks count:", data.deletedBooks?.length ?? 0);
+          console.log(
+            "[TRASH] API deletedBooks count:",
+            data.deletedBooks?.length ?? 0,
+          );
           if (data.deletedBooks && data.deletedBooks.length > 0) {
-            console.log("[TRASH] Setting deletedBooks from API:", data.deletedBooks.map(b => b.title));
+            console.log(
+              "[TRASH] Setting deletedBooks from API:",
+              data.deletedBooks.map((b) => b.title),
+            );
             setDeletedBooks(data.deletedBooks);
           }
         } else {
@@ -178,10 +235,25 @@ export function useWorkspaceController() {
   // behavior.
   useEffect(() => {
     if (!isLoaded) return;
-    saveWorkspace(workspace, deletedBooks, deletedScenes, deletedCharacters, deletedChapters, deletedIdeas)
+    saveWorkspace(
+      workspace,
+      deletedBooks,
+      deletedScenes,
+      deletedCharacters,
+      deletedChapters,
+      deletedIdeas,
+    )
       .catch(() => {})
       .finally(() => setSyncWarning(getSyncWarning()));
-  }, [workspace, deletedBooks, deletedScenes, deletedCharacters, deletedChapters, deletedIdeas, isLoaded]);
+  }, [
+    workspace,
+    deletedBooks,
+    deletedScenes,
+    deletedCharacters,
+    deletedChapters,
+    deletedIdeas,
+    isLoaded,
+  ]);
 
   const activeBook = books.find((book) => book.id === activeBookId);
   const chapters = activeBook?.chapters ?? [];
@@ -304,7 +376,10 @@ export function useWorkspaceController() {
           { ...bookToDelete, deletedAt: new Date() },
           ...previous,
         ];
-        console.log("[TRASH] deletedBooks after add:", updated.map(b => b.title));
+        console.log(
+          "[TRASH] deletedBooks after add:",
+          updated.map((b) => b.title),
+        );
         return updated;
       });
     }
@@ -588,10 +663,20 @@ export function useWorkspaceController() {
       // Add to trash
       if (chapterToDelete) {
         console.log("[TRASH] === deleteChapter START ===");
-        console.log("[TRASH] Deleting chapter:", chapterId, chapterToDelete.title);
+        console.log(
+          "[TRASH] Deleting chapter:",
+          chapterId,
+          chapterToDelete.title,
+        );
         setDeletedChapters((previous) => {
-          const updated = [{ ...chapterToDelete, deletedAt: new Date() }, ...previous];
-          console.log("[TRASH] deletedChapters after add:", updated.map(c => c.title));
+          const updated = [
+            { ...chapterToDelete, deletedAt: new Date() },
+            ...previous,
+          ];
+          console.log(
+            "[TRASH] deletedChapters after add:",
+            updated.map((c) => c.title),
+          );
           return updated;
         });
       }
@@ -640,8 +725,14 @@ export function useWorkspaceController() {
         console.log("[TRASH] === deleteScene START ===");
         console.log("[TRASH] Deleting scene:", sceneId, sceneToDelete.title);
         setDeletedScenes((previous) => {
-          const updated = [{ ...sceneToDelete, deletedAt: new Date() }, ...previous];
-          console.log("[TRASH] deletedScenes after add:", updated.map(s => s.title));
+          const updated = [
+            { ...sceneToDelete, deletedAt: new Date() },
+            ...previous,
+          ];
+          console.log(
+            "[TRASH] deletedScenes after add:",
+            updated.map((s) => s.title),
+          );
           return updated;
         });
       }
@@ -653,9 +744,7 @@ export function useWorkspaceController() {
             ? {
                 ...book,
                 chapters: book.chapters.map((c) =>
-                  c.id === chapterId
-                    ? { ...c, scenes: remainingScenes }
-                    : c,
+                  c.id === chapterId ? { ...c, scenes: remainingScenes } : c,
                 ),
               }
             : book,
@@ -754,13 +843,20 @@ export function useWorkspaceController() {
       // Add to trash
       if (characterToDelete) {
         console.log("[TRASH] === deleteCharacter START ===");
-        console.log("[TRASH] Deleting character:", characterId, characterToDelete.name);
+        console.log(
+          "[TRASH] Deleting character:",
+          characterId,
+          characterToDelete.name,
+        );
         setDeletedCharacters((previous) => {
           const updated = [
             { ...characterToDelete, deletedAt: new Date() },
             ...previous,
           ];
-          console.log("[TRASH] deletedCharacters after add:", updated.map(c => c.name));
+          console.log(
+            "[TRASH] deletedCharacters after add:",
+            updated.map((c) => c.name),
+          );
           return updated;
         });
       }
@@ -848,7 +944,10 @@ export function useWorkspaceController() {
         console.log("[TRASH] === deleteIdea START ===");
         console.log("[TRASH] Deleting idea:", ideaId);
         setDeletedIdeas((previous) => {
-          const updated = [{ ...ideaToDelete, deletedAt: new Date() }, ...previous];
+          const updated = [
+            { ...ideaToDelete, deletedAt: new Date() },
+            ...previous,
+          ];
           console.log("[TRASH] deletedIdeas after add:", updated.length);
           return updated;
         });
@@ -1237,7 +1336,9 @@ export function useWorkspaceController() {
     }
 
     // Get books in this series BEFORE modifying state
-    const booksInSeries = workspace.books.filter((b) => b.seriesId === seriesId);
+    const booksInSeries = workspace.books.filter(
+      (b) => b.seriesId === seriesId,
+    );
 
     void (async () => {
       try {
@@ -1247,10 +1348,10 @@ export function useWorkspaceController() {
         // Soft-delete each book in the series on server
         for (const book of booksInSeries) {
           try {
-            await fetch(
-              `/api/workspace?id=${encodeURIComponent(book.id)}`,
-              { method: "DELETE", credentials: "include" },
-            );
+            await fetch(`/api/workspace?id=${encodeURIComponent(book.id)}`, {
+              method: "DELETE",
+              credentials: "include",
+            });
           } catch (error) {
             console.error(`Failed to soft-delete book ${book.id}:`, error);
           }
@@ -1265,7 +1366,9 @@ export function useWorkspaceController() {
 
     setWorkspace((previous) => {
       // Remove the series and delete books that belonged to it
-      const updatedBooks = previous.books.filter((b) => b.seriesId !== seriesId);
+      const updatedBooks = previous.books.filter(
+        (b) => b.seriesId !== seriesId,
+      );
       return {
         ...previous,
         series: previous.series.filter((s) => s.id !== seriesId),

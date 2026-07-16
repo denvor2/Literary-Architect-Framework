@@ -99,11 +99,7 @@ export function LoginDialog({
                 aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
                 title={showPassword ? "Скрыть пароль" : "Показать пароль"}
               >
-                {showPassword ? (
-                  <EyeOff size={18} />
-                ) : (
-                  <Eye size={18} />
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </label>

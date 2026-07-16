@@ -141,7 +141,7 @@ export function EditorArea({
 }: EditorAreaProps) {
   if (!book) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
+      <main className="pointer-events-none flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
         <p className="text-lg text-zinc-500 dark:text-zinc-400">
           Создайте первую книгу, чтобы начать
         </p>

@@ -228,19 +228,23 @@ export default function Home() {
 
   // Sprint-36-Step-02: Global accordion for sidebar sections
   // Only one section (chapters, characters, ideas, series, trash) can be expanded at a time
-  type SidebarSection = 'chapters' | 'characters' | 'ideas' | 'series' | 'trash';
-  const [expandedSidebarSection, setExpandedSidebarSection] = useState<SidebarSection | null>('series');
+  type SidebarSection =
+    "chapters" | "characters" | "ideas" | "series" | "trash";
+  const [expandedSidebarSection, setExpandedSidebarSection] =
+    useState<SidebarSection | null>("series");
 
   // Persist expanded section to localStorage
   useEffect(() => {
     if (expandedSidebarSection) {
-      localStorage.setItem('sidebar-expanded-section', expandedSidebarSection);
+      localStorage.setItem("sidebar-expanded-section", expandedSidebarSection);
     }
   }, [expandedSidebarSection]);
 
   // Load expanded section from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem('sidebar-expanded-section') as SidebarSection | null;
+    const stored = localStorage.getItem(
+      "sidebar-expanded-section",
+    ) as SidebarSection | null;
     if (stored) {
       setExpandedSidebarSection(stored);
     }
@@ -451,18 +455,7 @@ export default function Home() {
 
     setIsExportLoading(true);
     try {
-      if (format === "json" || format === "both") {
-        // Download JSON
-        const jsonData = JSON.stringify(book, null, 2);
-        const jsonBlob = new Blob([jsonData], { type: "application/json" });
-        downloadFile(
-          jsonBlob,
-          `${book.title || "export"}.json`,
-          "application/json",
-        );
-      }
-
-      if (format === "markdown-zip" || format === "both") {
+      if (format === "markdown-zip") {
         // Download Markdown ZIP via API
         const activeSeries = series.find((s) => book.seriesId === s.id);
         const response = await fetch("/api/export", {
@@ -483,7 +476,7 @@ export default function Home() {
         downloadFile(blob, `${book.title || "export"}.zip`, "application/zip");
       }
 
-      if (format === "docx" || format === "both") {
+      if (format === "docx") {
         // Download DOCX via API
         const response = await fetch("/api/export", {
           method: "POST",
@@ -858,7 +851,7 @@ export default function Home() {
                   onToggleChaptersCollapsed={() =>
                     setIsChaptersCollapsed((value) => !value)
                   }
-                    onToggleChapterCollapsed={toggleChapterCollapsed}
+                  onToggleChapterCollapsed={toggleChapterCollapsed}
                   collapsedSceneIds={collapsedSceneIds}
                   onToggleSceneCollapsed={toggleSceneCollapsed}
                   onToggleAllScenesInChapter={toggleAllScenesInChapter}

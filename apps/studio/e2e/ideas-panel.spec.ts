@@ -5,6 +5,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
 });
 
 test.describe("Sprint-35: Ideas Panel", () => {
@@ -13,7 +14,7 @@ test.describe("Sprint-35: Ideas Panel", () => {
     const ideaText = "This is a test idea";
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -24,13 +25,17 @@ test.describe("Sprint-35: Ideas Panel", () => {
     console.log("[TEST] ✓ Book created");
 
     // Find and expand ideas section
-    const ideasButton = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    const ideasButton = sidebar
+      .getByRole("button")
+      .filter({ hasText: /^Идеи/ });
     await expect(ideasButton).toBeVisible({ timeout: 5000 });
     await ideasButton.click();
     await page.waitForTimeout(300);
 
     // Find create idea button
-    const createIdeaBtn = page.getByRole("button").filter({ hasText: /Добавить идею/ });
+    const createIdeaBtn = page
+      .getByRole("button")
+      .filter({ hasText: /Добавить идею/ });
     await expect(createIdeaBtn).toBeVisible({ timeout: 5000 });
     await createIdeaBtn.click();
     await page.waitForTimeout(300);
@@ -50,7 +55,7 @@ test.describe("Sprint-35: Ideas Panel", () => {
     const ideaText = "Persistent idea text";
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -58,13 +63,17 @@ test.describe("Sprint-35: Ideas Panel", () => {
     const sidebar = page.locator("aside").first();
 
     // Find and expand ideas section
-    const ideasButton = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    const ideasButton = sidebar
+      .getByRole("button")
+      .filter({ hasText: /^Идеи/ });
     await expect(ideasButton).toBeVisible({ timeout: 5000 });
     await ideasButton.click();
     await page.waitForTimeout(300);
 
     // Find create idea button and create idea
-    const createIdeaBtn = page.getByRole("button").filter({ hasText: /Добавить идею/ });
+    const createIdeaBtn = page
+      .getByRole("button")
+      .filter({ hasText: /Добавить идею/ });
     await expect(createIdeaBtn).toBeVisible({ timeout: 5000 });
     await createIdeaBtn.click();
     await page.waitForTimeout(300);
@@ -80,19 +89,26 @@ test.describe("Sprint-35: Ideas Panel", () => {
     await page.reload();
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(500);
+    await page.waitForTimeout(500);
 
     console.log("[TEST] ✓ Page reloaded");
 
     // Open ideas section if needed
-    const ideasButtonAfter = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    const ideasButtonAfter = sidebar
+      .getByRole("button")
+      .filter({ hasText: /^Идеи/ });
     if (await ideasButtonAfter.isVisible()) {
       await ideasButtonAfter.click();
       await page.waitForTimeout(300);
     }
 
     // Verify idea text persists
-    const ideaTextAfter = page.locator("textarea").filter({ hasText: ideaText });
-    const found = await ideaTextAfter.isVisible({ timeout: 1000 }).catch(() => false);
+    const ideaTextAfter = page
+      .locator("textarea")
+      .filter({ hasText: ideaText });
+    const found = await ideaTextAfter
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
 
     if (found) {
       console.log("[TEST] ✓ Idea text persisted in DB/localStorage");
@@ -107,7 +123,7 @@ test.describe("Sprint-35: Ideas Panel", () => {
     const bookTitle = `Multiple Ideas ${Date.now()}`;
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -115,13 +131,17 @@ test.describe("Sprint-35: Ideas Panel", () => {
     const sidebar = page.locator("aside").first();
 
     // Find and expand ideas section
-    const ideasButton = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    const ideasButton = sidebar
+      .getByRole("button")
+      .filter({ hasText: /^Идеи/ });
     await expect(ideasButton).toBeVisible({ timeout: 5000 });
     await ideasButton.click();
     await page.waitForTimeout(300);
 
     // Create 3 ideas
-    const createIdeaBtn = page.getByRole("button").filter({ hasText: /Добавить идею/ });
+    const createIdeaBtn = page
+      .getByRole("button")
+      .filter({ hasText: /Добавить идею/ });
 
     for (let i = 0; i < 3; i++) {
       await expect(createIdeaBtn).toBeVisible({ timeout: 5000 });
@@ -132,7 +152,9 @@ test.describe("Sprint-35: Ideas Panel", () => {
     console.log("[TEST] ✓ Multiple ideas created");
 
     // Ideas section should show count
-    const ideasHeaderAfter = sidebar.getByRole("button").filter({ hasText: /^Идеи/ });
+    const ideasHeaderAfter = sidebar
+      .getByRole("button")
+      .filter({ hasText: /^Идеи/ });
     const headerText = await ideasHeaderAfter.textContent();
     console.log(`[TEST] Ideas header: ${headerText}`);
 

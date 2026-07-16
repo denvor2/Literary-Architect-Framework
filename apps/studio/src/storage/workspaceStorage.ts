@@ -266,11 +266,26 @@ export function writeLocalEphemeralState(
       deletedChapters: deletedChapters ?? [],
       deletedIdeas: deletedIdeas ?? [],
     };
-    console.log("[TRASH] writeLocalEphemeralState - saving deletedBooks count:", deletedBooks?.length ?? 0);
-    console.log("[TRASH] writeLocalEphemeralState - saving deletedScenes count:", deletedScenes?.length ?? 0);
-    console.log("[TRASH] writeLocalEphemeralState - saving deletedCharacters count:", deletedCharacters?.length ?? 0);
-    console.log("[TRASH] writeLocalEphemeralState - saving deletedChapters count:", deletedChapters?.length ?? 0);
-    console.log("[TRASH] writeLocalEphemeralState - saving deletedIdeas count:", deletedIdeas?.length ?? 0);
+    console.log(
+      "[TRASH] writeLocalEphemeralState - saving deletedBooks count:",
+      deletedBooks?.length ?? 0,
+    );
+    console.log(
+      "[TRASH] writeLocalEphemeralState - saving deletedScenes count:",
+      deletedScenes?.length ?? 0,
+    );
+    console.log(
+      "[TRASH] writeLocalEphemeralState - saving deletedCharacters count:",
+      deletedCharacters?.length ?? 0,
+    );
+    console.log(
+      "[TRASH] writeLocalEphemeralState - saving deletedChapters count:",
+      deletedChapters?.length ?? 0,
+    );
+    console.log(
+      "[TRASH] writeLocalEphemeralState - saving deletedIdeas count:",
+      deletedIdeas?.length ?? 0,
+    );
     window.localStorage.setItem(
       EPHEMERAL_STATE_KEY,
       JSON.stringify(ephemeralState),
@@ -344,7 +359,9 @@ async function fetchBooksFromApi(): Promise<readonly Book[] | null> {
 }
 
 // Fetch series from /api/series endpoint. Same error handling as books.
-async function fetchSeriesFromApi(): Promise<readonly import("@/domain/model").Series[] | null> {
+async function fetchSeriesFromApi(): Promise<
+  readonly import("@/domain/model").Series[] | null
+> {
   try {
     const response = await fetch("/api/series", {
       credentials: "include",

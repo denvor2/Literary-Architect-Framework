@@ -24,10 +24,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], channel: "chrome" },
     },
   ],
-  webServer: USE_SCRATCH_SERVER ? undefined : {
-    command: "npm run dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !CI,
-    timeout: 120_000,
-  },
+  webServer: USE_SCRATCH_SERVER
+    ? undefined
+    : {
+        command: "npm run dev",
+        url: "http://localhost:3000",
+        reuseExistingServer: !CI,
+        timeout: 120_000,
+      },
 });

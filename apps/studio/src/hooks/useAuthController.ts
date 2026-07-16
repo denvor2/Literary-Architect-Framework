@@ -65,7 +65,10 @@ export function useAuthController() {
         }
       } catch (error) {
         if (cancelled) return;
-        console.warn("Session restoration failed (user not authenticated):", error);
+        console.warn(
+          "Session restoration failed (user not authenticated):",
+          error,
+        );
         setAuth({ isLoggedIn: false, isLoading: false });
       }
     }

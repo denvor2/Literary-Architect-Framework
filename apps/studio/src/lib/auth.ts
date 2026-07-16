@@ -11,7 +11,7 @@ if (!JWT_SECRET) {
   // This should fail at runtime if JWT_SECRET is not configured
   // Better to fail loudly than silently create invalid tokens
   console.warn(
-    "⚠️ WARNING: JWT_SECRET environment variable is not set. Authentication will fail."
+    "⚠️ WARNING: JWT_SECRET environment variable is not set. Authentication will fail.",
   );
 }
 const JWT_EXPIRATION_SECONDS = 24 * 60 * 60; // 24 hours as per ADR-0015

@@ -6,14 +6,18 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
-test("DB Persistence: all elements are saved to database", async ({ page, context }) => {
+test("DB Persistence: all elements are saved to database", async ({
+  page,
+  context,
+}) => {
   const testTitle = `DBTest ${Date.now()}`;
 
   // Step 1: Create book
   console.log("STEP 1: Creating book...");
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(500);
-  await page.getByText("+ Новая книга").click();
+  await page.waitForTimeout(500);
+  await page.getByText("Книга").first().click();
   await page.getByPlaceholder("Введите название...").fill(testTitle);
   await page.getByText("Создать книгу").click();
   await page.waitForTimeout(800);
@@ -32,7 +36,9 @@ test("DB Persistence: all elements are saved to database", async ({ page, contex
 
   // Step 3: Create scene (auto-created with chapter)
   console.log("\nSTEP 3: Checking scene (auto-created with chapter)...");
-  const sceneTextarea = page.locator("textarea[placeholder='Начните писать сцену...']").first();
+  const sceneTextarea = page
+    .locator("textarea[placeholder='Начните писать сцену...']")
+    .first();
   await expect(sceneTextarea).toBeVisible();
   console.log("✓ Scene exists locally");
 
@@ -80,6 +86,7 @@ test("DB Persistence: all elements are saved to database", async ({ page, contex
   console.log("\nSTEP 8: Reloading page to verify DB persistence...");
   await page.reload();
   await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
   await page.waitForTimeout(1000);
   console.log("✓ Page reloaded");
 
@@ -87,7 +94,9 @@ test("DB Persistence: all elements are saved to database", async ({ page, contex
   console.log("\nSTEP 9: Verifying book after reload...");
   const sidebarAfter = page.locator("aside").first();
   const bookAfter = sidebarAfter.getByText(testTitle);
-  const bookVisible = await bookAfter.isVisible({ timeout: 2000 }).catch(() => false);
+  const bookVisible = await bookAfter
+    .isVisible({ timeout: 2000 })
+    .catch(() => false);
 
   if (bookVisible) {
     console.log("✅ BOOK PERSISTED to DB!");
@@ -95,7 +104,9 @@ test("DB Persistence: all elements are saved to database", async ({ page, contex
     // Step 10: Verify chapter persists
     console.log("\nSTEP 10: Verifying chapter after reload...");
     const chapterAfter = sidebarAfter.getByText(/Chapter 1/);
-    const chapterVisible = await chapterAfter.isVisible({ timeout: 1000 }).catch(() => false);
+    const chapterVisible = await chapterAfter
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
     if (chapterVisible) {
       console.log("✅ CHAPTER PERSISTED to DB!");
     } else {
@@ -104,8 +115,12 @@ test("DB Persistence: all elements are saved to database", async ({ page, contex
 
     // Step 11: Verify scene text persists
     console.log("\nSTEP 11: Verifying scene content after reload...");
-    const sceneAfter = page.locator("textarea[placeholder='Начните писать сцену...']").first();
-    const sceneContent = await sceneAfter.inputValue({ timeout: 1000 }).catch(() => "");
+    const sceneAfter = page
+      .locator("textarea[placeholder='Начните писать сцену...']")
+      .first();
+    const sceneContent = await sceneAfter
+      .inputValue({ timeout: 1000 })
+      .catch(() => "");
     if (sceneContent.includes("Test scene content")) {
       console.log("✅ SCENE CONTENT PERSISTED to DB!");
     } else {

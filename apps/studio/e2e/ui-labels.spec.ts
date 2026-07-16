@@ -5,6 +5,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
 });
 
 test.describe("Sprint-35: UI Labels", () => {
@@ -12,7 +13,7 @@ test.describe("Sprint-35: UI Labels", () => {
     const bookTitle = `Label Test ${Date.now()}`;
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -32,18 +33,22 @@ test.describe("Sprint-35: UI Labels", () => {
 
     // Verify 'Заметки' is NOT used
     const notesLabel = sidebar.getByText(/^Заметки/);
-    const isVisible = await notesLabel.isVisible({ timeout: 1000 }).catch(() => false);
+    const isVisible = await notesLabel
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
     expect(isVisible).toBeFalsy();
 
     console.log("[TEST] ✓ 'Заметки' label not found");
     console.log("[TEST] ✅ PASS: Correct UI labels!");
   });
 
-  test("create button shows '+ Добавить идею' not '+ Добавить заметку'", async ({ page }) => {
+  test("create button shows '+ Добавить идею' not '+ Добавить заметку'", async ({
+    page,
+  }) => {
     const bookTitle = `Label Button Test ${Date.now()}`;
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -56,7 +61,9 @@ test.describe("Sprint-35: UI Labels", () => {
     await page.waitForTimeout(300);
 
     // Find the "Добавить идею" button
-    const createBtn = page.getByRole("button").filter({ hasText: /Добавить идею/ });
+    const createBtn = page
+      .getByRole("button")
+      .filter({ hasText: /Добавить идею/ });
 
     await expect(createBtn).toBeVisible({ timeout: 5000 });
     const btnText = await createBtn.textContent();
@@ -71,7 +78,7 @@ test.describe("Sprint-35: UI Labels", () => {
     const bookTitle = `Sidebar Layout ${Date.now()}`;
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -81,10 +88,26 @@ test.describe("Sprint-35: UI Labels", () => {
     // All section headers should be visible (they're buttons in the accordion)
     // even if content is collapsed
     const sections = {
-      "Главы": await sidebar.getByRole("button").filter({ hasText: /^Главы/ }).isVisible({ timeout: 1000 }).catch(() => false),
-      "Персонажи": await sidebar.getByRole("button").filter({ hasText: /^Персонажи/ }).isVisible({ timeout: 1000 }).catch(() => false),
-      "Идеи": await sidebar.getByRole("button").filter({ hasText: /^Идеи/ }).isVisible({ timeout: 1000 }).catch(() => false),
-      "Корзина": await sidebar.getByRole("button").filter({ hasText: /^Корзина/ }).isVisible({ timeout: 1000 }).catch(() => false),
+      Главы: await sidebar
+        .getByRole("button")
+        .filter({ hasText: /^Главы/ })
+        .isVisible({ timeout: 1000 })
+        .catch(() => false),
+      Персонажи: await sidebar
+        .getByRole("button")
+        .filter({ hasText: /^Персонажи/ })
+        .isVisible({ timeout: 1000 })
+        .catch(() => false),
+      Идеи: await sidebar
+        .getByRole("button")
+        .filter({ hasText: /^Идеи/ })
+        .isVisible({ timeout: 1000 })
+        .catch(() => false),
+      Корзина: await sidebar
+        .getByRole("button")
+        .filter({ hasText: /^Корзина/ })
+        .isVisible({ timeout: 1000 })
+        .catch(() => false),
     };
 
     Object.entries(sections).forEach(([name, visible]) => {

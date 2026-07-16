@@ -17,7 +17,8 @@ export function ExportDialog({
   onExport,
   onCancel,
 }: ExportDialogProps) {
-  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("markdown-zip");
+  const [selectedFormat, setSelectedFormat] =
+    useState<ExportFormat>("markdown-zip");
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;

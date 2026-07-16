@@ -5,6 +5,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
 });
 
 test.describe("Sprint-35: Sidebar Accordion", () => {
@@ -12,7 +13,7 @@ test.describe("Sprint-35: Sidebar Accordion", () => {
     const bookTitle = `Accordion Test ${Date.now()}`;
 
     // Create book with chapter
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -35,10 +36,12 @@ test.describe("Sprint-35: Sidebar Accordion", () => {
       console.log("[TEST] ✓ Chapter initially expanded");
       await collapseBtn.click();
       await page.waitForTimeout(300);
-      
+
       // Verify scenes are hidden
       const sceneItem = sidebar.getByText(/Scene/i).first();
-      const isVisible = await sceneItem.isVisible({ timeout: 500 }).catch(() => false);
+      const isVisible = await sceneItem
+        .isVisible({ timeout: 500 })
+        .catch(() => false);
       expect(isVisible).toBeFalsy();
       console.log("[TEST] ✓ Chapter collapsed - scenes hidden");
 
@@ -56,7 +59,7 @@ test.describe("Sprint-35: Sidebar Accordion", () => {
     const bookTitle = `Character Accordion ${Date.now()}`;
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -67,7 +70,9 @@ test.describe("Sprint-35: Sidebar Accordion", () => {
     console.log("[TEST] ✓ Book created");
 
     // Find characters section header button and expand it
-    const charButton = sidebar.getByRole("button").filter({ hasText: /^Персонажи/ });
+    const charButton = sidebar
+      .getByRole("button")
+      .filter({ hasText: /^Персонажи/ });
     await expect(charButton).toBeVisible({ timeout: 5000 });
 
     // Click to expand if collapsed
@@ -83,7 +88,7 @@ test.describe("Sprint-35: Sidebar Accordion", () => {
     const bookTitle = `Ideas Accordion ${Date.now()}`;
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -106,21 +111,23 @@ test.describe("Sprint-35: Sidebar Accordion", () => {
     console.log("[TEST] ✅ PASS: Ideas accordion works!");
   });
 
-  test("accordion: multiple chapters toggle independently", async ({ page }) => {
+  test("accordion: multiple chapters toggle independently", async ({
+    page,
+  }) => {
     const bookTitle = `Multi Chapter ${Date.now()}`;
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
 
     const sidebar = page.locator("aside").first();
-    
+
     // Create two chapters
     await page.getByText("+ Новая глава").click();
     await page.waitForTimeout(500);
-    
+
     await page.getByText("+ Новая глава").click();
     await page.waitForTimeout(500);
 
@@ -137,7 +144,10 @@ test.describe("Sprint-35: Sidebar Accordion", () => {
 
     // Click first chapter
     await firstChapter.hover();
-    const firstCollapseBtn = firstChapter.locator("..").getByRole("button").first();
+    const firstCollapseBtn = firstChapter
+      .locator("..")
+      .getByRole("button")
+      .first();
     await firstCollapseBtn.click();
     await page.waitForTimeout(300);
 

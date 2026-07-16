@@ -44,7 +44,7 @@ export async function findUserByEmail(email: string): Promise<User | null> {
  */
 export async function checkPassword(
   plainPassword: string,
-  passwordHash: string | null
+  passwordHash: string | null,
 ): Promise<boolean> {
   if (!passwordHash) {
     return false;
@@ -60,7 +60,7 @@ export async function checkPassword(
 export async function createUser(
   email: string,
   plainPassword: string,
-  role: Role = "user"
+  role: Role = "user",
 ): Promise<User> {
   if (!prisma) {
     throw new Error("Database connection unavailable");
@@ -115,7 +115,7 @@ export async function getUserById(userId: string): Promise<User | null> {
  */
 export async function updateUserPassword(
   userId: string,
-  newPlainPassword: string
+  newPlainPassword: string,
 ): Promise<User> {
   if (!prisma) {
     throw new Error("Database connection unavailable");
@@ -129,7 +129,7 @@ export async function updateUserPassword(
   // Hash new password
   const passwordHash = await bcrypt.hash(
     newPlainPassword,
-    PASSWORD_HASH_ROUNDS
+    PASSWORD_HASH_ROUNDS,
   );
 
   return prisma.user.update({
@@ -144,7 +144,7 @@ export async function updateUserPassword(
  */
 export async function updateUserStatus(
   userId: string,
-  isBlocked: boolean
+  isBlocked: boolean,
 ): Promise<User> {
   if (!prisma) {
     throw new Error("Database connection unavailable");
@@ -164,7 +164,9 @@ export async function updateUserStatus(
  */
 export async function getOrCreateDefaultUser(): Promise<User> {
   if (!prisma) {
-    throw new Error("Database connection unavailable. Cannot retrieve or create user.");
+    throw new Error(
+      "Database connection unavailable. Cannot retrieve or create user.",
+    );
   }
   const existingUser = await prisma.user.findFirst({
     orderBy: { createdAt: "asc" },

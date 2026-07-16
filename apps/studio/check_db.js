@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 async function main() {
   try {
     let user = await prisma.user.findFirst();
-    
+
     if (!user) {
       console.log("❌ No users found in database");
       return;
@@ -27,16 +27,15 @@ async function main() {
     });
 
     console.log("\n📚 === BOOKS ===");
-    const active = allBooks.filter(b => !b.deletedAt);
-    const deleted = allBooks.filter(b => b.deletedAt);
-    
+    const active = allBooks.filter((b) => !b.deletedAt);
+    const deleted = allBooks.filter((b) => b.deletedAt);
+
     console.log(`Active: ${active.length}, Deleted: ${deleted.length}`);
     console.log("\nActive:");
-    active.forEach(b => console.log(`  • ${b.title}`));
+    active.forEach((b) => console.log(`  • ${b.title}`));
     console.log("\nTrash:");
     if (deleted.length === 0) console.log("  (empty)");
-    deleted.forEach(b => console.log(`  • ${b.title}`));
-    
+    deleted.forEach((b) => console.log(`  • ${b.title}`));
   } catch (e) {
     console.error("Error:", e.message);
   } finally {

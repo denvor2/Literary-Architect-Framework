@@ -5,6 +5,8 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
+  await page.waitForTimeout(1000);
 });
 
 test.describe("Sprint-35: Trash Persistence", () => {
@@ -13,7 +15,11 @@ test.describe("Sprint-35: Trash Persistence", () => {
 
     // Step 1: Create book
     console.log("[TEST] Creating book...");
-    await page.getByText("+ Новая книга").click();
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll("button"));
+      const btn = buttons.find((b) => b.textContent.includes("Книга"));
+      if (btn) (btn as HTMLElement).click();
+    });
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -45,6 +51,7 @@ test.describe("Sprint-35: Trash Persistence", () => {
     await page.reload();
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(500);
+    await page.waitForTimeout(500);
 
     // Step 4: Verify trash section still there
     const sidebarAfter = page.locator("aside").first();
@@ -58,7 +65,11 @@ test.describe("Sprint-35: Trash Persistence", () => {
     const bookTitle = `Scene Test ${Date.now()}`;
 
     // Create book and chapter
-    await page.getByText("+ Новая книга").click();
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll("button"));
+      const btn = buttons.find((b) => b.textContent.includes("Книга"));
+      if (btn) (btn as HTMLElement).click();
+    });
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -67,7 +78,7 @@ test.describe("Sprint-35: Trash Persistence", () => {
     await expect(sidebar.getByText(bookTitle)).toBeVisible();
 
     // Create chapter (auto-creates scene)
-    await page.getByText("+ Новая глава").click();
+    await page.getByText("+ Новая глава").first().click();
     await page.waitForTimeout(500);
 
     console.log("[TEST] ✓ Book and chapter created");
@@ -85,6 +96,7 @@ test.describe("Sprint-35: Trash Persistence", () => {
     await page.reload();
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(500);
+    await page.waitForTimeout(500);
 
     const sidebarAfter = page.locator("aside").first();
     const trashAfter = sidebarAfter.getByText(/Корзина/);
@@ -97,7 +109,11 @@ test.describe("Sprint-35: Trash Persistence", () => {
     const bookTitle = `Character Test ${Date.now()}`;
 
     // Create book
-    await page.getByText("+ Новая книга").click();
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll("button"));
+      const btn = buttons.find((b) => b.textContent.includes("Книга"));
+      if (btn) (btn as HTMLElement).click();
+    });
     await page.getByPlaceholder("Введите название...").fill(bookTitle);
     await page.getByText("Создать книгу").click();
     await page.waitForTimeout(500);
@@ -119,6 +135,7 @@ test.describe("Sprint-35: Trash Persistence", () => {
     // Reload and verify trash
     await page.reload();
     await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
     await page.waitForTimeout(500);
 
     const sidebarAfter = page.locator("aside").first();

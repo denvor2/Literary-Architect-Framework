@@ -13,16 +13,14 @@ test.describe("Smoke: загрузка приложения", () => {
     await expect(page.getByText("Literary Studio")).toBeVisible();
   });
 
-  test("пустое состояние: нет книг, кнопка '+ Новая книга' видна", async ({
-    page,
-  }) => {
-    await expect(page.getByText("+ Новая книга")).toBeVisible();
+  test("пустое состояние: нет книг, кнопка 'Книга' видна", async ({ page }) => {
+    await expect(page.getByText("Книга")).toBeVisible();
   });
 });
 
 test.describe("CRUD книги", () => {
   test("создание книги через диалог", async ({ page }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill("Тестовая книга");
     await page.getByText("Создать книгу").click();
     await expect(
@@ -31,7 +29,7 @@ test.describe("CRUD книги", () => {
   });
 
   test("создание главы", async ({ page }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill("Книга для глав");
     await page.getByText("Создать книгу").click();
     await page.getByText("+ Новая глава").click();
@@ -39,7 +37,7 @@ test.describe("CRUD книги", () => {
   });
 
   test("создание сцены в главе", async ({ page }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill("Книга для сцен");
     await page.getByText("Создать книгу").click();
     await page.getByText("+ Новая глава").click();
@@ -50,7 +48,7 @@ test.describe("CRUD книги", () => {
 
 test.describe("Редактирование текста", () => {
   test("ввод текста в сцену", async ({ page }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill("Редактирование");
     await page.getByText("Создать книгу").click();
     await page.getByText("+ Новая глава").click();
@@ -67,7 +65,7 @@ test.describe("Редактирование текста", () => {
 
 test.describe("Навигация и сворачивание", () => {
   test("sidebar: дерево глав", async ({ page }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill("Дерево навигации");
     await page.getByText("Создать книгу").click();
     await page.getByText("+ Новая глава").click();
@@ -79,7 +77,7 @@ test.describe("Навигация и сворачивание", () => {
   });
 
   test("сворачивание главы: сцены исчезают", async ({ page }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill("Сворачивание");
     await page.getByText("Создать книгу").click();
     await page.getByText("+ Новая глава").click();
@@ -105,7 +103,7 @@ test.describe("Навигация и сворачивание", () => {
   test("сворачивание сцены: textarea исчезает, title остаётся", async ({
     page,
   }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page
       .getByPlaceholder("Введите название...")
       .fill("Сворачивание сцены");
@@ -138,7 +136,7 @@ test.describe("Навигация и сворачивание", () => {
 
 test.describe("Focus Mode", () => {
   test("включение/выключение Focus Mode", async ({ page }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill("Фокус");
     await page.getByText("Создать книгу").click();
 
@@ -164,7 +162,7 @@ test.describe("Focus Mode", () => {
 
 test.describe("Персистентность данных", () => {
   test("книга сохраняется после перезагрузки", async ({ page }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill("Персистентность");
     await page.getByText("Создать книгу").click();
     await expect(
@@ -179,7 +177,7 @@ test.describe("Персистентность данных", () => {
   });
 
   test("текст сцены сохраняется после перезагрузки", async ({ page }) => {
-    await page.getByText("+ Новая книга").click();
+    await page.getByText("Книга").first().click();
     await page.getByPlaceholder("Введите название...").fill("Текст");
     await page.getByText("Создать книгу").click();
     await page.getByText("+ Новая глава").click();

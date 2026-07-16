@@ -78,10 +78,22 @@ test.describe("Dark Mode Contrast & Color Verification", () => {
 
     // Calculate and verify contrast ratios for light mode
     const lightContrasts = {
-      mainText: calculateContrast(lightVariables.foreground, lightVariables.background),
-      accentText: calculateContrast(lightVariables.accent, lightVariables.background),
-      mutedText: calculateContrast(lightVariables.mutedForeground, lightVariables.muted),
-      inputText: calculateContrast(lightVariables.foreground, lightVariables.inputBg),
+      mainText: calculateContrast(
+        lightVariables.foreground,
+        lightVariables.background,
+      ),
+      accentText: calculateContrast(
+        lightVariables.accent,
+        lightVariables.background,
+      ),
+      mutedText: calculateContrast(
+        lightVariables.mutedForeground,
+        lightVariables.muted,
+      ),
+      inputText: calculateContrast(
+        lightVariables.foreground,
+        lightVariables.inputBg,
+      ),
     };
 
     console.log("Light Mode Contrast Ratios:", lightContrasts);
@@ -143,19 +155,34 @@ test.describe("Dark Mode Contrast & Color Verification", () => {
 
     // Calculate and verify contrast ratios for dark mode
     const darkContrasts = {
-      mainText: calculateContrast(darkVariables.foreground, darkVariables.background),
-      inputText: calculateContrast(darkVariables.foreground, darkVariables.inputBg),
+      mainText: calculateContrast(
+        darkVariables.foreground,
+        darkVariables.background,
+      ),
+      inputText: calculateContrast(
+        darkVariables.foreground,
+        darkVariables.inputBg,
+      ),
       mutedText: calculateContrast(
         darkVariables.mutedForeground,
-        darkVariables.muted
+        darkVariables.muted,
       ),
-      accentText: calculateContrast(darkVariables.accent, darkVariables.background),
-      successText: calculateContrast(darkVariables.success, darkVariables.background),
-      errorText: calculateContrast(darkVariables.error, darkVariables.background),
+      accentText: calculateContrast(
+        darkVariables.accent,
+        darkVariables.background,
+      ),
+      successText: calculateContrast(
+        darkVariables.success,
+        darkVariables.background,
+      ),
+      errorText: calculateContrast(
+        darkVariables.error,
+        darkVariables.background,
+      ),
       infoText: calculateContrast(darkVariables.info, darkVariables.background),
       warningText: calculateContrast(
         darkVariables.warning,
-        darkVariables.background
+        darkVariables.background,
       ),
     };
 
@@ -223,7 +250,9 @@ test.describe("Dark Mode Contrast & Color Verification", () => {
       await page.waitForTimeout(100);
 
       const lightBg = await page.locator("body").evaluate(() => {
-        return window.getComputedStyle(document.documentElement).getPropertyValue("--background");
+        return window
+          .getComputedStyle(document.documentElement)
+          .getPropertyValue("--background");
       });
 
       // Switch to dark
@@ -231,10 +260,14 @@ test.describe("Dark Mode Contrast & Color Verification", () => {
       await page.waitForTimeout(100);
 
       const darkBg = await page.locator("body").evaluate(() => {
-        return window.getComputedStyle(document.documentElement).getPropertyValue("--background");
+        return window
+          .getComputedStyle(document.documentElement)
+          .getPropertyValue("--background");
       });
 
-      console.log(`Switch ${i + 1}: Light BG=${lightBg.trim()}, Dark BG=${darkBg.trim()}`);
+      console.log(
+        `Switch ${i + 1}: Light BG=${lightBg.trim()}, Dark BG=${darkBg.trim()}`,
+      );
       expect(lightBg.trim()).toBe("#ffffff");
       expect(darkBg.trim()).toBe("#09090b");
     }
@@ -246,7 +279,10 @@ test.describe("Dark Mode Contrast & Color Verification", () => {
     await page.waitForTimeout(500);
 
     // Check if any inputs exist and are styled
-    const hasInputs = await page.locator("input").count().then((count) => count > 0);
+    const hasInputs = await page
+      .locator("input")
+      .count()
+      .then((count) => count > 0);
 
     if (hasInputs) {
       const firstInput = page.locator("input").first();

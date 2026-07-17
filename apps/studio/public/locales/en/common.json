@@ -209,6 +209,22 @@
         "constraints": "Constraints",
         "meta": "Metadata"
       },
+      "audiences": {
+        "select": "-- Select --",
+        "as_series": "As in series",
+        "children": "Children",
+        "ya": "YA (Teens)",
+        "teen": "Teen (Young Adults)",
+        "adult": "Adult",
+        "academic": "Academic"
+      },
+      "statuses": {
+        "outline": "Outline",
+        "draft": "Draft",
+        "editing": "Editing",
+        "beta": "Beta",
+        "published": "Published"
+      },
       "title_label": "Title",
       "working_title_label": "Working Title",
       "short_annotation_label": "Short Annotation",

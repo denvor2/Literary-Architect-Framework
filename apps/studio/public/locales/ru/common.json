@@ -209,6 +209,22 @@
         "constraints": "Ограничения",
         "meta": "Метаданные"
       },
+      "audiences": {
+        "select": "-- Выбрать --",
+        "as_series": "Как в серии",
+        "children": "Дети",
+        "ya": "YA (подростки)",
+        "teen": "Teen (молодежь)",
+        "adult": "Взрослые",
+        "academic": "Научно-популярное"
+      },
+      "statuses": {
+        "outline": "На рассмотрении (outline)",
+        "draft": "Черновик",
+        "editing": "Редактирование",
+        "beta": "Бета",
+        "published": "Опубликовано"
+      },
       "title_label": "Название",
       "working_title_label": "Рабочее название",
       "short_annotation_label": "Краткая аннотация",

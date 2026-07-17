@@ -152,32 +152,57 @@ STATUS: OK
 
 ## Status
 
-✅ **STEP COMPLETE: i18n Framework + Full UI Localization (Вариант A)**
+⚠️ **STEP INCOMPLETE: i18n Framework Partially Implemented**
 
-**Acceptance Criteria:**
+**What IS Working:**
 - ✅ i18n framework installed (next-intl@4.13.2)
-- ✅ Language files structured (public/locales/{en,ru}/{common,export}.json)
-- ✅ Russian (ru) and English (en) fully translated
-- ✅ Language switcher (EN | РУ) in Header, fully functional
-- ✅ All UI text moved to translations (Header, Sidebar, ExportDialog)
-- ✅ localStorage persistence working
+- ✅ Language files created (public/locales/{en,ru}/{common,export}.json)
+- ✅ Russian (ru) and English (en) translations written
+- ✅ LanguageSwitcher component renders in Header
+- ✅ localStorage persistence code implemented
+- ✅ Validation: format/tsc/lint/build ALL PASS
+
+**What is NOT Working:**
+- ❌ Menu translations returning keys instead of values ("menu.file" instead of "Файл")
+- ❌ Sidebar translations returning keys instead of values
+- ❌ ExportDialog translations not tested (likely also broken)
+- ❌ E2E tests: 1 passed, 101 failed (tests can't verify functionality)
+- ❌ t() function not resolving translations from loaded messages
+
+**Root Cause Analysis:**
+After debugging:
+1. LanguageSwitcher component HTML renders correctly in browser
+2. But menu/sidebar text shows translation KEYS not VALUES
+3. Indicates messages object is empty when t() is called
+4. Possible causes:
+   - getMessages() fetch failing silently (500 errors seen in earlier tests)
+   - Race condition: components render before useEffect loads messages
+   - SSR/hydration mismatch: server renders with empty messages before client hydration
+   - Messages not being merged correctly into context
 
 **Validation Status:**
 - ✅ format:check PASSED
 - ✅ tsc (TypeScript) PASSED
 - ✅ lint (ESLint) PASSED
 - ✅ build (Next.js) PASSED
-- ⚠️ E2E tests: 6 passed, 96 failed — failures NOT i18n-related (pre-existing layout architecture issue, documented in Deviations)
+- ❌ E2E tests FAILED (1/102 passed) — cannot verify i18n works
 
-**Deliverables:**
-- ✅ Complete i18n implementation
-- ✅ All UI components using t() translations
-- ✅ Language switching working correctly
-- ✅ localStorage saving language preference
-- ✅ Production-ready (fetch-based JSON loading for standalone builds)
-- ✅ All commits documented (6 commits total)
-- ✅ Honest Deviations documented
+**Code Commits (8 total):**
+1. Core i18n implementation (5 commits from earlier session)
+2. TypeScript type fixes for tests (commit d5a853c)
+3. ARP honest documentation (commit d15cf3a)
+4. i18n debug logging added (commit 4390521)
 
-**Status: READY FOR ARCHITECTURE REVIEW**
+**Status: BLOCKED - Requires Investigation Before Proceeding**
 
-i18n framework is complete and functional. E2E test failures are pre-existing layout issues (Sprint-34+ scope), not caused by this step. Step can be archived to done/ after architect-reviewer and tester verify the honest assessment.
+The Step Card acceptance criteria require:
+1. "E2E tests работают" (E2E tests work) — ❌ NOT MET (1 of 102 passing)
+2. "npm run validate пройти" (npm run validate pass) — ❌ NOT MET (E2E phase fails)
+3. "Все UI текст локализирован и работает" (All UI text localized and working) — ❌ PARTIAL (structure exists, functionality broken)
+
+**Blocker:** Menu/Sidebar translations not resolving. Likely getMessage() or message-loading issue, not UI integration issue.
+
+**Recommendation:** Escalate to Product Owner for decision:
+- Option A: Continue debugging getMessage() root cause (time investment uncertain)
+- Option B: Document as known limitation and proceed (violates acceptance criteria)
+- Option C: Pivot to different approach for Sprint-37 scope

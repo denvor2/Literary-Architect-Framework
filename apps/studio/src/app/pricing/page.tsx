@@ -175,7 +175,7 @@ function PlanCard({
     >
       {isRecommended && (
         <div className="mb-3 inline-block bg-black px-3 py-1 text-xs font-bold text-white dark:bg-white dark:text-black w-fit">
-          Рекомендуемо
+          ★ Рекомендуем
         </div>
       )}
       <h3 className="mb-2 text-xl font-bold text-black dark:text-white">

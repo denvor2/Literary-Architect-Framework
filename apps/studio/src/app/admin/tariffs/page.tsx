@@ -229,7 +229,8 @@ function PlanCard({
         </h3>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           ${(plan.price / 100).toFixed(2)}/мес • {plan.maxAssistantRequests}{" "}
-          запросов
+          запросов • {plan.maxBooks === 0 ? "∞" : plan.maxBooks} книг •{" "}
+          {plan.maxAssistants === 0 ? "∞" : plan.maxAssistants} помощников
         </p>
       </div>
       <button

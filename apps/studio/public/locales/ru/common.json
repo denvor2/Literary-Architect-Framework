@@ -125,6 +125,12 @@
     "chapters": "ГЛАВЫ",
     "helpers": "ПОМОЩНИКИ"
   },
+  "plan": {
+    "title": "План",
+    "expired": "Истёк",
+    "upgrade": "Обновить",
+    "days_remaining": "Осталось {days} дней"
+  },
   "character": {
     "select": "Выберите персонажа",
     "unnamed": "Безымянный персонаж",
@@ -163,6 +169,20 @@
   "dialogs": {
     "save_error": "Ошибка при сохранении",
     "close_button": "Закрыть",
+    "back_button": "Назад",
+    "plan_selection": {
+      "title": "Выберите тариф",
+      "loading": "Загрузка тарифов...",
+      "current": "Текущий",
+      "per_days": "на {days} дней",
+      "no_features": "Нет дополнительных возможностей",
+      "requests_per_month": "Запросов: {count}/месяц",
+      "payment_confirm": "Подтверждение оплаты"
+    },
+    "payment": {
+      "title": "Оплата",
+      "processing": "Обработка платежа..."
+    },
     "series_settings": {
       "title": "Параметры серии",
       "name_label": "Название",

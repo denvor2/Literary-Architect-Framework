@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 export type PaymentFormProps = {
   /** Phase 2: Used for Stripe Payment Element integration */
@@ -12,6 +13,7 @@ export type PaymentFormProps = {
 };
 
 export function PaymentForm(props: PaymentFormProps) {
+  const { t } = useLocaleContext();
   const { planName, amount, clientSecret, onPaymentComplete, onPaymentError } =
     props;
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +63,7 @@ export function PaymentForm(props: PaymentFormProps) {
         disabled={isLoading}
         className="rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
       >
-        {isLoading ? "..." : "Оплатить"}
+        {isLoading ? "..." : "Pay"}
       </button>
     </div>
   );

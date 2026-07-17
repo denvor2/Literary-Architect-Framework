@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Plan } from "@/generated/prisma/client";
 import { PaymentForm } from "./PaymentForm";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 export type PlanSelectionDialogProps = {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export function PlanSelectionDialog({
   currentPlanId,
   onSelectPlan,
 }: PlanSelectionDialogProps) {
+  const { t } = useLocaleContext();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

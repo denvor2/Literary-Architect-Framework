@@ -125,6 +125,12 @@
     "chapters": "CHAPTERS",
     "helpers": "HELPERS"
   },
+  "plan": {
+    "title": "Plan",
+    "expired": "Expired",
+    "upgrade": "Upgrade",
+    "days_remaining": "{days} days remaining"
+  },
   "character": {
     "select": "Select a character",
     "unnamed": "Unnamed character",
@@ -163,6 +169,20 @@
   "dialogs": {
     "save_error": "Error saving",
     "close_button": "Close",
+    "back_button": "Back",
+    "plan_selection": {
+      "title": "Choose a Plan",
+      "loading": "Loading plans...",
+      "current": "Current",
+      "per_days": "for {days} days",
+      "no_features": "No additional features",
+      "requests_per_month": "Requests: {count}/month",
+      "payment_confirm": "Payment Confirmation"
+    },
+    "payment": {
+      "title": "Payment",
+      "processing": "Processing payment..."
+    },
     "series_settings": {
       "title": "Series Settings",
       "name_label": "Title",

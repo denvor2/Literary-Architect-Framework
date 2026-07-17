@@ -54,7 +54,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       {/* Header */}
       <div className="border-b border-zinc-200 px-4 py-6 dark:border-zinc-800">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl text-center">
           <h1 className="mb-2 text-4xl font-bold text-black dark:text-white">
             Тарифные планы
           </h1>

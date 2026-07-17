@@ -1,8 +1,0 @@
-check_db.js
-seed-admin.js
-scripts/
-verify-dark-mode.js
-node_modules/
-.next/
-build/
-dist/

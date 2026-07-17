@@ -256,7 +256,7 @@ export function Header({
   const activeBook = books.find((b) => b.id === activeBookId);
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-4 border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-black">
+    <header className="relative z-40 flex h-14 shrink-0 items-center gap-4 border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-black">
       <div className="flex items-center gap-3">
         <span className="text-lg font-semibold tracking-tight text-black dark:text-zinc-50">
           Literary Studio

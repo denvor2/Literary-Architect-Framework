@@ -2,93 +2,81 @@ STATUS: FIX
 
 ## Резюме (RU)
 
-Фреймворк i18n установлен и инфраструктура работает, но приёмные критерии степ-карты не полностью выполнены. ARP утверждает, что "все UI текст перемещён в языковые файлы", но только Sidebar локализирован; Header меню, ExportDialog и другие компоненты остаются с hardcoded русским текстом. Плюс, значительные изменения в модели и экспортёрах для ESLint/TypeScript fixes не раскрыты в секции Отклонения. E2E тесты i18n-switching в настоящий момент падают (modal intercepting clicks).
+Локализация Header.tsx и ExportDialog.tsx реализована, но E2E тесты i18n-switching полностью падают: модальный диалог блокирует взаимодействие с кнопками language switcher. ARP утверждает "npm run validate: ✅ PASSED" и "6/6 E2E тестов pass", но реальная проверка показывает 5 из 5 тестов i18n-switching падают с timeout-ами. Это критическая ошибка валидации — живая проверка не реальна.
 
-## Список выявленных проблем
+## Выявленные Проблемы
 
-### 1. Честность Отклонений (CRITICAL)
-- ARP не содержит секции "Отклонения от Step Card"
-- Фактические изменения включают файлы, не упомянутые в Step Card: RootClientWrapper.tsx, page.tsx, model.ts, fb2Exporter.ts, hybridArchiveExporter.ts, hybridArchiveImporter.ts, seriesRepository.ts, useWorkspaceController.ts
-- Эти файлы были изменены для исправления 16 ESLint ошибок и TypeScript типов, что не было в original scope
-- ARP объявляет это как "исправления необходимые" но не раскрывает явно
+### 1. КРИТИКА: Живая Валидация Не Реальна
+**Находка:** ARP заявляет "npm run validate: ✅ PASSED (format, tsc, lint, build, **e2e**)" и "6/6 E2E тестов pass", но `npm run test:e2e e2e/i18n-switching.spec.ts` падает с 5/5 FAILURES.
 
-### 2. Acceptance Criteria — "Все UI текст перемещено" (CRITICAL)
-- Step Card требует: "Все UI текст перемещено в языковые файлы"
-- Implementation Plan уточняет: "Экспорт диалоги (Export.tsx), Sidebar заголовки, Кнопки и labels, Placeholder texts"
-- Реальность: 
-  - ✅ Sidebar заголовки (6 sections)
-  - ❌ Header.tsx: все меню-кнопки остаются hardcoded ("Файл", "Правка", "Вид" и т.д., поиск placeholder)
-  - ❌ ExportDialog.tsx: не обновлён, не использует i18n
-  - ❌ Систематическая миграция buttons/labels не сделана
-- ARP оправдывает это: "Step Card требует 'все UI текст перемещено' ✅ (Sidebar сделан)" — неправильная интерпретация требования
+**Ошибки:**
+- Тесты timeout (30 сек): `<div class="fixed inset-0 z-50 bg-black/40">` блокирует pointer events на EN/РУ кнопки
+- Strict mode violation: `getByRole('button', { name: 'EN' })` находит 2 элемента (EN button + Next.js Dev Tools)
+- Модальный диалог физически блокирует клики на language switcher
 
-### 3. Acceptance Criteria — "Экспорт диалоги используют i18n" (CRITICAL)
-- Step Card требует: "Экспорт диалоги используют i18n"
-- Реальность:
-  - ✅ Языковые файлы созданы (public/locales/*/export.json)
-  - ❌ ExportDialog.tsx не импортирует useLocaleContext и не использует t() функцию
-  - Файлы "готовы" но не интегрированы — это дефер, а не выполнение
-- ARP оправдывает: "файлы готовы к использованию" — это не то же самое, что "используют i18n"
+**Последствие:** Acceptance Criteria "Тесты написаны (language switching works)" — **НЕ ВЫПОЛНЕНО**. Tests не работают.
 
-### 4. Валидация E2E Тестов (HIGH)
-- ARP утверждает: "E2E тесты: 6/6 passed"
-- Реальность: `npm run test:e2e e2e/i18n-switching.spec.ts` падает с ошибкой:
-  - Modal dialog (PlanSelectionDialog?) блокирует click события на языковый switcher
-  - Тесты не проходят в текущем состоянии
-  - Либо регрессия с момента написания ARP, либо неправильное reporting результатов
+### 2. КРИТИКА: Недостоверность Отклонений
+**Находка:** ARP утверждает "Нет отклонений от Step Card" и "All UI text peremesheno", но:
+- Commit 06424b7 меняет 13+ файлов за пределами i18n scope: page.tsx (115 строк), model.ts (135 строк), 5 exporters/importers, ESLint конфиг
+- Все эти изменения — для "Fix ESLint errors + TypeScript type fixes" — не раскрыты в Деviations
 
-### 5. Качество E2E Тестов (MEDIUM)
-- Тесты проверяют видимость кнопок и возможность клика, но НЕ проверяют:
-  - Фактическое изменение текста UI при переключении языка (например, "Главы" → "Chapters")
-  - Сохранение языка в localStorage после перезагрузки (тест claim это, но не verifies)
-  - Отсутствие untranslated keys в отображаемом контенте
-- Реальная live verification требует проверки того, что текст Sidebar меняется (например, "Книги" становится "Books")
+**Оценка:** Commit содержит hidden scope creep. ARP должен был раскрыть это явно.
 
-### 6. Структурные Проблемы
-- Создан `.eslintignore` файл, но он deprecated в ESLint 9+ (только для compatibility, warning выводится)
-- `eslint.config.mjs` уже содержит `ignores`, так что `.eslintignore` redundant
+### 3. ВЫСОКОЕ: Deprecated ESLint Config
+**Находка:** Добавлен `.eslintignore`, но ESLint 9+ больше не поддерживает этот файл (warning при запуске). `eslint.config.mjs` уже содержит `ignores`, так что файл redundant.
 
-### 7. Scope Creep в других файлах (MEDIUM)
-- `page.tsx`: массивные изменения в инициализации state (проблема React cascading renders)
-  - Переместил useState initialization в функции
-  - Удалил useEffect, который загружал state из localStorage
-  - Добавил `typeof window !== "undefined"` checks для prerendering
-- `model.ts`: переписана типизация (проблема `any` types)
-- Экспортёры/импортёры: type fixes
-- Эти fixes нужны и good, но не были в Step Card scope и должны быть раскрыты
+**Fix:** Удалить `.eslintignore`, убедиться что `eslint.config.mjs` покрывает все ignores.
+
+### 4. СРЕДНЕЕ: E2E Тесты Неадекватны
+Даже если modal issue будет фиксена, текущие E2E тесты проверяют только:
+- Видимость кнопок (getByRole, visibility checks)
+- Возможность клика
+
+Но НЕ проверяют:
+- Фактическое изменение UI текста при переключении языка ("Книги" → "Books")
+- Сохранение языка в localStorage после reload (тест claim это делает, но не вериф)
+- Отсутствие untranslated keys (missing t() keys)
+
+**Fix:** Добавить реальный assertions на текст: проверить что "Книги" меняется на "Books" при EN switch.
 
 ## Архитектурная Согласованность
 
-✅ i18n инфраструктура (LocaleContext, useLocaleContext, getMessage) правильная
-✅ Язык сохраняется в localStorage
-✅ LanguageSwitcher компонент функционален
-✅ Языковые файлы структурированы правильно (JSON, ru/en, nested keys)
+✅ i18n инфраструктура правильная (LocaleContext, t() функция, JSON structure)
+✅ Языковые файлы в правильных местах (public/locales/{ru,en}/{common,export}.json)
+✅ Header.tsx и ExportDialog.tsx используют useLocaleContext
 
-## Действия для исправления (REQUIRED)
+**НО:** Модальный диалог блокирует взаимодействие с компонентом — это указывает на проблему в app state или modal z-index логике, не в самой i18n инфраструктуре.
 
-### Вариант A: Расширить scope (Рекомендуется)
-1. Локализировать Header.tsx меню (Файл, Правка, Вид, Помощь, О программе + все пункты меню)
-2. Локализировать ExportDialog.tsx (импортировать useLocaleContext, использовать t() для labels)
-3. Локализировать другие hardcoded UI strings (search placeholder, dialogs, etc.)
-4. Улучшить E2E тесты: добавить проверку что текст Sidebar меняется при переключении (ищем "Книги" → затем EN → ищем "Books")
-5. Добавить真实 live verification в ARP: скриншот или лог вывода того, что модальный диалог не блокирует i18n switcher и тесты проходят
+## Требуемые Действия
 
-### Вариант B: Честно раскрыть Деviations
-1. Добавить секцию "Отклонения от Step Card" в ARP:
-   - Раскрыть что Header/ExportDialog дефёрены на будущие шаги
-   - Раскрыть ESLint/TypeScript fixes как необходимые но unplanned scope
-   - Объяснить почему "все UI текст" интерпретируется как "Sidebar только"
-2. Переклассифицировать acceptance criteria:
-   - "Все UI текст перемещено" → "Sidebar UI текст перемещено (остальное в future steps)"
-   - "Экспорт диалоги используют i18n" → "Подготовлены языковые файлы для экспорта (интеграция deferred)"
-3. Исправить E2E тест результаты: реально запустить и confirm 6/6 passing или раскрыть что они падают
+### Обязательно (BLOCKING):
+1. **Найти и закрыть модальный диалог** перед E2E тестом i18n
+   - Это PlanSelectionDialog или другой modal?
+   - Закрыть его в test.beforeEach() перед запуском тестов
+   - Или убедиться что modal НЕ открывается на empty workspace
 
-## Следующий шаг
+2. **Запустить реально `npm run test:e2e e2e/i18n-switching.spec.ts`** и подтвердить 5/5 pass
+   - Текущее состояние: 0/5 pass
+
+3. **Раскрыть Деviations в ARP** явно:
+   - Commit 06424b7: 16 ESLint fixes + TypeScript refactoring (не из Step Card scope)
+   - Объяснить почему это необходимо было
+
+4. **Удалить deprecated .eslintignore**
+   - ESLint 9+ предупреждает при каждом запуске
+
+### Рекомендуется:
+5. Улучшить E2E тесты: добавить assertions на реальный текст change ("Книги" → "Books")
+
+## Следующий Шаг
 
 **Не коммитить в текущем состоянии.**
 
-Выберите:
-- **Вариант A**: Расширить локализацию на Header + ExportDialog + другие компоненты + улучшить тесты (требует реальной работы но тогда truly "complete")
-- **Вариант B**: Добавить честный Деviations раздел + переписать acceptance criteria как "partial" + fix E2E тесты (quick win но incomplete feature)
+Требуется:
+- Фиксить modal blocking issue (найти откуда он берётся)
+- Запустить E2E тесты и подтвердить все pass
+- Обновить ARP с честным Деviations разделом
+- Удалить .eslintignore
 
-Рекомендуется **Вариант A** потому что Step Card явно требует "все UI текст" и "экспорт диалоги используют i18n". Это не optional. Без этого step incomplete по определению.
+После этого — новый review для финального одобрения.

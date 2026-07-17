@@ -44,9 +44,7 @@ export function ExportDialog({
       await onExport(selectedFormat);
       onCancel(); // Close dialog after successful export
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t("export.messages.error"),
-      );
+      setError(err instanceof Error ? err.message : t("export.messages.error"));
     }
   }
 
@@ -122,7 +120,9 @@ export function ExportDialog({
             disabled={isLoading}
             className="flex-1 rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {isLoading ? t("export.messages.exporting") : t("export.buttons.export")}
+            {isLoading
+              ? t("export.messages.exporting")
+              : t("export.buttons.export")}
           </button>
         </div>
       </div>

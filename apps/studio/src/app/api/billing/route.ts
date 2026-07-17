@@ -47,6 +47,8 @@ export async function GET() {
       tier: plan.tier,
       price: plan.price,
       billingPeriodDays: plan.billingPeriodDays,
+      maxBooks: plan.maxBooks,
+      maxAssistants: plan.maxAssistants,
       maxAssistantRequests: plan.maxAssistantRequests,
       features: plan.features,
       description: plan.description,

@@ -11,12 +11,18 @@ const messagesCache: { [key in Locale]?: Messages } = {};
 
 export async function getMessages(locale: Locale): Promise<Messages> {
   if (messagesCache[locale]) {
+    console.log(`[i18n] Returning cached messages for ${locale}`);
     return messagesCache[locale];
   }
 
   try {
+    console.log(`[i18n] Fetching messages for locale: ${locale}`);
     const commonRes = await fetch(`/locales/${locale}/common.json`);
     const exportRes = await fetch(`/locales/${locale}/export.json`);
+
+    console.log(
+      `[i18n] Fetch responses: common=${commonRes.status}, export=${exportRes.status}`,
+    );
 
     if (!commonRes.ok || !exportRes.ok) {
       throw new Error(
@@ -31,6 +37,10 @@ export async function getMessages(locale: Locale): Promise<Messages> {
       ...common,
       export: export_,
     };
+
+    console.log(
+      `[i18n] Successfully loaded messages for ${locale}. Keys: ${Object.keys(messages).join(", ")}`,
+    );
 
     messagesCache[locale] = messages;
     return messages;

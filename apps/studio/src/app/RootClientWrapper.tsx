@@ -17,6 +17,7 @@ export function RootClientWrapper({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     getMessages(locale).then((msgs) => {
+      console.log(`[i18n] Loaded messages for ${locale}:`, msgs);
       setMessages(msgs);
       setIsLoading(false);
     });
@@ -39,6 +40,9 @@ export function RootClientWrapper({ children }: { children: ReactNode }) {
       ) {
         value = (value as Record<string, unknown>)[k];
       } else {
+        console.warn(
+          `[i18n] Translation missing for "${key}". Messages loaded: ${Object.keys(messages).length > 0 ? "yes" : "NO"}`,
+        );
         return key;
       }
     }

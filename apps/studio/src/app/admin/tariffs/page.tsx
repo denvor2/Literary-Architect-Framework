@@ -28,20 +28,32 @@ export default function AdminTariffsPage() {
 
   async function handleSave(plan: Plan) {
     try {
+      console.log("📤 Отправляю данные:", {
+        id: plan.id,
+        name: plan.name,
+        price: plan.price,
+        maxBooks: plan.maxBooks,
+        maxAssistants: plan.maxAssistants,
+        maxAssistantRequests: plan.maxAssistantRequests,
+      });
+
       const res = await fetch(`/api/admin/plans/${plan.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(plan),
       });
+
+      const responseData = await res.json();
+      console.log("📥 Ответ от сервера:", responseData);
+
       if (res.ok) {
         console.log("✓ План сохранён:", plan.name);
         await loadPlans();
         setEditingId(null);
       } else {
-        const error = await res.json();
-        console.error("Ошибка сохранения:", error);
-        alert(`Ошибка: ${error.error || "Не удалось сохранить план"}`);
+        console.error("Ошибка сохранения:", responseData);
+        alert(`Ошибка: ${responseData.error || "Не удалось сохранить план"}`);
       }
     } catch (error) {
       console.error("Ошибка при сохранении плана:", error);
@@ -113,10 +125,11 @@ function PlanCard({
           </div>
           <div>
             <label className="text-xs font-semibold text-zinc-500">
-              Цена (центы)
+              Цена (центы, макс 5)
             </label>
             <input
               type="number"
+              maxLength={5}
               value={formData.price}
               onChange={(e) =>
                 setFormData({ ...formData, price: Number(e.target.value) })
@@ -126,10 +139,11 @@ function PlanCard({
           </div>
           <div>
             <label className="text-xs font-semibold text-zinc-500">
-              Макс запросов
+              Макс запросов (макс 6)
             </label>
             <input
               type="number"
+              maxLength={6}
               value={formData.maxAssistantRequests}
               onChange={(e) =>
                 setFormData({
@@ -142,10 +156,11 @@ function PlanCard({
           </div>
           <div>
             <label className="text-xs font-semibold text-zinc-500">
-              Макс книг (0 = неограниченно)
+              Макс книг (макс 3, 0=∞)
             </label>
             <input
               type="number"
+              maxLength={3}
               value={formData.maxBooks}
               onChange={(e) =>
                 setFormData({
@@ -158,10 +173,11 @@ function PlanCard({
           </div>
           <div>
             <label className="text-xs font-semibold text-zinc-500">
-              Макс помощников (0 = неограниченно)
+              Макс помощников (макс 3, 0=∞)
             </label>
             <input
               type="number"
+              maxLength={3}
               value={formData.maxAssistants}
               onChange={(e) =>
                 setFormData({

@@ -313,9 +313,7 @@ enum PaymentStatus {
 
 enum PlanTier {
   free
-  basic
   pro
-  premium
 }
 
 enum Role {

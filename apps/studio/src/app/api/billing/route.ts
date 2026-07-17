@@ -117,15 +117,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (
-      !tier ||
-      !["free", "basic", "pro", "premium"].includes(tier as string)
-    ) {
+    if (!tier || !["free", "pro"].includes(tier as string)) {
       return NextResponse.json(
         {
           ok: false,
-          error:
-            "tier is required and must be one of: free, basic, pro, premium",
+          error: "tier is required and must be one of: free, pro",
         },
         { status: 400 },
       );
@@ -193,7 +189,7 @@ export async function POST(request: NextRequest) {
     }
 
     const existingPlan = await prisma.plan.findUnique({
-      where: { tier: tier as "free" | "basic" | "pro" | "premium" },
+      where: { tier: tier as "free" | "pro" },
     });
 
     if (existingPlan) {
@@ -210,7 +206,7 @@ export async function POST(request: NextRequest) {
       data: {
         id: nanoid(),
         name,
-        tier: tier as "free" | "basic" | "pro" | "premium",
+        tier: tier as "free" | "pro",
         price,
         billingPeriodDays,
         maxAssistantRequests,

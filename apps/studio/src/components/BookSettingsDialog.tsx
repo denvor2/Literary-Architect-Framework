@@ -310,7 +310,7 @@ export function BookSettingsDialog({
                         handleAddGenre();
                       }
                     }}
-                    placeholder="Введите жанр и нажмите Enter..."
+                    placeholder={t("dialogs.book_settings.genre_placeholder")}
                     className="flex-1 rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                   />
                   <button
@@ -429,7 +429,9 @@ export function BookSettingsDialog({
                         handleAddPlotline();
                       }
                     }}
-                    placeholder="Добавить сюжетную линию и нажать Enter..."
+                    placeholder={t(
+                      "dialogs.book_settings.plotline_placeholder",
+                    )}
                     className="flex-1 rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                   />
                   <button
@@ -502,7 +504,7 @@ export function BookSettingsDialog({
                         handleAddTheme();
                       }
                     }}
-                    placeholder="Добавить тему и нажать Enter..."
+                    placeholder={t("dialogs.book_settings.theme_placeholder")}
                     className="flex-1 rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                   />
                   <button
@@ -553,7 +555,9 @@ export function BookSettingsDialog({
                         handleAddConstraint();
                       }
                     }}
-                    placeholder="Добавить ограничение и нажать Enter..."
+                    placeholder={t(
+                      "dialogs.book_settings.constraint_placeholder",
+                    )}
                     className="flex-1 rounded-md border border-zinc-300 bg-white p-2 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                   />
                   <button

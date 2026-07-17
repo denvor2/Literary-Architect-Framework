@@ -43,6 +43,7 @@
     },
     "help": {
       "shortcuts": "Keyboard Shortcuts",
+      "shortcuts_menu": "⌨️ Keyboard Shortcuts",
       "documentation": "Documentation",
       "report_bug": "Report Bug"
     },
@@ -118,6 +119,11 @@
     "short_annotation": "Short annotation...",
     "chapter_intro": "Chapter intro...",
     "scene_notes": "Scene notes..."
+  },
+  "sections": {
+    "requisites": "PROPERTIES",
+    "chapters": "CHAPTERS",
+    "helpers": "HELPERS"
   },
   "entities": {
     "book": "Book",

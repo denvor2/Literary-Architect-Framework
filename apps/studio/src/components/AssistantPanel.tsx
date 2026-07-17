@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import * as aiBus from "@/ai/aiBus";
 import type { AssistantThread, Book, ChatMessage } from "@/domain/model";
+import { useLocaleContext } from "@/context/LocaleContext";
 import {
   Pen,
   Wand2,
@@ -92,7 +93,7 @@ const CRITIC_SUBCATEGORIES = [
 // Sprint-25-Step-05: emoji replaced with lucide-react icons (Pen, Wand2, Eye,
 // BookOpen) for design consistency and accessibility. Icons are 18px (text-lg)
 // to match the previous emoji glyph size.
-const MODE_META: Record<
+function getModeMeta(t: (key: string) => string): Record<
   AssistantMode,
   {
     icon: React.ComponentType<{ className?: string }>;
@@ -102,42 +103,49 @@ const MODE_META: Record<
     activeBorder: string;
     placeholder: string;
   }
-> = {
-  coauthor: {
-    icon: Pen,
-    label: "Соавтор",
-    description: "Пишет и развивает текст вместе с вами.",
-    accent: "text-amber-600 dark:text-amber-400",
-    activeBorder: "border-amber-400 dark:border-amber-600",
-    placeholder: "Что дальше в этой книге? (необязательно)",
-  },
-  editor: {
-    icon: Wand2,
-    label: "Редактор",
-    description: "Улучшает грамматику, ясность и стиль.",
-    accent: "text-emerald-600 dark:text-emerald-400",
-    activeBorder: "border-emerald-400 dark:border-emerald-600",
-    placeholder: "Что улучшить в этой сцене? (необязательно)",
-  },
-  critic: {
-    icon: Eye,
-    label: "Критик",
-    description: "Даёт оценку вашему тексту.",
-    accent: "text-red-600 dark:text-red-400",
-    activeBorder: "border-red-400 dark:border-red-600",
-    placeholder: "На что обратить внимание? (необязательно)",
-  },
-  reader: {
-    icon: BookOpen,
-    label: "Читатель",
-    description: "Показывает, как отреагирует читатель.",
-    accent: "text-blue-600 dark:text-blue-400",
-    activeBorder: "border-blue-400 dark:border-blue-600",
-    placeholder: "Что именно интересует? (необязательно)",
-  },
-};
+> {
+  return {
+    coauthor: {
+      icon: Pen,
+      label: t("panels.assistant.coauthor"),
+      description: "Пишет и развивает текст вместе с вами.",
+      accent: "text-amber-600 dark:text-amber-400",
+      activeBorder: "border-amber-400 dark:border-amber-600",
+      placeholder: "Что дальше в этой книге? (необязательно)",
+    },
+    editor: {
+      icon: Wand2,
+      label: t("panels.assistant.editor"),
+      description: "Улучшает грамматику, ясность и стиль.",
+      accent: "text-emerald-600 dark:text-emerald-400",
+      activeBorder: "border-emerald-400 dark:border-emerald-600",
+      placeholder: "Что улучшить в этой сцене? (необязательно)",
+    },
+    critic: {
+      icon: Eye,
+      label: t("panels.assistant.critic"),
+      description: "Даёт оценку вашему тексту.",
+      accent: "text-red-600 dark:text-red-400",
+      activeBorder: "border-red-400 dark:border-red-600",
+      placeholder: "На что обратить внимание? (необязательно)",
+    },
+    reader: {
+      icon: BookOpen,
+      label: t("panels.assistant.reader"),
+      description: "Показывает, как отреагирует читатель.",
+      accent: "text-blue-600 dark:text-blue-400",
+      activeBorder: "border-blue-400 dark:border-blue-600",
+      placeholder: "Что именно интересует? (необязательно)",
+    },
+  };
+}
 
-const ASSISTANT_MODES = Object.keys(MODE_META) as AssistantMode[];
+const ASSISTANT_MODES: AssistantMode[] = [
+  "coauthor",
+  "editor",
+  "critic",
+  "reader",
+];
 
 // Sprint-25-Step-03 (ADR-0013): per-mode customization (display name/prompt
 // suffix/typical requests), one row per AssistantMode, instance-wide — see
@@ -194,13 +202,15 @@ function AssistantSettingsDialog({
   initial,
   onCancel,
   onSaved,
+  t,
 }: {
   mode: AssistantMode;
   initial: AssistantSettingsEntry | null;
   onCancel: () => void;
   onSaved: (mode: AssistantMode, settings: AssistantSettingsEntry) => void;
+  t: (key: string) => string;
 }) {
-  const meta = MODE_META[mode];
+  const meta = getModeMeta(t)[mode];
   const [displayName, setDisplayName] = useState(initial?.displayName ?? "");
   const [promptSuffix, setPromptSuffix] = useState(initial?.promptSuffix ?? "");
   const [typicalRequestsText, setTypicalRequestsText] = useState(
@@ -782,6 +792,9 @@ export function AssistantPanel({
   onReplaceSceneText,
   onAcceptStructureProposal,
 }: AssistantPanelProps) {
+  const { t } = useLocaleContext();
+  const MODE_META = getModeMeta(t);
+
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [criticSubcategory, setCriticSubcategory] = useState<
@@ -1355,6 +1368,7 @@ export function AssistantPanel({
             setSettingsMap((previous) => ({ ...previous, [mode]: settings }));
             setSettingsDialogMode(null);
           }}
+          t={t}
         />
       )}
     </>

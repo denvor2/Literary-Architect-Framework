@@ -422,7 +422,9 @@ export function Sidebar({
                             setIsUnsortedCollapsed(!isUnsortedCollapsed)
                           }
                           aria-label={
-                            isUnsortedCollapsed ? t("buttons.expand") : t("buttons.collapse")
+                            isUnsortedCollapsed
+                              ? t("buttons.expand")
+                              : t("buttons.collapse")
                           }
                           className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                         >

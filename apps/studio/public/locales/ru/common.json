@@ -43,6 +43,7 @@
     },
     "help": {
       "shortcuts": "Горячие клавиши",
+      "shortcuts_menu": "⌨️ Горячие клавиши",
       "documentation": "Документация",
       "report_bug": "Сообщить об ошибке"
     },
@@ -118,6 +119,11 @@
     "short_annotation": "Краткая аннотация...",
     "chapter_intro": "Введение в главу...",
     "scene_notes": "Заметки к сцене..."
+  },
+  "sections": {
+    "requisites": "РЕКВИЗИТЫ",
+    "chapters": "ГЛАВЫ",
+    "helpers": "ПОМОЩНИКИ"
   },
   "entities": {
     "book": "Книга",

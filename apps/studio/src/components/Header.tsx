@@ -513,7 +513,7 @@ export function Header({
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                     >
-                      ⌨️ Горячие клавиши
+                      {t("menu_items.help.shortcuts_menu")}
                     </button>
                     <button
                       onClick={() => {

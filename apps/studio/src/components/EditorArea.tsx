@@ -483,7 +483,7 @@ function UnifiedBookView({
                       fullAnnotation: event.target.value,
                     })
                   }
-                  placeholder="Полная аннотация..."
+                  placeholder={t("placeholders.full_annotation")}
                   rows={6}
                   className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
                 />

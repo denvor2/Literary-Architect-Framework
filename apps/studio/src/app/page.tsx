@@ -21,6 +21,7 @@ import { BookSettingsDialog } from "@/components/BookSettingsDialog";
 import { ImportDialog } from "@/components/ImportDialog";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 import { useAuthController } from "@/hooks/useAuthController";
+import { useLocaleContext } from "@/context/LocaleContext";
 import { execute as aiBusExecute } from "@/ai/aiBus";
 import type { BookFieldName } from "@/ai/operations";
 import type { Book, Series } from "@/domain/model";
@@ -80,6 +81,7 @@ function useIsMobileLayout(): boolean {
 export default function Home() {
   // Sprint-30-Step-05: Authentication controller
   const { auth, login, register, logout } = useAuthController();
+  const { t } = useLocaleContext();
 
   // Sprint-30-Step-05: Auth dialog state
   const [authDialogMode, setAuthDialogMode] = useState<
@@ -775,7 +777,7 @@ export default function Home() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="w-96 max-h-96 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
               <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">
-                ⌨️ Горячие клавиши
+                {t("menu_items.help.shortcuts_menu")}
               </h2>
               <div className="space-y-3 text-sm">
                 <div>
@@ -1065,7 +1067,7 @@ export default function Home() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="w-96 max-h-96 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
               <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">
-                ⌨️ Горячие клавиши
+                {t("menu_items.help.shortcuts_menu")}
               </h2>
               <div className="space-y-3 text-sm">
                 <div>

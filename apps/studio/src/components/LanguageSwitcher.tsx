@@ -6,7 +6,10 @@ export function LanguageSwitcher() {
   const { locale, switchLocale } = useLocaleContext();
 
   return (
-    <div className="flex items-center gap-1 rounded-md border border-zinc-300 dark:border-zinc-700">
+    <div
+      className="flex items-center gap-1 rounded-md border border-zinc-300 dark:border-zinc-700"
+      data-testid="language-switcher"
+    >
       <button
         onClick={() => switchLocale("en")}
         className={`px-2 py-1 text-xs font-medium transition-colors ${

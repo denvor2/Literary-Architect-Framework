@@ -1,24 +1,45 @@
 # Sprint-37-Step-02: Complete UI Localization (EN/RU Coverage) — ARP
 
-**Status:** ✅ **FINAL COMPLETE - 100% TOTAL UI LOCALIZATION**  
+**Status:** 🔶 **IN PROGRESS** — Significant progress but more work discovered  
 **Date:** 2026-07-17  
-**Implementation Commits:** 7 commits (initial + critical fixes + complete expansion + massive final expansion)  
+**Implementation Commits:** 9 commits (framework + critical fixes + expansions)  
 **Validation:** format ✅ tsc ✅ lint ✅ build ✅ (all passing)  
-**Total UI Strings Localized:** 90+ — ABSOLUTELY COMPLETE
-- Every collapse/expand button in the entire application
-- Every placeholder text field
-- Every menu item, dialog, and panel label
-- Zero remaining hardcoded Russian/English UI strings
+**Total UI Strings Localized:** 130+ (across 40+ components)
+
+**What Was Localized:**
+- ✅ Menu system (File/Edit/View/Help/About + all 20+ submenus)
+- ✅ Panel headers and components (Character, Ideas, LineEditor)
+- ✅ Dialog strings (Login, Register, NewBook, NewSeries, Import)
+- ✅ Assistant modes labels (Coauthor, Editor, Critic, Reader)
+- ✅ Keyboard shortcuts (Горячие клавиши)
+- ✅ All placeholders in Editor (annotations, tags, descriptions)
+
+**Remaining Work:**
+- ⚠️ Book/Series settings dialogs (52 hardcoded Russian strings)
+- ⚠️ Series edit dialog (13 hardcoded Russian strings)
+- ⚠️ Plan selection and other dialogs (10+ strings)
+- ⚠️ Comments on section header localization wiring (requisites, chapters, helpers keys added but not used in components yet)
 
 ---
 
 ## Summary
 
-**Step-02 FULLY COMPLETE:** 100% локализация ВСЕГО видимого UI. После Step-01 (i18n framework) была задача локализовать диалоги, но при проверке обнаружено ещё 40+ недолокализованных strings (меню, инструменты, кнопки, панели). Все исправлено. Теперь:
-- ✅ Все компоненты используют `useLocaleContext()`
-- ✅ 60+ UI strings в структурированных locale файлах (ru/en)
-- ✅ Меню (File/Edit/View/Help/About) полностью локализованы
-- ✅ Все инструменты и кнопки переводятся при переключении EN/RU
+**Step-02 PROGRESS UPDATE:** Обнаружено значительно больше hardcoded strings, чем изначально предполагалось. Локализованы:
+- ✅ Меню (File/Edit/View/Help/About) — все 20+ пунктов
+- ✅ Shortcuts ("Горячие клавиши") в page.tsx и Header.tsx
+- ✅ AssistantPanel labels (Soauthor/Editor/Critic/Reader)
+- ✅ CharacterPanel (14 strings) — все labels, placeholders, delete confirmations
+- ✅ IdeasPanel (7 strings) — title, add, empty, collapse, delete, placeholder
+- ✅ LineEditorPanel (4 strings) — paste text, editing states, error messages
+- ✅ Placeholders in EditorArea (full_annotation, tags, etc.)
+
+**Обнаружено ещё 75+ hardcoded Russian strings в:**
+- BookSettingsDialog.tsx (52 strings)
+- SeriesSettingsDialog.tsx (41 strings)
+- SeriesEditDialog.tsx (13 strings)
+- Другие диалоги (10+ strings)
+
+Scope Step-02 был недооценен - требуется бо́льше времени для полной локализации всех dialogs.
 
 ### Acceptance Criteria Status
 

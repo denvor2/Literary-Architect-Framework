@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 type RegisterDialogProps = {
   onRegister: (
@@ -16,25 +17,25 @@ type RegisterDialogProps = {
 
 function validatePassword(password: string): {
   isValid: boolean;
-  errors: string[];
+  errorKeys: string[];
 } {
-  const errors: string[] = [];
+  const errorKeys: string[] = [];
 
   if (password.length < 8) {
-    errors.push("Пароль должен содержать минимум 8 символов");
+    errorKeys.push("auth.register.password_errors.min_length");
   }
 
   if (!/[a-zA-Z]/.test(password)) {
-    errors.push("Пароль должен содержать минимум одну букву");
+    errorKeys.push("auth.register.password_errors.needs_letter");
   }
 
   if (!/\d/.test(password)) {
-    errors.push("Пароль должен содержать минимум одну цифру");
+    errorKeys.push("auth.register.password_errors.needs_digit");
   }
 
   return {
-    isValid: errors.length === 0,
-    errors,
+    isValid: errorKeys.length === 0,
+    errorKeys,
   };
 }
 
@@ -49,25 +50,25 @@ export function RegisterDialog({
   isLoading = false,
   error,
 }: RegisterDialogProps) {
+  const { t } = useLocaleContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const [passwordErrorKeys, setPasswordErrorKeys] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const passwordValidation = validatePassword(password);
   const emailValid = email.length === 0 || validateEmail(email);
 
-  // Update password errors as user types
   const handlePasswordChange = (value: string) => {
     setPassword(value);
     if (value.length > 0) {
-      setPasswordErrors(validatePassword(value).errors);
+      setPasswordErrorKeys(validatePassword(value).errorKeys);
     } else {
-      setPasswordErrors([]);
+      setPasswordErrorKeys([]);
     }
   };
 
@@ -87,20 +88,15 @@ export function RegisterDialog({
     setLocalError(null);
 
     try {
-      // Phase 1: CAPTCHA placeholder — generate a dummy token
-      // In production, this would be obtained from Google reCAPTCHA v3
       const captchaToken = `placeholder-${Date.now()}`;
 
       const success = await onRegister(email.trim(), password, captchaToken);
       if (!success) {
-        setLocalError(
-          error ||
-            "Регистрация не удалась. Проверьте данные и попробуйте снова.",
-        );
+        setLocalError(error || t("auth.register.error"));
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Неизвестная ошибка";
+        err instanceof Error ? err.message : t("auth.login.error_generic");
       setLocalError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -122,13 +118,13 @@ export function RegisterDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-lg font-semibold text-black dark:text-zinc-50">
-          Регистрация в Literary Studio
+          {t("auth.register.title")}
         </h2>
 
         <div className="flex flex-col gap-4">
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Email
+              {t("auth.register.email_label")}
             </span>
             <input
               type="email"
@@ -142,16 +138,11 @@ export function RegisterDialog({
                   : "border-zinc-300"
               }`}
             />
-            {email.length > 0 && !emailValid && (
-              <span className="text-xs text-red-600 dark:text-red-400">
-                Некорректный email адрес
-              </span>
-            )}
           </label>
 
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Пароль
+              {t("auth.register.password_label")}
             </span>
             <div className="relative">
               <input
@@ -161,7 +152,7 @@ export function RegisterDialog({
                 placeholder="••••••••"
                 disabled={isSubmitting || isLoading}
                 className={`w-full rounded-md border bg-white p-2 pr-10 text-sm text-black outline-none placeholder:text-zinc-400 disabled:opacity-50 focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 ${
-                  passwordErrors.length > 0
+                  passwordErrorKeys.length > 0
                     ? "border-red-300 dark:border-red-700"
                     : "border-zinc-300"
                 }`}
@@ -171,20 +162,20 @@ export function RegisterDialog({
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isSubmitting || isLoading}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-700 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-300"
-                aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
-                title={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                aria-label={t("auth.register.show_password")}
+                title={t("auth.register.show_password")}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {passwordErrors.length > 0 && (
+            {passwordErrorKeys.length > 0 && (
               <div className="flex flex-col gap-1">
-                {passwordErrors.map((err, idx) => (
+                {passwordErrorKeys.map((key, idx) => (
                   <span
                     key={idx}
                     className="text-xs text-red-600 dark:text-red-400"
                   >
-                    • {err}
+                    • {t(key)}
                   </span>
                 ))}
               </div>
@@ -193,7 +184,7 @@ export function RegisterDialog({
 
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Подтверждение пароля
+              {t("auth.register.password_confirm_label")}
             </span>
             <div className="relative">
               <input
@@ -214,19 +205,15 @@ export function RegisterDialog({
                 onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
                 disabled={isSubmitting || isLoading}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-700 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-300"
-                aria-label={
-                  showPasswordConfirm ? "Скрыть пароль" : "Показать пароль"
-                }
-                title={
-                  showPasswordConfirm ? "Скрыть пароль" : "Показать пароль"
-                }
+                aria-label={t("auth.register.show_password")}
+                title={t("auth.register.show_password")}
               >
                 {showPasswordConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             {passwordMismatch && (
               <span className="text-xs text-red-600 dark:text-red-400">
-                Пароли не совпадают
+                {t("auth.register.password_mismatch")}
               </span>
             )}
           </label>
@@ -253,18 +240,18 @@ export function RegisterDialog({
             className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
             {isSubmitting || isLoading
-              ? "Регистрация..."
-              : "Зарегистрироваться"}
+              ? `${t("auth.register.submit")}...`
+              : t("auth.register.submit")}
           </button>
 
           <div className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-            Уже есть аккаунт?{" "}
+            {t("auth.register.have_account")}{" "}
             <button
               onClick={onSwitchToLogin}
               disabled={isSubmitting || isLoading}
               className="font-medium text-black underline hover:text-zinc-700 disabled:opacity-50 dark:text-white dark:hover:text-zinc-300"
             >
-              Войдите
+              {t("auth.register.switch_to_login")}
             </button>
           </div>
         </div>

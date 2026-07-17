@@ -1,4 +1,5 @@
 import { BarChart3, Pencil, MessageSquare } from "lucide-react";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 export type MobileTab = "collection" | "editor" | "helpers";
 
@@ -15,21 +16,24 @@ export function MobileBottomNav({
   wordCount = 0,
   progress = 0,
 }: MobileBottomNavProps) {
+  const { t } = useLocaleContext();
   const tabs: Array<{
     id: MobileTab;
-    label: string;
+    labelKey: string;
     icon: React.ComponentType<{ className?: string }>;
   }> = [
-    { id: "collection", label: "Коллекция", icon: BarChart3 },
-    { id: "editor", label: "Редактор", icon: Pencil },
-    { id: "helpers", label: "Помощники", icon: MessageSquare },
+    { id: "collection", labelKey: "mobile.collection", icon: BarChart3 },
+    { id: "editor", labelKey: "mobile.editor", icon: Pencil },
+    { id: "helpers", labelKey: "mobile.helpers", icon: MessageSquare },
   ];
 
   return (
     <div className="flex flex-col border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-black">
       {/* Status bar: word count and progress */}
       <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-        <span>Слов: {wordCount}</span>
+        <span>
+          {t("mobile.words")} {wordCount}
+        </span>
         {progress > 0 && (
           <div className="flex items-center gap-2">
             <div className="h-1 w-24 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
@@ -59,9 +63,10 @@ export function MobileBottomNav({
                 : "border-transparent"
             }`}
             aria-current={activeTab === tab.id ? "page" : undefined}
-            aria-label={tab.label}
+            aria-label={t(tab.labelKey)}
           >
             <tab.icon className="h-5 w-5" />
+            <span className="text-xs">{t(tab.labelKey)}</span>
           </button>
         ))}
       </div>

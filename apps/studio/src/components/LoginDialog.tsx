@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 type LoginDialogProps = {
   onLogin: (email: string, password: string) => Promise<boolean>;
@@ -16,6 +17,7 @@ export function LoginDialog({
   isLoading = false,
   error,
 }: LoginDialogProps) {
+  const { t } = useLocaleContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -37,11 +39,11 @@ export function LoginDialog({
     try {
       const success = await onLogin(email.trim(), password);
       if (!success) {
-        setLocalError(error || "Вход не удался. Проверьте email и пароль.");
+        setLocalError(error || t("auth.login.error"));
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Неизвестная ошибка";
+        err instanceof Error ? err.message : t("auth.login.error_generic");
       setLocalError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -58,13 +60,13 @@ export function LoginDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-lg font-semibold text-black dark:text-zinc-50">
-          Вход в Literary Studio
+          {t("auth.login.title")}
         </h2>
 
         <div className="flex flex-col gap-4">
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Email
+              {t("auth.login.email_label")}
             </span>
             <input
               type="email"
@@ -79,7 +81,7 @@ export function LoginDialog({
 
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Пароль
+              {t("auth.login.password_label")}
             </span>
             <div className="relative">
               <input
@@ -96,8 +98,8 @@ export function LoginDialog({
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isSubmitting || isLoading}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-700 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-300"
-                aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
-                title={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                aria-label={t("auth.login.show_password")}
+                title={t("auth.login.show_password")}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -117,17 +119,19 @@ export function LoginDialog({
             disabled={!canSubmit}
             className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {isSubmitting || isLoading ? "Вход..." : "Войти"}
+            {isSubmitting || isLoading
+              ? `${t("auth.login.submit")}...`
+              : t("auth.login.submit")}
           </button>
 
           <div className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-            Нет аккаунта?{" "}
+            {t("auth.login.no_account")}{" "}
             <button
               onClick={onSwitchToRegister}
               disabled={isSubmitting || isLoading}
               className="font-medium text-black underline hover:text-zinc-700 disabled:opacity-50 dark:text-white dark:hover:text-zinc-300"
             >
-              Зарегистрируйтесь
+              {t("auth.login.switch_to_register")}
             </button>
           </div>
         </div>

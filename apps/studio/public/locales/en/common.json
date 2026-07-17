@@ -5,6 +5,13 @@
     "language": "Language",
     "login": "Sign In"
   },
+  "menu": {
+    "file": "File",
+    "edit": "Edit",
+    "view": "View",
+    "help": "Help",
+    "about": "About"
+  },
   "sidebar": {
     "books": "Books",
     "series": "Series",
@@ -38,13 +45,134 @@
     "save": "Save",
     "edit": "Edit",
     "restore": "Restore",
-    "permanent_delete": "Delete permanently"
+    "permanent_delete": "Delete permanently",
+    "yes": "Yes",
+    "no": "No"
   },
-  "menu": {
-    "file": "File",
-    "edit": "Edit",
-    "view": "View",
-    "help": "Help",
-    "about": "About"
+  "auth": {
+    "login": {
+      "title": "Sign In to Literary Studio",
+      "email_label": "Email",
+      "password_label": "Password",
+      "show_password": "Show password",
+      "submit": "Sign In",
+      "no_account": "Don't have an account?",
+      "switch_to_register": "Create one",
+      "error": "Sign in failed. Check your email and password.",
+      "error_generic": "Unknown error"
+    },
+    "register": {
+      "title": "Create Account",
+      "email_label": "Email",
+      "password_label": "Password",
+      "password_confirm_label": "Confirm Password",
+      "show_password": "Show password",
+      "submit": "Create Account",
+      "have_account": "Already have an account?",
+      "switch_to_login": "Sign in",
+      "error": "Registration failed. Check your information and try again.",
+      "password_errors": {
+        "min_length": "Password must be at least 8 characters",
+        "needs_letter": "Password must contain at least one letter",
+        "needs_digit": "Password must contain at least one digit"
+      },
+      "password_mismatch": "Passwords do not match"
+    }
+  },
+  "dialogs": {
+    "new_book": {
+      "title": "New Book",
+      "title_label": "Book Title",
+      "title_placeholder": "Enter title...",
+      "genre_label": "Genre",
+      "genre_placeholder": "Choose or enter a genre...",
+      "language_label": "Language",
+      "premise_label": "Synopsis",
+      "premise_placeholder": "Brief plot description...",
+      "series_label": "Series (optional)",
+      "submit": "Create Book"
+    },
+    "new_series": {
+      "title": "Create Series",
+      "title_label": "Series Title",
+      "title_placeholder": "Enter series name...",
+      "description_label": "Description (optional)",
+      "description_placeholder": "Series description...",
+      "submit": "Create Series"
+    },
+    "book_settings": {
+      "title": "Book Settings",
+      "title_label": "Title",
+      "genre_label": "Genre",
+      "language_label": "Language",
+      "premise_label": "Synopsis",
+      "annotation_label": "Annotation",
+      "submit": "Save"
+    },
+    "series_settings": {
+      "title": "Series Settings",
+      "title_label": "Title",
+      "description_label": "Description",
+      "submit": "Save"
+    },
+    "series_edit": {
+      "title": "Edit Series",
+      "name_label": "Title",
+      "description_label": "Description",
+      "submit": "Save"
+    },
+    "import": {
+      "title": "Import Project",
+      "description": "Drag and drop a ZIP file or click to select",
+      "submit": "Import",
+      "success": "Project imported successfully",
+      "error": "Error importing file",
+      "error_only_zip": "Only ZIP archives are supported"
+    }
+  },
+  "panels": {
+    "assistant": {
+      "coauthor": "Coauthor",
+      "editor": "Editor",
+      "critic": "Critic",
+      "reader": "Reader",
+      "settings": "Settings",
+      "clear": "Clear",
+      "delete": "Delete",
+      "all": "All",
+      "continuity": "Continuity",
+      "fact": "Fact",
+      "exporting": "Exporting...",
+      "error": "Export error"
+    },
+    "ideas": {
+      "title": "Ideas",
+      "add": "Add idea",
+      "empty": "No ideas yet"
+    },
+    "character": {
+      "title": "Characters",
+      "add": "Add character",
+      "empty": "No characters yet"
+    },
+    "audit": {
+      "title": "Audit",
+      "filters": "Filters",
+      "no_events": "No events"
+    }
+  },
+  "mobile": {
+    "collection": "Collection",
+    "editor": "Editor",
+    "helpers": "Helpers",
+    "words": "Words:"
+  },
+  "sync": {
+    "db_unavailable": "Database is temporarily unavailable — changes are saved locally.",
+    "recovered_local_wins": "Database sync issue detected — using newer local changes."
+  },
+  "export": {
+    "title": "Export",
+    "error_generic": "Export error"
   }
 }

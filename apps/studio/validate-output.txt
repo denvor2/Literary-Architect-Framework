@@ -1,0 +1,32 @@
+
+> studio@0.1.0 validate
+> npm run format:check && npx tsc --noEmit && npm run lint && npm run build && npm run test:e2e
+
+
+> studio@0.1.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+e2e/test-i18n-independent.spec.ts(7,11): error TS7034: Variable 'consoleErrors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-independent.spec.ts(34,53): error TS7005: Variable 'consoleErrors' implicitly has an 'any[]' type.
+e2e/test-i18n-independent.spec.ts(41,11): error TS7034: Variable 'consoleErrors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-independent.spec.ts(76,53): error TS7005: Variable 'consoleErrors' implicitly has an 'any[]' type.
+e2e/test-i18n-independent.spec.ts(83,11): error TS7034: Variable 'consoleErrors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-independent.spec.ts(118,53): error TS7005: Variable 'consoleErrors' implicitly has an 'any[]' type.
+e2e/test-i18n-independent.spec.ts(123,11): error TS7034: Variable 'consoleErrors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-independent.spec.ts(157,53): error TS7005: Variable 'consoleErrors' implicitly has an 'any[]' type.
+e2e/test-i18n-independent.spec.ts(162,11): error TS7034: Variable 'consoleErrors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-independent.spec.ts(204,53): error TS7005: Variable 'consoleErrors' implicitly has an 'any[]' type.
+e2e/test-i18n-independent.spec.ts(209,11): error TS7034: Variable 'consoleMessages' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-independent.spec.ts(228,20): error TS7005: Variable 'consoleMessages' implicitly has an 'any[]' type.
+e2e/test-i18n-independent.spec.ts(240,11): error TS7034: Variable 'consoleErrors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-independent.spec.ts(279,53): error TS7005: Variable 'consoleErrors' implicitly has an 'any[]' type.
+e2e/test-i18n-independent.spec.ts(284,11): error TS7034: Variable 'consoleErrors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-independent.spec.ts(335,53): error TS7005: Variable 'consoleErrors' implicitly has an 'any[]' type.
+e2e/test-i18n-independent.spec.ts(340,11): error TS7034: Variable 'consoleErrors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-independent.spec.ts(364,53): error TS7005: Variable 'consoleErrors' implicitly has an 'any[]' type.
+e2e/test-i18n-simple-verify.spec.ts(138,11): error TS7034: Variable 'errors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-simple-verify.spec.ts(166,5): error TS7005: Variable 'errors' implicitly has an 'any[]' type.
+e2e/test-i18n-with-login.spec.ts(181,11): error TS7034: Variable 'errors' implicitly has type 'any[]' in some locations where its type cannot be determined.
+e2e/test-i18n-with-login.spec.ts(211,7): error TS7005: Variable 'errors' implicitly has an 'any[]' type.

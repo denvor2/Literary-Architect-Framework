@@ -5,6 +5,13 @@
     "language": "Язык",
     "login": "Войти"
   },
+  "menu": {
+    "file": "Файл",
+    "edit": "Правка",
+    "view": "Вид",
+    "help": "Руководство",
+    "about": "О программе"
+  },
   "sidebar": {
     "books": "Книги",
     "series": "Серии",
@@ -38,13 +45,134 @@
     "save": "Сохранить",
     "edit": "Редактировать",
     "restore": "Восстановить",
-    "permanent_delete": "Удалить безвозвратно"
+    "permanent_delete": "Удалить безвозвратно",
+    "yes": "Да",
+    "no": "Нет"
   },
-  "menu": {
-    "file": "Файл",
-    "edit": "Правка",
-    "view": "Вид",
-    "help": "Руководство",
-    "about": "О программе"
+  "auth": {
+    "login": {
+      "title": "Вход в Literary Studio",
+      "email_label": "Email",
+      "password_label": "Пароль",
+      "show_password": "Показать пароль",
+      "submit": "Войти",
+      "no_account": "Нет аккаунта?",
+      "switch_to_register": "Создать аккаунт",
+      "error": "Вход не удался. Проверьте email и пароль.",
+      "error_generic": "Неизвестная ошибка"
+    },
+    "register": {
+      "title": "Регистрация",
+      "email_label": "Email",
+      "password_label": "Пароль",
+      "password_confirm_label": "Повторите пароль",
+      "show_password": "Показать пароль",
+      "submit": "Создать аккаунт",
+      "have_account": "Уже есть аккаунт?",
+      "switch_to_login": "Войти",
+      "error": "Регистрация не удалась. Проверьте данные и попробуйте снова.",
+      "password_errors": {
+        "min_length": "Пароль должен содержать минимум 8 символов",
+        "needs_letter": "Пароль должен содержать минимум одну букву",
+        "needs_digit": "Пароль должен содержать минимум одну цифру"
+      },
+      "password_mismatch": "Пароли не совпадают"
+    }
+  },
+  "dialogs": {
+    "new_book": {
+      "title": "Новая книга",
+      "title_label": "Название книги",
+      "title_placeholder": "Введите название...",
+      "genre_label": "Жанр",
+      "genre_placeholder": "Выберите или введите жанр...",
+      "language_label": "Язык",
+      "premise_label": "Синопсис",
+      "premise_placeholder": "Краткое описание сюжета...",
+      "series_label": "Серия (опционально)",
+      "submit": "Создать книгу"
+    },
+    "new_series": {
+      "title": "Создать серию",
+      "title_label": "Название серии",
+      "title_placeholder": "Введите название серии...",
+      "description_label": "Описание (опционально)",
+      "description_placeholder": "Описание серии...",
+      "submit": "Создать серию"
+    },
+    "book_settings": {
+      "title": "Параметры книги",
+      "title_label": "Название",
+      "genre_label": "Жанр",
+      "language_label": "Язык",
+      "premise_label": "Синопсис",
+      "annotation_label": "Аннотация",
+      "submit": "Сохранить"
+    },
+    "series_settings": {
+      "title": "Параметры серии",
+      "title_label": "Название",
+      "description_label": "Описание",
+      "submit": "Сохранить"
+    },
+    "series_edit": {
+      "title": "Редактировать серию",
+      "name_label": "Название",
+      "description_label": "Описание",
+      "submit": "Сохранить"
+    },
+    "import": {
+      "title": "Импорт проекта",
+      "description": "Перетащите ZIP файл или нажмите для выбора",
+      "submit": "Импортировать",
+      "success": "Проект успешно импортирован",
+      "error": "Ошибка при импорте файла",
+      "error_only_zip": "Только ZIP архивы поддерживаются"
+    }
+  },
+  "panels": {
+    "assistant": {
+      "coauthor": "Соавтор",
+      "editor": "Редактор",
+      "critic": "Критик",
+      "reader": "Читатель",
+      "settings": "Настройки",
+      "clear": "Очистить",
+      "delete": "Удалить",
+      "all": "Все",
+      "continuity": "Связность",
+      "fact": "Достоверность",
+      "exporting": "Экспортирование...",
+      "error": "Ошибка экспорта"
+    },
+    "ideas": {
+      "title": "Идеи",
+      "add": "Добавить идею",
+      "empty": "Пока нет идей"
+    },
+    "character": {
+      "title": "Персонажи",
+      "add": "Добавить персонажа",
+      "empty": "Пока нет персонажей"
+    },
+    "audit": {
+      "title": "Аудит",
+      "filters": "Фильтры",
+      "no_events": "Нет событий"
+    }
+  },
+  "mobile": {
+    "collection": "Коллекция",
+    "editor": "Редактор",
+    "helpers": "Помощники",
+    "words": "Слов:"
+  },
+  "sync": {
+    "db_unavailable": "База данных временно недоступна — изменения сохраняются локально.",
+    "recovered_local_wins": "Обнаружено расхождение с базой данных — использованы более свежие локальные изменения."
+  },
+  "export": {
+    "title": "Экспорт",
+    "error_generic": "Ошибка экспорта"
   }
 }

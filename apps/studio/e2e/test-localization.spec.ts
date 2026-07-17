@@ -97,11 +97,15 @@ test.describe("Sprint-37-Step-01: Independent Localization Verification", () => 
     await page.waitForTimeout(500);
 
     // Language should still be English after reload
-    const fileMenuEnAfterReload = page.locator('button:has-text("File")').first();
+    const fileMenuEnAfterReload = page
+      .locator('button:has-text("File")')
+      .first();
     await expect(fileMenuEnAfterReload).toBeVisible();
 
     // Russian should not be visible
-    const fileMenuRuAfterReload = page.locator('button:has-text("Файл")').first();
+    const fileMenuRuAfterReload = page
+      .locator('button:has-text("Файл")')
+      .first();
     await expect(fileMenuRuAfterReload).not.toBeVisible();
   });
 
@@ -174,8 +178,8 @@ test.describe("Sprint-37-Step-01: Independent Localization Verification", () => 
 
     // Verify header is now dark
     const header = page.locator("header");
-    const headerBg = await header.evaluate((el) =>
-      window.getComputedStyle(el).backgroundColor
+    const headerBg = await header.evaluate(
+      (el) => window.getComputedStyle(el).backgroundColor,
     );
 
     // Dark mode should have dark background (close to black)
@@ -191,8 +195,8 @@ test.describe("Sprint-37-Step-01: Independent Localization Verification", () => 
     await expect(fileMenuEn).toBeVisible();
 
     // Verify header is still dark
-    const headerBgAfterSwitch = await header.evaluate((el) =>
-      window.getComputedStyle(el).backgroundColor
+    const headerBgAfterSwitch = await header.evaluate(
+      (el) => window.getComputedStyle(el).backgroundColor,
     );
     expect(headerBgAfterSwitch).toContain("rgb");
   });
@@ -227,7 +231,7 @@ test.describe("Sprint-37-Step-01: Independent Localization Verification", () => 
       (err) =>
         !err.includes("ResizeObserver") &&
         !err.includes("Failed to fetch") &&
-        !err.includes("NetworkError")
+        !err.includes("NetworkError"),
     );
 
     expect(criticalErrors.length).toBe(0);

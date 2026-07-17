@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { Upload, AlertCircle, CheckCircle } from "lucide-react";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 export interface ImportDialogProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export function ImportDialog({
   onImport,
   onCancel,
 }: ImportDialogProps) {
+  const { t } = useLocaleContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export function ImportDialog({
         onCancel();
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при импорте файла");
+      setError(err instanceof Error ? err.message : t("dialogs.import.error"));
     }
   }
 
@@ -40,7 +42,7 @@ export function ImportDialog({
     const file = e.target.files?.[0];
     if (file) {
       if (!file.name.endsWith(".zip")) {
-        setError("Только ZIP архивы поддерживаются");
+        setError(t("dialogs.import.error_only_zip"));
         return;
       }
       setSelectedFile(file);
@@ -59,7 +61,7 @@ export function ImportDialog({
     const file = e.dataTransfer.files?.[0];
     if (file) {
       if (!file.name.endsWith(".zip")) {
-        setError("Только ZIP архивы поддерживаются");
+        setError(t("dialogs.import.error_only_zip"));
         return;
       }
       setSelectedFile(file);
@@ -71,14 +73,14 @@ export function ImportDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">
-          Импорт проекта
+          {t("dialogs.import.title")}
         </h2>
 
         {success ? (
           <div className="mb-4 flex items-center gap-3 rounded-md bg-green-100 p-4 dark:bg-green-900">
             <CheckCircle className="h-5 w-5 text-green-700 dark:text-green-300" />
             <span className="text-sm text-green-700 dark:text-green-300">
-              Проект успешно импортирован
+              {t("dialogs.import.success")}
             </span>
           </div>
         ) : (
@@ -101,10 +103,7 @@ export function ImportDialog({
 
               <div className="mb-3">
                 <p className="text-sm font-medium text-black dark:text-white">
-                  Перетащите ZIP архив сюда
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  или нажмите для выбора файла
+                  {t("dialogs.import.description")}
                 </p>
               </div>
 
@@ -113,7 +112,7 @@ export function ImportDialog({
                 disabled={isLoading}
                 className="inline-block rounded-md bg-zinc-100 px-3 py-1.5 text-sm font-medium text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
               >
-                Выбрать файл
+                {t("dialogs.import.submit")}
               </button>
             </div>
 
@@ -145,14 +144,16 @@ export function ImportDialog({
             disabled={isLoading || success}
             className="flex-1 rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
           >
-            Отмена
+            {t("buttons.cancel")}
           </button>
           <button
             onClick={handleImport}
             disabled={!selectedFile || isLoading || success}
             className="flex-1 rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {isLoading ? "Импортируется..." : "Импорт"}
+            {isLoading
+              ? `${t("dialogs.import.submit")}...`
+              : t("dialogs.import.submit")}
           </button>
         </div>
       </div>

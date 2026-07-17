@@ -162,6 +162,25 @@
   },
   "dialogs": {
     "save_error": "Error saving",
+    "close_button": "Close",
+    "series_settings": {
+      "title": "Series Settings",
+      "name_label": "Title",
+      "genre_label": "Genre",
+      "genre_placeholder": "Choose or enter a genre...",
+      "description_label": "Description",
+      "description_placeholder": "Series description...",
+      "target_audience_label": "Target Audience",
+      "save_button": "Save",
+      "saving": "Saving..."
+    },
+    "series_edit": {
+      "title": "Edit Series",
+      "name_label": "Title",
+      "description_label": "Description",
+      "save_button": "Save",
+      "saving": "Saving..."
+    },
     "book_settings": {
       "title": "Book Settings",
       "tabs": {

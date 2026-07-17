@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Series, SeriesStatus } from "@/domain/model";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 type SeriesSettingsDialogProps = {
   series: Series | null;
@@ -18,6 +19,7 @@ export function SeriesSettingsDialog({
   onClose,
   onSave,
 }: SeriesSettingsDialogProps) {
+  const { t } = useLocaleContext();
   const [activeTab, setActiveTab] = useState<TabType>("basic");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export function SeriesSettingsDialog({
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при сохранении");
+      setError(err instanceof Error ? err.message : t("dialogs.save_error"));
     } finally {
       setIsSaving(false);
     }
@@ -146,7 +148,7 @@ export function SeriesSettingsDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-lg font-semibold text-black dark:text-zinc-50">
-          Настройки серии: {series.title}
+          {t("dialogs.series_settings.title")}: {series.title}
         </h2>
 
         {/* Tabs */}
@@ -491,7 +493,9 @@ export function SeriesSettingsDialog({
             disabled={isSaving}
             className="rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {isSaving ? "Сохранение..." : "Сохранить"}
+            {isSaving
+              ? t("dialogs.series_settings.saving")
+              : t("dialogs.series_settings.save_button")}
           </button>
         </div>
       </div>

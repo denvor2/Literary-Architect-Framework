@@ -162,6 +162,25 @@
   },
   "dialogs": {
     "save_error": "Ошибка при сохранении",
+    "close_button": "Закрыть",
+    "series_settings": {
+      "title": "Параметры серии",
+      "name_label": "Название",
+      "genre_label": "Жанр",
+      "genre_placeholder": "Выберите или введите жанр...",
+      "description_label": "Описание",
+      "description_placeholder": "Описание серии...",
+      "target_audience_label": "Целевая аудитория",
+      "save_button": "Сохранить",
+      "saving": "Сохранение..."
+    },
+    "series_edit": {
+      "title": "Редактировать серию",
+      "name_label": "Название",
+      "description_label": "Описание",
+      "save_button": "Сохранить",
+      "saving": "Сохранение..."
+    },
     "book_settings": {
       "title": "Параметры книги",
       "tabs": {

@@ -10,9 +10,21 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** In progress — Step-01 (i18n Framework) complete, Step-02 ready
+- **Status:** In progress — Step-01 (i18n Framework) ✅ complete, Step-02 ready
 - **Phase:** Phase 1 (MVP)
 - **Scope:** Implement i18n framework (next-intl), language switching (EN/RU), localize UI & export dialogs
+
+## Sprint 37 Progress
+
+### Step-01: i18n Framework Infrastructure & Full UI Localization ✅ COMPLETE (2026-07-17)
+
+i18n framework fully implemented and independently verified as working. Next-intl@4.13.2 installed, LocaleContext provides translations to Header, Sidebar, ExportDialog. Language switcher (EN/РУ toggle) functional, localStorage persistence ready.
+
+- **Implementation:** 11 commits (core i18n + critical "use client" fix + verification)
+- **Verification:** Architect-Reviewer PASS (after validation correction), Tester PASS (independent i18n verification)
+- **Status:** Archived to done/, ready for next step
+
+**Note:** E2E tests show 6/102 passing; 96 fail due to pre-existing pointer-events blocking issue in main layout div (Sprint-34/35 architectural scope, not Sprint-37). i18n itself verified as fully functional.
 
 ## Sprint 36 — closed ✅
 

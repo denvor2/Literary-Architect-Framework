@@ -258,15 +258,15 @@ export function Sidebar({
                 aria-label="Создать новую книгу"
                 title="Новая книга"
               >
-                📖 Книга
+                📖 {t("entities.book")}
               </button>
               <button
                 onClick={() => onCreateSeries?.()}
                 className="flex-1 rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                aria-label="Создать новую серию"
-                title="Новая серия"
+                aria-label={`${t("buttons.create")} ${t("entities.series")}`}
+                title={`${t("sidebar.new_series")}`}
               >
-                + Серия
+                + {t("entities.series")}
               </button>
             </div>
 

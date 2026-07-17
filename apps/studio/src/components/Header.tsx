@@ -301,16 +301,16 @@ export function Header({
                         setOpenMenu(null);
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
-                      aria-label="Новая книга (Ctrl+N)"
+                      aria-label={`${t("menu_items.file.new_book")} (Ctrl+N)`}
                     >
-                      Новая книга
+                      {t("menu_items.file.new_book")}
                     </button>
                     <button
                       disabled
                       className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
-                      aria-label="Открыть (скоро)"
+                      aria-label={t("menu_items.file.open_soon")}
                     >
-                      Открыть (скоро)
+                      {t("menu_items.file.open_soon")}
                     </button>
                     <button
                       onClick={() => {
@@ -318,9 +318,9 @@ export function Header({
                         setOpenMenu(null);
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
-                      aria-label="Сохранить (Ctrl+S)"
+                      aria-label={`${t("menu_items.file.save")} (Ctrl+S)`}
                     >
-                      Сохранить
+                      {t("menu_items.file.save")}
                     </button>
                     <button
                       onClick={() => {
@@ -328,9 +328,9 @@ export function Header({
                         setOpenMenu(null);
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
-                      aria-label="Открыть из архива (Ctrl+O)"
+                      aria-label={`${t("menu_items.file.open_archive")} (Ctrl+O)`}
                     >
-                      Открыть из архива...
+                      {t("menu_items.file.open_archive")}
                     </button>
                     <button
                       onClick={() => {
@@ -345,9 +345,9 @@ export function Header({
                           ? "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                           : "cursor-not-allowed text-zinc-400 dark:text-zinc-600"
                       }`}
-                      aria-label="Сохранить как (Ctrl+Shift+S)"
+                      aria-label={`${t("menu_items.file.save_as")} (Ctrl+Shift+S)`}
                     >
-                      Сохранить как...
+                      {t("menu_items.file.save_as")}
                     </button>
                     <button
                       onClick={() => {
@@ -362,9 +362,9 @@ export function Header({
                           ? "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                           : "cursor-not-allowed text-zinc-400 dark:text-zinc-600"
                       }`}
-                      aria-label="Экспортировать (Ctrl+E)"
+                      aria-label={`${t("menu_items.file.export")} (Ctrl+E)`}
                     >
-                      Экспортировать
+                      {t("menu_items.file.export")}
                     </button>
                     <div className="border-t border-zinc-200 dark:border-zinc-800" />
                     <button
@@ -373,9 +373,9 @@ export function Header({
                         setOpenMenu(null);
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-red-600 hover:bg-zinc-100 dark:text-red-400 dark:hover:bg-zinc-900"
-                      aria-label="Выход"
+                      aria-label={t("menu_items.file.exit")}
                     >
-                      Выход
+                      {t("menu_items.file.exit")}
                     </button>
                   </>
                 ) : menu.key === "edit" ? (
@@ -383,16 +383,16 @@ export function Header({
                     <button
                       disabled
                       className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
-                      aria-label="Отменить (Ctrl+Z, скоро)"
+                      aria-label={`${t("menu_items.edit.undo")} (Ctrl+Z, ${t("buttons.expand")})`}
                     >
-                      Отменить (скоро)
+                      {t("menu_items.edit.undo_soon")}
                     </button>
                     <button
                       disabled
                       className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
-                      aria-label="Повторить (Ctrl+Y, скоро)"
+                      aria-label={`${t("menu_items.edit.redo")} (Ctrl+Y, ${t("buttons.expand")})`}
                     >
-                      Повторить (скоро)
+                      {t("menu_items.edit.redo_soon")}
                     </button>
                     <button
                       onClick={() => {
@@ -400,22 +400,22 @@ export function Header({
                         setOpenMenu(null);
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
-                      aria-label="Поиск (Ctrl+F)"
+                      aria-label={`${t("menu_items.edit.search")} (Ctrl+F)`}
                     >
-                      Поиск
+                      {t("menu_items.edit.search")}
                     </button>
                     <button
                       disabled
                       className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
-                      aria-label="Заменить (Ctrl+H, скоро)"
+                      aria-label={`${t("menu_items.edit.replace")} (Ctrl+H, ${t("buttons.expand")})`}
                     >
-                      Заменить (скоро)
+                      {t("menu_items.edit.replace_soon")}
                     </button>
                   </>
                 ) : menu.key === "view" ? (
                   <>
                     <div className="px-3 py-1.5 text-sm font-semibold text-black dark:text-white">
-                      Тема
+                      {t("menu_items.view.theme")}
                     </div>
                     <button
                       onClick={() => {
@@ -428,7 +428,7 @@ export function Header({
                           : "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                       }`}
                     >
-                      ☀️ Светлая
+                      {t("menu_items.view.light")}
                     </button>
                     <button
                       onClick={() => {
@@ -441,7 +441,7 @@ export function Header({
                           : "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                       }`}
                     >
-                      🌙 Тёмная
+                      {t("menu_items.view.dark")}
                     </button>
                     <button
                       onClick={() => {
@@ -454,11 +454,11 @@ export function Header({
                           : "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                       }`}
                     >
-                      🔄 Авто
+                      {t("menu_items.view.auto")}
                     </button>
                     <div className="border-t border-zinc-200 dark:border-zinc-800" />
                     <div className="px-3 py-1.5 text-sm font-semibold text-black dark:text-white">
-                      Размер текста
+                      {t("menu_items.view.font_size")}
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1.5">
                       <button
@@ -489,13 +489,7 @@ export function Header({
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                     >
-                      Боковая панель
-                    </button>
-                    <button
-                      disabled
-                      className="w-full cursor-not-allowed px-3 py-1.5 text-left text-sm text-zinc-400 dark:text-zinc-600"
-                    >
-                      Режим фокуса (скоро)
+                      {t("menu_items.view.toggle_sidebar")}
                     </button>
                   </>
                 ) : menu.key === "help" ? (
@@ -510,7 +504,7 @@ export function Header({
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                     >
-                      📖 Документация
+                      📖 {t("menu_items.help.documentation")}
                     </button>
                     <button
                       onClick={() => {
@@ -541,7 +535,7 @@ export function Header({
                         Literary Studio
                       </div>
                       <div className="text-xs text-zinc-600 dark:text-zinc-400">
-                        v{appVersion}
+                        {t("menu_items.about.version")} v{appVersion}
                       </div>
                     </div>
                     <div className="border-t border-zinc-200 dark:border-zinc-800" />

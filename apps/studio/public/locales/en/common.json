@@ -12,6 +12,43 @@
     "help": "Help",
     "about": "About"
   },
+  "menu_items": {
+    "file": {
+      "new_book": "New Book",
+      "open": "Open",
+      "open_soon": "Open (soon)",
+      "save": "Save",
+      "open_archive": "Open from Archive...",
+      "save_as": "Save As...",
+      "export": "Export",
+      "book_settings": "Book Settings",
+      "exit": "Exit"
+    },
+    "edit": {
+      "undo": "Undo",
+      "undo_soon": "Undo (soon)",
+      "redo": "Redo",
+      "redo_soon": "Redo (soon)",
+      "search": "Search",
+      "replace": "Replace",
+      "replace_soon": "Replace (soon)"
+    },
+    "view": {
+      "theme": "Theme",
+      "light": "☀️ Light",
+      "dark": "🌙 Dark",
+      "auto": "⚙️ Auto",
+      "font_size": "Font Size",
+      "toggle_sidebar": "Show/Hide Sidebar"
+    },
+    "help": {
+      "shortcuts": "Keyboard Shortcuts",
+      "documentation": "Documentation"
+    },
+    "about": {
+      "version": "Version"
+    }
+  },
   "sidebar": {
     "books": "Books",
     "series": "Series",
@@ -48,6 +85,14 @@
     "permanent_delete": "Delete permanently",
     "yes": "Yes",
     "no": "No"
+  },
+  "entities": {
+    "book": "Book",
+    "series": "Series",
+    "chapter": "Chapter",
+    "scene": "Scene",
+    "character": "Character",
+    "idea": "Idea"
   },
   "auth": {
     "login": {

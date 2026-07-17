@@ -1,9 +1,9 @@
 # Sprint-37-Step-02: Complete UI Localization (EN/RU Coverage) — ARP
 
-**Status:** ✅ **IMPLEMENTATION COMPLETE**  
+**Status:** ✅ **IMPLEMENTATION COMPLETE & FINAL REVIEW**  
 **Date:** 2026-07-17  
-**Implementation Commits:** 3 commits  
-**Validation:** format ✅ tsc ✅ lint ✅ build ✅
+**Implementation Commits:** 5 commits (3 initial + 2 critical fixes for menu/entity localization)  
+**Validation:** format ✅ tsc ✅ lint ✅ build ✅ (all passing)
 
 ---
 
@@ -153,6 +153,28 @@ $ npm run build
 $ npx prettier --write [files]
 # Formatted: ImportDialog, LoginDialog, MobileBottomNav (3 files)
 ```
+
+---
+
+## Critical Fixes Applied During Review
+
+### Fix 1: Localize ALL Menu Items (Commits 4-5)
+**Issue Found:** Menu items (File/Edit/View/Help/About) were still hardcoded in Russian.  
+**Impact:** User could not see translated menu items even with language switcher.  
+**Solution:**
+- Added `menu_items.*` sections to locale files with 20+ menu strings
+- Updated Header.tsx to use t() for all File/Edit/View/Help/About menu items
+- Examples: "Новая книга" → t("menu_items.file.new_book"), "Сохранить" → t("menu_items.file.save")
+
+### Fix 2: Localize Entity Names
+**Issue Found:** Entity type names (Книга/Серия/Глава/Сцена/Персонаж/Идея) were hardcoded.  
+**Impact:** Buttons in Sidebar showed Russian even on English language.  
+**Solution:**
+- Added `entities.*` section to locale files: book, series, chapter, scene, character, idea
+- Updated Sidebar.tsx buttons to use t("entities.book"), t("entities.series")
+- All entity references now localized consistently
+
+**Total Strings Added:** 40+ new translation keys across menu_items and entities sections.
 
 ---
 

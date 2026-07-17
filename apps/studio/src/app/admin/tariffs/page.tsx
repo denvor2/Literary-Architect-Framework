@@ -231,10 +231,10 @@ function PlanCard({
           {plan.name}
         </h3>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          ₽{Math.round((plan.price / 100) * 90)}/мес •{" "}
-          {plan.maxAssistantRequests} запросов •{" "}
-          {plan.maxBooks === 0 ? "∞" : plan.maxBooks} книг •{" "}
-          {plan.maxAssistants === 0 ? "∞" : plan.maxAssistants} помощников
+          ₽{Math.round((plan.price / 100) * 90)}/мес • Запросы:{" "}
+          {plan.maxAssistantRequests} • Книги:{" "}
+          {plan.maxBooks === 0 ? "∞" : plan.maxBooks} • Помощники:{" "}
+          {plan.maxAssistants === 0 ? "∞" : plan.maxAssistants}
         </p>
       </div>
       <button

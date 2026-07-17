@@ -172,6 +172,8 @@ export async function PUT(
           tier: updatedPlan.tier,
           price: updatedPlan.price,
           billingPeriodDays: updatedPlan.billingPeriodDays,
+          maxBooks: updatedPlan.maxBooks,
+          maxAssistants: updatedPlan.maxAssistants,
           maxAssistantRequests: updatedPlan.maxAssistantRequests,
           features: updatedPlan.features,
           description: updatedPlan.description,

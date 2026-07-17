@@ -35,11 +35,17 @@ export default function AdminTariffsPage() {
         body: JSON.stringify(plan),
       });
       if (res.ok) {
+        console.log("✓ План сохранён:", plan.name);
         await loadPlans();
         setEditingId(null);
+      } else {
+        const error = await res.json();
+        console.error("Ошибка сохранения:", error);
+        alert(`Ошибка: ${error.error || "Не удалось сохранить план"}`);
       }
     } catch (error) {
-      console.error("Failed to save plan:", error);
+      console.error("Ошибка при сохранении плана:", error);
+      alert("Ошибка подключения к серверу");
     }
   }
 

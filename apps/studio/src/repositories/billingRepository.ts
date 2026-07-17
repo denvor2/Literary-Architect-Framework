@@ -13,7 +13,6 @@ import type {
   Plan,
   UserSubscription,
   Payment,
-  PlanTier,
   PaymentStatus,
 } from "@/generated/prisma/client";
 
@@ -339,7 +338,7 @@ export async function canMakeAssistantRequest(
  */
 export async function getUserPlanInfo(userId: string): Promise<{
   planName: string;
-  tier: PlanTier;
+  tier: string;
   daysUntilExpiry: number | null;
   requestsThisMonth: number;
   maxRequests: number | null;

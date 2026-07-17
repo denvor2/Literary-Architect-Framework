@@ -165,7 +165,7 @@ model Payment {
 model Plan {
   id                   String             @id
   name                 String             @unique
-  tier                 PlanTier           @unique
+  tier                 String             @unique
   price                Int                @default(0)
   billingPeriodDays    Int                @default(30)
   maxAssistantRequests Int                @default(0)
@@ -311,10 +311,6 @@ enum PaymentStatus {
   failed
 }
 
-enum PlanTier {
-  free
-  pro
-}
 
 enum Role {
   admin

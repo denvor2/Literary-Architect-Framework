@@ -10,11 +10,22 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** In progress — Step-01 (i18n Framework) ✅ complete, Step-02 ready
+- **Status:** In progress — Step-01 ✅ complete, Step-02 ✅ complete, Step-03 ready
 - **Phase:** Phase 1 (MVP)
 - **Scope:** Implement i18n framework (next-intl), language switching (EN/RU), localize UI & export dialogs
 
 ## Sprint 37 Progress
+
+### Step-02: Complete UI Localization (EN/RU Coverage) ✅ COMPLETE (2026-07-18)
+
+Full localization of 18 UI components across admin audit system (AdminAuditPanel, AuditEventRow, AuditFilters), export system (ExportDialog), editor (EditorArea), and supporting components. 18+ localization keys added to ru/en common.json, all hardcoded strings replaced with i18n calls.
+
+- **Implementation:** Multiple rounds of fixes; final version corrects ESLint violations in pricing/tariffs
+- **Components localized:** AdminAuditPanel, AuditEventRow, AuditFilters, ExportDialog, EditorArea, and 13 others
+- **Localization keys:** 60+ new keys under audit.*, export.*, editor.* namespaces (EN/RU parity)
+- **Status:** Archived to done/ (commit aa60646, 2026-07-18)
+
+**Note:** Step-02 required 8 rounds of verification and fixes due to pre-existing ESLint issues in pricing/tariffs (Sprint-37-Step-01) and incomplete scope tracking. Final version passes TypeScript, ESLint, Prettier validation.
 
 ### Step-01: i18n Framework Infrastructure & Full UI Localization ✅ COMPLETE (2026-07-17)
 

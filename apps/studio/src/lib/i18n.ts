@@ -15,12 +15,21 @@ export async function getMessages(locale: Locale): Promise<Messages> {
   }
 
   try {
-    const common = await import(`../../public/locales/${locale}/common.json`);
-    const export_ = await import(`../../public/locales/${locale}/export.json`);
+    const commonRes = await fetch(`/locales/${locale}/common.json`);
+    const exportRes = await fetch(`/locales/${locale}/export.json`);
+
+    if (!commonRes.ok || !exportRes.ok) {
+      throw new Error(
+        `Failed to fetch locales: common=${commonRes.status}, export=${exportRes.status}`,
+      );
+    }
+
+    const common = await commonRes.json();
+    const export_ = await exportRes.json();
 
     const messages = {
-      ...common.default,
-      export: export_.default,
+      ...common,
+      export: export_,
     };
 
     messagesCache[locale] = messages;

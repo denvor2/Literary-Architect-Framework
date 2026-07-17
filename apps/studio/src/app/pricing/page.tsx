@@ -18,9 +18,18 @@ export default function PricingPage() {
     try {
       const res = await fetch("/api/billing", { credentials: "include" });
       const data = (await res.json()) as { plans?: Plan[] };
-      setPlans((data.plans || []).sort((a, b) => a.price - b.price));
+      const sortedPlans = (data.plans || []).sort((a, b) => a.price - b.price);
+      console.log(
+        "Загруженные планы:",
+        sortedPlans.map((p) => ({
+          name: p.name,
+          price: p.price,
+          isActive: p.isActive,
+        })),
+      );
+      setPlans(sortedPlans);
     } catch (error) {
-      console.error("Failed to load plans:", error);
+      console.error("Ошибка загрузки планов:", error);
     } finally {
       setLoading(false);
     }
@@ -144,6 +153,15 @@ function PlanCard({
   const isFree = plan.price === 0;
   const pricePerMonth = (plan.price / 100).toFixed(2);
 
+  const descriptions: Record<string, string> = {
+    Free: "Идеально для начинающих писателей",
+    Basic: "Для активных авторов с 3 помощниками",
+    Pro: "Профессиональный уровень с 5 помощниками",
+    Premium: "Неограниченные возможности для авторов",
+  };
+
+  const description = descriptions[plan.name] || plan.description;
+
   return (
     <div
       className={`rounded-lg border-2 p-6 transition-all ${
@@ -164,16 +182,16 @@ function PlanCard({
         ) : (
           <>
             <p className="text-4xl font-bold text-black dark:text-white">
-              ${pricePerMonth}
+              ₽{Math.round(parseFloat(pricePerMonth) * 90)}
             </p>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">в месяц</p>
           </>
         )}
       </div>
 
-      {plan.description && (
+      {description && (
         <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
-          {plan.description}
+          {description}
         </p>
       )}
 
@@ -232,14 +250,14 @@ function featureLabel(feature: string): string {
   const labels: Record<string, string> = {
     basic_editing: "Базовое редактирование",
     advanced_editing: "Продвинутое редактирование",
-    one_assistant: "1 помощник",
-    three_assistants: "3 помощника",
-    five_assistants: "5 помощников",
-    ten_assistants: "10 помощников",
-    custom_prompts: "Кастомные промпты",
+    unlimited_editing: "Полное редактирование",
+    one_assistant: "1 AI помощник",
+    three_assistants: "3 AI помощника",
+    five_assistants: "5 AI помощников",
+    ten_assistants: "10 AI помощников",
+    custom_prompts: "Собственные промпты",
     priority_support: "Приоритетная поддержка",
     advanced_analytics: "Продвинутая аналитика",
-    unlimited_editing: "Полное редактирование",
     unlimited_books: "Неограниченные книги",
   };
   return labels[feature] || feature;

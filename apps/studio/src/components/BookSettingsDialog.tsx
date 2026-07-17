@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Book, BookStatus, Series } from "@/domain/model";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 type BookSettingsDialogProps = {
   book: Book | null;
@@ -20,6 +21,7 @@ export function BookSettingsDialog({
   onClose,
   onSave,
 }: BookSettingsDialogProps) {
+  const { t } = useLocaleContext();
   const [activeTab, setActiveTab] = useState<TabType>("basic");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export function BookSettingsDialog({
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при сохранении");
+      setError(err instanceof Error ? err.message : t("dialogs.save_error"));
     } finally {
       setIsSaving(false);
     }
@@ -176,27 +178,30 @@ export function BookSettingsDialog({
   // Helper to show inherited value
   const inheritedAudience =
     !formData.targetAudience && series?.targetAudience
-      ? ` (наследуется из серии: ${series.targetAudience})`
+      ? ` (inherited from series: ${series.targetAudience})`
       : "";
   const inheritedGenres =
     !genres.length && series?.genre?.length
-      ? ` (наследуется из серии: ${series.genre.join(", ")})`
+      ? ` (inherited from series: ${series.genre.join(", ")})`
       : "";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-lg font-semibold text-black dark:text-zinc-50">
-          Настройки книги: {book.title}
+          {t("dialogs.book_settings.title")}: {book.title}
         </h2>
 
         {/* Tabs */}
         <div className="mb-6 flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
           {[
-            { key: "basic", label: "Основное" },
-            { key: "bible", label: "Story Bible" },
-            { key: "constraints", label: "Ограничения" },
-            { key: "meta", label: "Метаданные" },
+            { key: "basic", label: t("dialogs.book_settings.tabs.basic") },
+            { key: "bible", label: t("dialogs.book_settings.tabs.bible") },
+            {
+              key: "constraints",
+              label: t("dialogs.book_settings.tabs.constraints"),
+            },
+            { key: "meta", label: t("dialogs.book_settings.tabs.meta") },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -219,7 +224,7 @@ export function BookSettingsDialog({
             <>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Название
+                  {t("dialogs.book_settings.title_label")}
                 </span>
                 <input
                   type="text"
@@ -233,7 +238,7 @@ export function BookSettingsDialog({
 
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Рабочее название (черновик)
+                  {t("dialogs.book_settings.working_title_label")}
                 </span>
                 <input
                   type="text"
@@ -632,7 +637,9 @@ export function BookSettingsDialog({
             disabled={isSaving}
             className="rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {isSaving ? "Сохранение..." : "Сохранить"}
+            {isSaving
+              ? t("dialogs.book_settings.saving")
+              : t("dialogs.book_settings.save_button")}
           </button>
         </div>
       </div>

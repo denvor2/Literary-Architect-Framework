@@ -211,12 +211,6 @@ function PlanCard({
         <li className="flex items-start gap-3">
           <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
           <span className="text-sm text-zinc-700 dark:text-zinc-300">
-            {getAssistantsList(plan.maxAssistants)}
-          </span>
-        </li>
-        <li className="flex items-start gap-3">
-          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
-          <span className="text-sm text-zinc-700 dark:text-zinc-300">
             Главы, сцены, персонажи, идеи
           </span>
         </li>
@@ -226,6 +220,14 @@ function PlanCard({
             Импорт и экспорт (DOCX, PDF)
           </span>
         </li>
+        {plan.name === "Basic" && (
+          <li className="flex items-start gap-3">
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+            <span className="text-sm text-zinc-700 dark:text-zinc-300">
+              Стандартная поддержка
+            </span>
+          </li>
+        )}
         {features.map((feature, idx) => (
           <li key={idx} className="flex items-start gap-3">
             <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
@@ -255,22 +257,6 @@ function PlanCard({
   );
 }
 
-function getAssistantsList(maxAssistants: number): string {
-  const assistants = ["Соавтор", "Редактор", "Критик", "Читатель"];
-
-  if (maxAssistants === 0) {
-    return "Неограниченные помощники + собственные";
-  }
-
-  if (maxAssistants <= 4) {
-    return assistants.slice(0, maxAssistants).join(", ");
-  }
-
-  return (
-    assistants.slice(0, 4).join(", ") + ` + ${maxAssistants - 4} собственных`
-  );
-}
-
 function featureLabel(feature: string): string {
   const labels: Record<string, string> = {
     basic_editing: "Базовое редактирование",
@@ -278,8 +264,6 @@ function featureLabel(feature: string): string {
     unlimited_editing: "Полное редактирование",
     one_assistant: "1 AI помощник",
     three_assistants: "3 AI помощника",
-    five_assistants: "5 AI помощников",
-    ten_assistants: "10 AI помощников",
     custom_prompts: "Собственные промпты",
     priority_support: "Приоритетная поддержка",
     advanced_analytics: "Продвинутая аналитика",

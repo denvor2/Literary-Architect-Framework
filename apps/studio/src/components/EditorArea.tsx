@@ -349,8 +349,8 @@ function UnifiedBookView({
               onClick={() => setIsDetailsCollapsed((value) => !value)}
               aria-label={
                 isDetailsCollapsed
-                  ? "Развернуть реквизиты"
-                  : "Свернуть реквизиты"
+                  ? t("buttons.expand_properties")
+                  : t("buttons.collapse_properties")
               }
               className="shrink-0 rounded-md border border-zinc-300 p-1 text-zinc-500 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
@@ -445,7 +445,7 @@ function UnifiedBookView({
                       .filter((tag) => tag.length > 0),
                   })
                 }
-                placeholder="Теги (через запятую)..."
+                placeholder={t("placeholders.tags")}
                 className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
               />
               <div className="flex items-start gap-2">
@@ -517,8 +517,8 @@ function UnifiedBookView({
                 className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
               >
                 {isChaptersCollapsed
-                  ? "Развернуть все главы"
-                  : "Свернуть все главы"}
+                  ? t("buttons.expand_all_chapters")
+                  : t("buttons.collapse_all_chapters")}
               </button>
             )}
           </div>
@@ -547,8 +547,8 @@ function UnifiedBookView({
                       onClick={() => onToggleChapterCollapsed?.(chapter.id)}
                       aria-label={
                         isChapterCollapsed
-                          ? "Развернуть главу"
-                          : "Свернуть главу"
+                          ? t("buttons.expand_chapter")
+                          : t("buttons.collapse_chapter")
                       }
                       className="mt-2 shrink-0 rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                     >
@@ -573,7 +573,7 @@ function UnifiedBookView({
                               subtitle: event.target.value,
                             })
                           }
-                          placeholder="Подзаголовок..."
+                          placeholder={t("placeholders.subtitle")}
                           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
                         />
                       )}
@@ -594,8 +594,8 @@ function UnifiedBookView({
                           className="self-start rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                         >
                           {allScenesCollapsed
-                            ? "Развернуть все сцены главы"
-                            : "Свернуть все сцены главы"}
+                            ? t("buttons.expand_all_scenes")
+                            : t("buttons.collapse_all_scenes")}
                         </button>
                         <div className="flex flex-col gap-6 pl-4">
                           {chapter.scenes.map((scene) => {
@@ -620,8 +620,8 @@ function UnifiedBookView({
                                     }
                                     aria-label={
                                       isSceneCollapsed
-                                        ? "Развернуть сцену"
-                                        : "Свернуть сцену"
+                                        ? t("buttons.expand_scene")
+                                        : t("buttons.collapse_scene")
                                     }
                                     className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                                   >

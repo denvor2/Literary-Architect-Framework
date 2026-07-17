@@ -233,8 +233,8 @@ export function Sidebar({
           className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
           aria-label={
             expandedSidebarSection === "series"
-              ? "Свернуть серии"
-              : "Развернуть серии"
+              ? t("buttons.collapse_series")
+              : t("buttons.expand_series")
           }
         >
           <div className="flex items-center gap-2">
@@ -301,8 +301,8 @@ export function Sidebar({
                             onClick={() => onToggleSeriesCollapsed?.(s.id)}
                             aria-label={
                               isSeriesCollapsed
-                                ? "Развернуть серию"
-                                : "Свернуть серию"
+                                ? t("buttons.expand_one_series")
+                                : t("buttons.collapse_one_series")
                             }
                             className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                           >
@@ -422,7 +422,7 @@ export function Sidebar({
                             setIsUnsortedCollapsed(!isUnsortedCollapsed)
                           }
                           aria-label={
-                            isUnsortedCollapsed ? "Развернуть" : "Свернуть"
+                            isUnsortedCollapsed ? t("buttons.expand") : t("buttons.collapse")
                           }
                           className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                         >
@@ -511,8 +511,8 @@ export function Sidebar({
           className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
           aria-label={
             expandedSidebarSection === "chapters"
-              ? "Свернуть главы"
-              : "Развернуть главы"
+              ? t("buttons.collapse_all_chapters")
+              : t("buttons.expand_all_chapters")
           }
         >
           <div className="flex items-center gap-2">
@@ -536,9 +536,9 @@ export function Sidebar({
                 <button
                   onClick={() => onCreateChapter?.()}
                   className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                  aria-label="Создать новую главу"
+                  aria-label={t("buttons.new_chapter")}
                 >
-                  + Новая глава
+                  {t("buttons.new_chapter")}
                 </button>
                 <ul className="flex flex-col gap-2">
                   {chapters.map((chapter) => {
@@ -559,8 +559,8 @@ export function Sidebar({
                             }}
                             aria-label={
                               isChapterCollapsed
-                                ? "Развернуть главу"
-                                : "Свернуть главу"
+                                ? t("buttons.expand_chapter")
+                                : t("buttons.collapse_chapter")
                             }
                             className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                           >
@@ -586,9 +586,9 @@ export function Sidebar({
                           <button
                             onClick={() => onCreateScene?.(chapter.id)}
                             className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                            aria-label={`Создать новую сцену в главе ${chapter.title}`}
+                            aria-label={`${t("buttons.new_scene")} ${chapter.title}`}
                           >
-                            + Новая сцена
+                            {t("buttons.new_scene")}
                           </button>
                           <button
                             onClick={() => {
@@ -665,8 +665,8 @@ export function Sidebar({
           className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
           aria-label={
             expandedSidebarSection === "characters"
-              ? "Свернуть персонажей"
-              : "Развернуть персонажей"
+              ? t("buttons.collapse_characters")
+              : t("buttons.expand_characters")
           }
         >
           <div className="flex items-center gap-2">
@@ -750,8 +750,8 @@ export function Sidebar({
           className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
           aria-label={
             expandedSidebarSection === "ideas"
-              ? "Свернуть идеи"
-              : "Развернуть идеи"
+              ? t("buttons.collapse_ideas")
+              : t("buttons.expand_ideas")
           }
         >
           <div className="flex items-center gap-2">
@@ -781,8 +781,8 @@ export function Sidebar({
           className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
           aria-label={
             expandedSidebarSection === "trash"
-              ? "Свернуть корзину"
-              : "Развернуть корзину"
+              ? t("buttons.collapse_trash")
+              : t("buttons.expand_trash")
           }
         >
           <div className="flex items-center gap-2">

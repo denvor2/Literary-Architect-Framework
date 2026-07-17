@@ -125,14 +125,17 @@ function PlanCard({
           </div>
           <div>
             <label className="text-xs font-semibold text-zinc-500">
-              Цена (центы, макс 5)
+              Цена (₽, макс 5)
             </label>
             <input
               type="number"
               maxLength={5}
-              value={formData.price}
+              value={Math.round((formData.price / 100) * 90)}
               onChange={(e) =>
-                setFormData({ ...formData, price: Number(e.target.value) })
+                setFormData({
+                  ...formData,
+                  price: Math.round((Number(e.target.value) / 90) * 100),
+                })
               }
               className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
             />

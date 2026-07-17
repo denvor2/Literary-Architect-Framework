@@ -67,6 +67,7 @@
     "new_scene": "Новая сцена",
     "new_character": "Новый персонаж",
     "new_idea": "Новая идея",
+    "new_reader": "+ Новый читатель",
     "empty_books": "Пока нет книг",
     "empty_series": "Пока нет серий",
     "empty_chapters": "Пока нет глав",
@@ -90,6 +91,7 @@
     "permanent_delete": "Удалить безвозвратно",
     "yes": "Да",
     "no": "Нет",
+    "ask": "Спросить",
     "new_chapter": "+ Новая глава",
     "new_scene": "+ Новая сцена",
     "collapse_all_chapters": "Свернуть все главы",
@@ -120,7 +122,9 @@
     "short_annotation": "Краткая аннотация...",
     "chapter_intro": "Введение в главу...",
     "scene_notes": "Заметки к сцене...",
-    "book_title": "Название книги..."
+    "book_title": "Название книги...",
+    "character_persona": "Персонаж (необязательно, например: подросток 16 лет)",
+    "reader_name": "Имя (например, Молодой читатель)"
   },
   "sections": {
     "requisites": "РЕКВИЗИТЫ",
@@ -174,6 +178,17 @@
     "save_error": "Ошибка при сохранении",
     "close_button": "Закрыть",
     "back_button": "Назад",
+    "cancel_button": "Отмена",
+    "assistant_settings": {
+      "title": "Настройки режима",
+      "display_name_label": "Отображаемое имя",
+      "prompt_suffix_label": "Дополнение к промпту",
+      "prompt_suffix_placeholder": "Дополнительные инструкции для этого режима — добавляются к существующему промпту, не заменяют его.",
+      "typical_requests_label": "Типовые запросы (по одному на строку)",
+      "typical_requests_placeholder": "Например:\nПродолжи сцену\nСделай диалог живее",
+      "save_button": "Сохранить",
+      "saving": "Сохранение..."
+    },
     "plan_selection": {
       "title": "Выберите тариф",
       "loading": "Загрузка тарифов...",
@@ -349,12 +364,16 @@
     "assistant": {
       "coauthor": "Соавтор",
       "coauthor_desc": "Пишет и развивает текст вместе с вами.",
+      "coauthor_placeholder": "Что дальше в этой книге? (необязательно)",
       "editor": "Редактор",
       "editor_desc": "Улучшает грамматику, ясность и стиль.",
+      "editor_placeholder": "Что улучшить в этой сцене? (необязательно)",
       "critic": "Критик",
       "critic_desc": "Даёт оценку вашему тексту.",
+      "critic_placeholder": "На что обратить внимание? (необязательно)",
       "reader": "Читатель",
       "reader_desc": "Показывает, как отреагирует читатель.",
+      "reader_placeholder": "Что именно интересует? (необязательно)",
       "settings": "Настройки",
       "clear": "Очистить",
       "delete": "Удалить",

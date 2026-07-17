@@ -111,7 +111,7 @@ function getModeMeta(t: (key: string) => string): Record<
       description: t("panels.assistant.coauthor_desc"),
       accent: "text-amber-600 dark:text-amber-400",
       activeBorder: "border-amber-400 dark:border-amber-600",
-      placeholder: "Что дальше в этой книге? (необязательно)",
+      placeholder: t("panels.assistant.coauthor_placeholder"),
     },
     editor: {
       icon: Wand2,
@@ -119,7 +119,7 @@ function getModeMeta(t: (key: string) => string): Record<
       description: t("panels.assistant.editor_desc"),
       accent: "text-emerald-600 dark:text-emerald-400",
       activeBorder: "border-emerald-400 dark:border-emerald-600",
-      placeholder: "Что улучшить в этой сцене? (необязательно)",
+      placeholder: t("panels.assistant.editor_placeholder"),
     },
     critic: {
       icon: Eye,
@@ -127,7 +127,7 @@ function getModeMeta(t: (key: string) => string): Record<
       description: t("panels.assistant.critic_desc"),
       accent: "text-red-600 dark:text-red-400",
       activeBorder: "border-red-400 dark:border-red-600",
-      placeholder: "На что обратить внимание? (необязательно)",
+      placeholder: t("panels.assistant.critic_placeholder"),
     },
     reader: {
       icon: BookOpen,
@@ -135,7 +135,7 @@ function getModeMeta(t: (key: string) => string): Record<
       description: t("panels.assistant.reader_desc"),
       accent: "text-blue-600 dark:text-blue-400",
       activeBorder: "border-blue-400 dark:border-blue-600",
-      placeholder: "Что именно интересует? (необязательно)",
+      placeholder: t("panels.assistant.reader_placeholder"),
     },
   };
 }
@@ -267,13 +267,13 @@ function AssistantSettingsDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-lg font-semibold text-black dark:text-zinc-50">
-          Настройки режима «{meta.label}»
+          {t("dialogs.assistant_settings.title")} «{meta.label}»
         </h2>
 
         <div className="flex flex-col gap-4">
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Отображаемое имя
+              {t("dialogs.assistant_settings.display_name_label")}
             </span>
             <input
               type="text"
@@ -286,26 +286,30 @@ function AssistantSettingsDialog({
 
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Дополнение к промпту
+              {t("dialogs.assistant_settings.prompt_suffix_label")}
             </span>
             <textarea
               value={promptSuffix}
               onChange={(event) => setPromptSuffix(event.target.value)}
               rows={4}
-              placeholder="Дополнительные инструкции для этого режима — добавляются к существующему промпту, не заменяют его."
+              placeholder={t(
+                "dialogs.assistant_settings.prompt_suffix_placeholder",
+              )}
               className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-zinc-400"
             />
           </label>
 
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Типовые запросы (по одному на строку)
+              {t("dialogs.assistant_settings.typical_requests_label")}
             </span>
             <textarea
               value={typicalRequestsText}
               onChange={(event) => setTypicalRequestsText(event.target.value)}
               rows={3}
-              placeholder={"Например:\nПродолжи сцену\nСделай диалог живее"}
+              placeholder={t(
+                "dialogs.assistant_settings.typical_requests_placeholder",
+              )}
               className="rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-zinc-400"
             />
           </label>
@@ -339,14 +343,16 @@ function AssistantSettingsDialog({
             onClick={onCancel}
             className="rounded-full border border-zinc-300 px-4 py-1.5 text-sm font-medium text-black transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
           >
-            Отмена
+            {t("dialogs.cancel_button")}
           </button>
           <button
             onClick={handleSave}
             disabled={status === "saving"}
             className="rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {status === "saving" ? "Сохранение…" : "Сохранить"}
+            {status === "saving"
+              ? t("dialogs.assistant_settings.saving")
+              : t("dialogs.assistant_settings.save_button")}
           </button>
         </div>
       </div>
@@ -384,6 +390,7 @@ function ReaderPanel({
   onCreateThread,
   onRenameThread,
   onDeleteThread,
+  t,
 }: {
   threads: readonly AssistantThread[];
   scopedText: string;
@@ -396,6 +403,7 @@ function ReaderPanel({
   onCreateThread: (options?: { name?: string; persona?: string }) => void;
   onRenameThread: (threadId: string, name: string) => void;
   onDeleteThread: (threadId: string) => void;
+  t: (key: string) => string;
 }) {
   const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>(
     threads.at(-1)?.id,
@@ -554,7 +562,7 @@ function ReaderPanel({
             onClick={() => setCreating(true)}
             className="rounded-full border border-dashed border-zinc-300 px-2.5 py-1 text-xs text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
           >
-            + Новый читатель
+            {t("sidebar.new_reader")}
           </button>
         )}
       </div>
@@ -564,13 +572,13 @@ function ReaderPanel({
           <input
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
-            placeholder="Имя (например, Молодой читатель)"
+            placeholder={t("placeholders.reader_name")}
             className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-zinc-400"
           />
           <input
             value={newPersona}
             onChange={(event) => setNewPersona(event.target.value)}
-            placeholder="Персонаж (необязательно, например: подросток 16 лет)"
+            placeholder={t("placeholders.character_persona")}
             className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-zinc-400"
           />
           <div className="flex gap-2">
@@ -579,13 +587,13 @@ function ReaderPanel({
               disabled={!newName.trim()}
               className="rounded-full bg-black px-3 py-1 text-xs font-medium text-white disabled:opacity-50 dark:bg-white dark:text-black"
             >
-              Создать
+              {t("buttons.create")}
             </button>
             <button
               onClick={() => setCreating(false)}
               className="rounded-full px-3 py-1 text-xs text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
-              Отмена
+              {t("buttons.cancel")}
             </button>
           </div>
         </div>
@@ -687,7 +695,7 @@ function ReaderPanel({
               disabled={status === "loading" || !canSend || !selectedThread}
               className="self-start rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
             >
-              {status === "loading" ? "…" : "Спросить"}
+              {status === "loading" ? "…" : t("buttons.ask")}
             </button>
             {status === "error" && (
               <p className="text-sm text-red-600 dark:text-red-400">
@@ -1261,6 +1269,7 @@ export function AssistantPanel({
                 onRenameThread("reader", threadId, name)
               }
               onDeleteThread={(threadId) => onDeleteThread("reader", threadId)}
+              t={t}
             />
           ) : (
             <>
@@ -1347,7 +1356,7 @@ export function AssistantPanel({
                   disabled={status === "loading" || !canSend}
                   className="self-start rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                 >
-                  {status === "loading" ? "…" : "Спросить"}
+                  {status === "loading" ? "…" : t("buttons.ask")}
                 </button>
                 {status === "error" && (
                   <p className="text-sm text-red-600 dark:text-red-400">

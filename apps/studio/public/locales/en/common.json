@@ -67,6 +67,7 @@
     "new_scene": "New Scene",
     "new_character": "New Character",
     "new_idea": "New Idea",
+    "new_reader": "+ New Reader",
     "empty_books": "No books yet",
     "empty_series": "No series yet",
     "empty_chapters": "No chapters yet",
@@ -90,6 +91,7 @@
     "permanent_delete": "Delete permanently",
     "yes": "Yes",
     "no": "No",
+    "ask": "Ask",
     "new_chapter": "+ New Chapter",
     "new_scene": "+ New Scene",
     "collapse_all_chapters": "Collapse all chapters",
@@ -120,7 +122,9 @@
     "short_annotation": "Short annotation...",
     "chapter_intro": "Chapter intro...",
     "scene_notes": "Scene notes...",
-    "book_title": "Book title..."
+    "book_title": "Book title...",
+    "character_persona": "Character (optional, e.g.: 16-year-old teenager)",
+    "reader_name": "Name (e.g., Young reader)"
   },
   "sections": {
     "requisites": "PROPERTIES",
@@ -174,6 +178,17 @@
     "save_error": "Error saving",
     "close_button": "Close",
     "back_button": "Back",
+    "cancel_button": "Cancel",
+    "assistant_settings": {
+      "title": "Mode Settings",
+      "display_name_label": "Display Name",
+      "prompt_suffix_label": "Prompt Suffix",
+      "prompt_suffix_placeholder": "Additional instructions for this mode — appended to existing prompt, not replacing it.",
+      "typical_requests_label": "Typical Requests (one per line)",
+      "typical_requests_placeholder": "For example:\nContinue the scene\nMake the dialogue more vivid",
+      "save_button": "Save",
+      "saving": "Saving..."
+    },
     "plan_selection": {
       "title": "Choose a Plan",
       "loading": "Loading plans...",
@@ -349,12 +364,16 @@
     "assistant": {
       "coauthor": "Coauthor",
       "coauthor_desc": "Writes and develops text together with you.",
+      "coauthor_placeholder": "What comes next in this book? (optional)",
       "editor": "Editor",
       "editor_desc": "Improves grammar, clarity and style.",
+      "editor_placeholder": "What to improve in this scene? (optional)",
       "critic": "Critic",
       "critic_desc": "Evaluates your text.",
+      "critic_placeholder": "What should I focus on? (optional)",
       "reader": "Reader",
       "reader_desc": "Shows how readers will react.",
+      "reader_placeholder": "What exactly interests you? (optional)",
       "settings": "Settings",
       "clear": "Clear",
       "delete": "Delete",

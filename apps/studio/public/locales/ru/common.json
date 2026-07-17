@@ -160,6 +160,43 @@
     "editing": "Правка...",
     "edit_button": "Отредактировать"
   },
+  "dialogs": {
+    "save_error": "Ошибка при сохранении",
+    "book_settings": {
+      "title": "Параметры книги",
+      "tabs": {
+        "basic": "Основное",
+        "bible": "Story Bible",
+        "constraints": "Ограничения",
+        "meta": "Метаданные"
+      },
+      "title_label": "Название",
+      "working_title_label": "Рабочее название",
+      "short_annotation_label": "Краткая аннотация",
+      "target_audience_label": "Целевая аудитория",
+      "genres_label": "Жанры",
+      "genre_placeholder": "Введите жанр...",
+      "add_genre": "Добавить",
+      "story_bible_status_label": "Статус Story Bible",
+      "main_plotlines_label": "Основные сюжетные линии",
+      "plotline_placeholder": "Введите сюжетную линию...",
+      "add_plotline": "Добавить",
+      "principle_label": "Принцип",
+      "escalation_label": "Эскалация",
+      "themes_label": "Темы",
+      "theme_placeholder": "Введите тему...",
+      "add_theme": "Добавить",
+      "constraints_label": "Ограничения",
+      "constraint_placeholder": "Введите ограничение...",
+      "add_constraint": "Добавить",
+      "estimated_words_label": "Ожидаемое количество слов",
+      "estimated_chapters_label": "Ожидаемое количество глав",
+      "isbn_label": "ISBN",
+      "notes_label": "Заметки",
+      "save_button": "Сохранить",
+      "saving": "Сохранение..."
+    }
+  },
   "entities": {
     "book": "Книга",
     "series": "Серия",

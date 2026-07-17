@@ -160,6 +160,43 @@
     "editing": "Editing...",
     "edit_button": "Edit"
   },
+  "dialogs": {
+    "save_error": "Error saving",
+    "book_settings": {
+      "title": "Book Settings",
+      "tabs": {
+        "basic": "Basic",
+        "bible": "Story Bible",
+        "constraints": "Constraints",
+        "meta": "Metadata"
+      },
+      "title_label": "Title",
+      "working_title_label": "Working Title",
+      "short_annotation_label": "Short Annotation",
+      "target_audience_label": "Target Audience",
+      "genres_label": "Genres",
+      "genre_placeholder": "Enter genre...",
+      "add_genre": "Add",
+      "story_bible_status_label": "Story Bible Status",
+      "main_plotlines_label": "Main Plotlines",
+      "plotline_placeholder": "Enter plotline...",
+      "add_plotline": "Add",
+      "principle_label": "Principle",
+      "escalation_label": "Escalation",
+      "themes_label": "Themes",
+      "theme_placeholder": "Enter theme...",
+      "add_theme": "Add",
+      "constraints_label": "Constraints",
+      "constraint_placeholder": "Enter constraint...",
+      "add_constraint": "Add",
+      "estimated_words_label": "Estimated Word Count",
+      "estimated_chapters_label": "Estimated Chapters",
+      "isbn_label": "ISBN",
+      "notes_label": "Notes",
+      "save_button": "Save",
+      "saving": "Saving..."
+    }
+  },
   "entities": {
     "book": "Book",
     "series": "Series",

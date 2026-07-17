@@ -234,14 +234,25 @@ function PlanCard({
             </span>
           </li>
         )}
-        {features.map((feature, idx) => (
-          <li key={idx} className="flex items-start gap-3">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
-            <span className="text-sm text-zinc-700 dark:text-zinc-300">
-              {featureLabel(feature)}
-            </span>
-          </li>
-        ))}
+        {features
+          .filter(
+            (f) =>
+              ![
+                "one_assistant",
+                "three_assistants",
+                "five_assistants",
+                "ten_assistants",
+                "custom_prompts",
+              ].includes(f),
+          )
+          .map((feature, idx) => (
+            <li key={idx} className="flex items-start gap-3">
+              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                {featureLabel(feature)}
+              </span>
+            </li>
+          ))}
       </ul>
 
       <button

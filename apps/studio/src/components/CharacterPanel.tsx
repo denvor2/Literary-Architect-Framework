@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import type { Character } from "@/domain/model";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 type CharacterPanelProps = {
   character?: Character;
@@ -20,6 +21,7 @@ export function CharacterPanel({
   onUpdate,
   onDelete,
 }: CharacterPanelProps) {
+  const { t } = useLocaleContext();
   // Sprint-10-Step-03: focus the Name field whenever the selected character
   // changes (including a just-created one) — keyed on character?.id only, so
   // typing into the field doesn't keep re-triggering the focus.
@@ -33,7 +35,7 @@ export function CharacterPanel({
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
         <p className="text-lg text-zinc-500 dark:text-zinc-400">
-          Выберите персонажа
+          {t("character.select")}
         </p>
       </main>
     );
@@ -44,16 +46,16 @@ export function CharacterPanel({
       <div className="flex w-full flex-1 flex-col gap-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-            {character.name || "Безымянный персонаж"}
+            {character.name || t("character.unnamed")}
           </h1>
           <button
             onClick={() => {
-              if (window.confirm("Удалить персонажа?")) {
+              if (window.confirm(t("character.delete_confirm"))) {
                 onDelete?.();
               }
             }}
             className="text-red-600 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-            title="Удалить персонажа"
+            title={t("character.delete_button")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -61,32 +63,32 @@ export function CharacterPanel({
 
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Имя
+            {t("character.name_label")}
           </label>
           <input
             ref={nameInputRef}
             value={character.name}
             onChange={(event) => onUpdate?.({ name: event.target.value })}
-            placeholder="Имя персонажа..."
+            placeholder={t("character.name_placeholder")}
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Ссылка на фото
+            {t("character.photo_label")}
           </label>
           <input
             value={character.photoUrl}
             onChange={(event) => onUpdate?.({ photoUrl: event.target.value })}
-            placeholder="Ссылка на изображение..."
+            placeholder={t("character.photo_placeholder")}
             className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
           />
           {character.photoUrl && (
             // eslint-disable-next-line @next/next/no-img-element -- arbitrary external URL, not a build-time optimizable local asset
             <img
               src={character.photoUrl}
-              alt={character.name || "Фото персонажа"}
+              alt={character.name || t("character.photo_alt")}
               className="h-40 w-40 rounded-lg object-cover"
             />
           )}
@@ -94,26 +96,26 @@ export function CharacterPanel({
 
         <div className="flex flex-1 flex-col gap-1.5">
           <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Описание
+            {t("character.description_label")}
           </label>
           <textarea
             value={character.description}
             onChange={(event) =>
               onUpdate?.({ description: event.target.value })
             }
-            placeholder="Кто этот персонаж..."
+            placeholder={t("character.description_placeholder")}
             className="min-h-32 w-full flex-1 resize-none rounded-md border border-zinc-300 bg-white p-3 text-base leading-relaxed text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
           />
         </div>
 
         <div className="flex flex-1 flex-col gap-1.5">
           <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Заметки
+            {t("character.notes_label")}
           </label>
           <textarea
             value={character.notes}
             onChange={(event) => onUpdate?.({ notes: event.target.value })}
-            placeholder="Дополнительные заметки..."
+            placeholder={t("character.notes_placeholder")}
             className="min-h-32 w-full flex-1 resize-none rounded-md border border-zinc-300 bg-white p-3 text-base leading-relaxed text-black outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
           />
         </div>

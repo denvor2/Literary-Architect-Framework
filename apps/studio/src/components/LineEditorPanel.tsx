@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import * as aiBus from "@/ai/aiBus";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 // Discovery implementation (Sprint-04-Step-05). Disposable — not a reusable Expert component.
 // Sprint 07 Step 02: routed through aiBus.execute() instead of a direct fetch, closing the
@@ -9,6 +10,7 @@ import * as aiBus from "@/ai/aiBus";
 // only the internal call path changed.
 
 export function LineEditorPanel() {
+  const { t } = useLocaleContext();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,9 @@ export function LineEditorPanel() {
       });
       setOutput(result.response.text);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Запрос не выполнен.");
+      setError(
+        err instanceof Error ? err.message : t("editor.error_request_failed"),
+      );
     } finally {
       setStatus("idle");
     }
@@ -39,7 +43,7 @@ export function LineEditorPanel() {
       <textarea
         value={input}
         onChange={(event) => setInput(event.target.value)}
-        placeholder="Вставьте отрывок текста для правки..."
+        placeholder={t("line_editor.paste_text")}
         rows={6}
         className="w-full rounded-md border border-zinc-300 bg-white p-3 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
       />
@@ -48,7 +52,9 @@ export function LineEditorPanel() {
         disabled={status === "loading" || input.trim().length === 0}
         className="self-start rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
       >
-        {status === "loading" ? "Правка..." : "Отредактировать"}
+        {status === "loading"
+          ? t("line_editor.editing")
+          : t("line_editor.edit_button")}
       </button>
       {output && (
         <p className="whitespace-pre-wrap rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100">
@@ -57,7 +63,8 @@ export function LineEditorPanel() {
       )}
       {error && (
         <p className="text-sm text-red-600 dark:text-red-400">
-          Ошибка: {error}
+          {t("editor.error_prefix")}
+          {error}
         </p>
       )}
     </div>

@@ -125,6 +125,41 @@
     "chapters": "CHAPTERS",
     "helpers": "HELPERS"
   },
+  "character": {
+    "select": "Select a character",
+    "unnamed": "Unnamed character",
+    "delete_confirm": "Delete character?",
+    "delete_button": "Delete character",
+    "name_label": "Name",
+    "name_placeholder": "Character name...",
+    "photo_label": "Photo link",
+    "photo_placeholder": "Image link...",
+    "photo_alt": "Character photo",
+    "description_label": "Description",
+    "description_placeholder": "Who is this character...",
+    "notes_label": "Notes",
+    "notes_placeholder": "Additional notes..."
+  },
+  "ideas": {
+    "title": "Ideas",
+    "count": "Ideas ({count})",
+    "add": "Add idea",
+    "empty": "No ideas yet",
+    "collapse": "Collapse",
+    "delete_confirm": "Delete note?",
+    "delete_button": "Delete",
+    "text_placeholder": "Note text..."
+  },
+  "editor": {
+    "error_request_failed": "Request failed.",
+    "error_prefix": "Error: ",
+    "error_button": "Edit"
+  },
+  "line_editor": {
+    "paste_text": "Paste text excerpt for editing...",
+    "editing": "Editing...",
+    "edit_button": "Edit"
+  },
   "entities": {
     "book": "Book",
     "series": "Series",

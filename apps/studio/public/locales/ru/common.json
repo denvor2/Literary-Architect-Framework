@@ -125,6 +125,41 @@
     "chapters": "ГЛАВЫ",
     "helpers": "ПОМОЩНИКИ"
   },
+  "character": {
+    "select": "Выберите персонажа",
+    "unnamed": "Безымянный персонаж",
+    "delete_confirm": "Удалить персонажа?",
+    "delete_button": "Удалить персонажа",
+    "name_label": "Имя",
+    "name_placeholder": "Имя персонажа...",
+    "photo_label": "Ссылка на фото",
+    "photo_placeholder": "Ссылка на изображение...",
+    "photo_alt": "Фото персонажа",
+    "description_label": "Описание",
+    "description_placeholder": "Кто этот персонаж...",
+    "notes_label": "Заметки",
+    "notes_placeholder": "Дополнительные заметки..."
+  },
+  "ideas": {
+    "title": "Идеи",
+    "count": "Идеи ({count})",
+    "add": "Добавить идею",
+    "empty": "Пока нет идей",
+    "collapse": "Свернуть",
+    "delete_confirm": "Удалить заметку?",
+    "delete_button": "Удалить",
+    "text_placeholder": "Текст заметки..."
+  },
+  "editor": {
+    "error_request_failed": "Запрос не выполнен.",
+    "error_prefix": "Ошибка: ",
+    "error_button": "Отредактировать"
+  },
+  "line_editor": {
+    "paste_text": "Вставьте отрывок текста для правки...",
+    "editing": "Правка...",
+    "edit_button": "Отредактировать"
+  },
   "entities": {
     "book": "Книга",
     "series": "Серия",

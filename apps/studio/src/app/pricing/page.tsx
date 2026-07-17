@@ -192,15 +192,6 @@ function PlanCard({
         <li className="flex items-start gap-3">
           <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
           <span className="text-sm text-zinc-700 dark:text-zinc-300">
-            {plan.maxAssistantRequests === 0
-              ? "Неограниченные"
-              : plan.maxAssistantRequests}{" "}
-            запросов в месяц
-          </span>
-        </li>
-        <li className="flex items-start gap-3">
-          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
-          <span className="text-sm text-zinc-700 dark:text-zinc-300">
             {plan.maxBooks === 0
               ? "Неограниченное"
               : plan.maxBooks === 3
@@ -212,6 +203,15 @@ function PlanCard({
           <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
           <span className="text-sm text-zinc-700 dark:text-zinc-300">
             {getAssistantsList(plan.maxAssistants)}
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+          <span className="text-sm text-zinc-700 dark:text-zinc-300">
+            {plan.maxAssistantRequests === 0
+              ? "Неограниченные"
+              : plan.maxAssistantRequests}{" "}
+            запросов в месяц
           </span>
         </li>
         <li className="flex items-start gap-3">

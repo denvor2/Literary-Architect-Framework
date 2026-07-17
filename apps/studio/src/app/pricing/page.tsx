@@ -151,6 +151,7 @@ function PlanCard({
 }) {
   const features = Array.isArray(plan.features) ? plan.features : [];
   const isFree = plan.price === 0;
+  const isRecommended = plan.name === "Pro";
   const pricePerMonth = (plan.price / 100).toFixed(2);
 
   const descriptions: Record<string, string> = {
@@ -164,12 +165,19 @@ function PlanCard({
 
   return (
     <div
-      className={`rounded-lg border-2 p-6 transition-all ${
-        isSelected
-          ? "border-blue-500 bg-blue-50 dark:border-blue-600 dark:bg-blue-950/20"
-          : "border-zinc-200 dark:border-zinc-800"
+      className={`flex flex-col rounded-lg border-2 p-6 transition-all ${
+        isRecommended
+          ? "border-black shadow-lg dark:border-white scale-105"
+          : isSelected
+            ? "border-blue-500 bg-blue-50 dark:border-blue-600 dark:bg-blue-950/20"
+            : "border-zinc-200 dark:border-zinc-800"
       }`}
     >
+      {isRecommended && (
+        <div className="mb-3 inline-block bg-black px-3 py-1 text-xs font-bold text-white dark:bg-white dark:text-black w-fit">
+          Рекомендуемо
+        </div>
+      )}
       <h3 className="mb-2 text-xl font-bold text-black dark:text-white">
         {plan.name}
       </h3>
@@ -196,7 +204,7 @@ function PlanCard({
       )}
 
       {/* Features */}
-      <ul className="mb-6 space-y-3">
+      <ul className="mb-6 flex-1 space-y-3">
         <li className="flex items-start gap-3">
           <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
           <span className="text-sm text-zinc-700 dark:text-zinc-300">
@@ -235,9 +243,11 @@ function PlanCard({
         className={`w-full rounded-full py-2 font-medium transition-colors ${
           isFree
             ? "border border-zinc-300 text-black hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
-            : isSelected
-              ? "bg-blue-500 text-white dark:bg-blue-600"
-              : "bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            : isRecommended
+              ? "bg-black text-white hover:bg-zinc-800 dark:bg-black dark:text-white dark:hover:bg-zinc-900"
+              : isSelected
+                ? "bg-blue-500 text-white dark:bg-blue-600"
+                : "border border-zinc-300 text-black hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
         }`}
       >
         {isFree ? "Начать бесплатно" : "Подписаться"}

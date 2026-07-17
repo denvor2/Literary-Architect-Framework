@@ -263,7 +263,6 @@ function featureLabel(feature: string): string {
     advanced_editing: "Продвинутое редактирование",
     unlimited_editing: "Полное редактирование",
     one_assistant: "1 AI помощник",
-    three_assistants: "3 AI помощника",
     custom_prompts: "Собственные промпты",
     priority_support: "Приоритетная поддержка",
     advanced_analytics: "Продвинутая аналитика",

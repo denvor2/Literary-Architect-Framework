@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Search, LogOut } from "lucide-react";
 import type { Book, Chapter, Character, Idea } from "@/domain/model";

@@ -267,15 +267,16 @@ function getAssistantsList(maxAssistants: number): string {
   const assistants = ["Соавтор", "Редактор", "Критик", "Читатель"];
 
   if (maxAssistants === 0) {
-    return "Неограниченные помощники + собственные";
+    return "AI помощники: Неограниченные + собственные";
   }
 
   if (maxAssistants <= 4) {
-    return assistants.slice(0, maxAssistants).join(", ");
+    return "AI помощники: " + assistants.slice(0, maxAssistants).join(", ");
   }
 
   const remaining = maxAssistants - 4;
   return (
+    "AI помощники: " +
     assistants.join(", ") +
     ` + ${remaining} ${remaining === 1 ? "свой" : "своих"}`
   );
@@ -286,8 +287,6 @@ function featureLabel(feature: string): string {
     basic_editing: "Базовое редактирование",
     advanced_editing: "Продвинутое редактирование",
     unlimited_editing: "Полное редактирование",
-    one_assistant: "1 AI помощник",
-    custom_prompts: "Собственные промпты",
     priority_support: "Приоритетная поддержка",
     advanced_analytics: "Продвинутая аналитика",
     unlimited_books: "Неограниченные книги",

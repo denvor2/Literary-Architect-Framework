@@ -267,9 +267,9 @@ export function Header({
         {activeBook && (
           <button
             onClick={() => onOpenBookSettings?.(activeBook.id)}
-            title="Настройки книги"
+            title={t("dialogs.book_settings.title")}
             className="rounded-md border border-zinc-300 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-            aria-label="Настройки книги"
+            aria-label={t("dialogs.book_settings.title")}
           >
             ⚙️
           </button>

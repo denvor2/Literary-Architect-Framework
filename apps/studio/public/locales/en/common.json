@@ -118,12 +118,15 @@
     "full_annotation": "Full annotation...",
     "short_annotation": "Short annotation...",
     "chapter_intro": "Chapter intro...",
-    "scene_notes": "Scene notes..."
+    "scene_notes": "Scene notes...",
+    "book_title": "Book title..."
   },
   "sections": {
     "requisites": "PROPERTIES",
     "chapters": "CHAPTERS",
-    "helpers": "HELPERS"
+    "helpers": "HELPERS",
+    "book_properties": "Book Properties",
+    "book_constraints": "Book Constraints"
   },
   "plan": {
     "title": "Plan",

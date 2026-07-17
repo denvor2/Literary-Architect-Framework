@@ -118,12 +118,15 @@
     "full_annotation": "Полная аннотация...",
     "short_annotation": "Краткая аннотация...",
     "chapter_intro": "Введение в главу...",
-    "scene_notes": "Заметки к сцене..."
+    "scene_notes": "Заметки к сцене...",
+    "book_title": "Название книги..."
   },
   "sections": {
     "requisites": "РЕКВИЗИТЫ",
     "chapters": "ГЛАВЫ",
-    "helpers": "ПОМОЩНИКИ"
+    "helpers": "ПОМОЩНИКИ",
+    "book_properties": "Реквизиты книги",
+    "book_constraints": "Ограничения книги"
   },
   "plan": {
     "title": "План",

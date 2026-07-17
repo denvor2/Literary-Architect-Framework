@@ -343,7 +343,7 @@ function UnifiedBookView({
         >
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Реквизиты книги
+              {t("sections.book_properties")}
             </h2>
             <button
               onClick={() => setIsDetailsCollapsed((value) => !value)}
@@ -369,7 +369,7 @@ function UnifiedBookView({
                   onChange={(event) =>
                     onUpdateBook?.(book.id, { title: event.target.value })
                   }
-                  placeholder="Название книги..."
+                  placeholder={t("placeholders.book_title")}
                   className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400 md:text-xl"
                 />
               </div>

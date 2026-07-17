@@ -539,7 +539,7 @@ export function BookSettingsDialog({
             <>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Ограничения книги
+                  {t("sections.book_constraints")}
                 </span>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Что НЕЛЬЗЯ делать в этой книге

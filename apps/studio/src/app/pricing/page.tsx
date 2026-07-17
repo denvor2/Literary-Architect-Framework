@@ -201,18 +201,29 @@ function PlanCard({
         <li className="flex items-start gap-3">
           <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
           <span className="text-sm text-zinc-700 dark:text-zinc-300">
-            {plan.maxBooks === 0 ? "Неограниченное" : `До ${plan.maxBooks}`}{" "}
-            количество книг
+            {plan.maxBooks === 0
+              ? "Неограниченное"
+              : plan.maxBooks === 3
+                ? "До 3-х книг"
+                : `До ${plan.maxBooks} книг`}
           </span>
         </li>
         <li className="flex items-start gap-3">
           <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
           <span className="text-sm text-zinc-700 dark:text-zinc-300">
-            {plan.maxAssistants === 0
-              ? "Неограниченные"
-              : plan.maxAssistants === 1
-                ? "1 AI помощник"
-                : `${plan.maxAssistants} AI помощников`}
+            {getAssistantsList(plan.maxAssistants)}
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+          <span className="text-sm text-zinc-700 dark:text-zinc-300">
+            Главы, сцены, персонажи, идеи
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+          <span className="text-sm text-zinc-700 dark:text-zinc-300">
+            Импорт и экспорт (DOCX, PDF)
           </span>
         </li>
         {features.map((feature, idx) => (
@@ -241,6 +252,22 @@ function PlanCard({
         {isFree ? "Начать бесплатно" : "Подписаться"}
       </button>
     </div>
+  );
+}
+
+function getAssistantsList(maxAssistants: number): string {
+  const assistants = ["Соавтор", "Редактор", "Критик", "Читатель"];
+
+  if (maxAssistants === 0) {
+    return "Неограниченные помощники + собственные";
+  }
+
+  if (maxAssistants <= 4) {
+    return assistants.slice(0, maxAssistants).join(", ");
+  }
+
+  return (
+    assistants.slice(0, 4).join(", ") + ` + ${maxAssistants - 4} собственных`
   );
 }
 

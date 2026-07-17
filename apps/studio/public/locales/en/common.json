@@ -387,7 +387,17 @@
       "no_messages": "No messages yet.",
       "character_label": "Character:",
       "exporting": "Exporting...",
-      "error": "Export error"
+      "error": "Export error",
+      "propose_structure": "Propose Structure",
+      "proposed_structure": "Proposed Structure",
+      "insert_into_scene": "Insert into Scene",
+      "add_all": "Add All",
+      "add_selected": "Add Selected",
+      "start_over": "Start Over",
+      "no_reviews": "No reviews found.",
+      "see_reader_reaction": "See how the reader will react.",
+      "error_proposal_failed": "Failed to get proposal. Try again.",
+      "error_unavailable": "Assistant unavailable. Try again."
     },
     "ideas": {
       "title": "Ideas",

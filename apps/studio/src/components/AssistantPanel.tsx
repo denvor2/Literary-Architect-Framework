@@ -655,7 +655,7 @@ function ReaderPanel({
           <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
             {(!selectedThread || selectedThread.messages.length === 0) && (
               <p className="text-xs text-zinc-400 dark:text-zinc-600">
-                Посмотрите, как читатель отреагирует.
+                {t("panels.assistant.see_reader_reaction")}
               </p>
             )}
             {selectedThread?.messages.map((message, index) => (
@@ -709,7 +709,7 @@ function ReaderPanel({
             </button>
             {status === "error" && (
               <p className="text-sm text-red-600 dark:text-red-400">
-                Помощник недоступен. Попробуйте ещё раз.
+                {t("panels.assistant.error_unavailable")}
               </p>
             )}
           </div>
@@ -719,11 +719,17 @@ function ReaderPanel({
   );
 }
 
-function ReviewList({ reviews }: { reviews: ReviewItem[] }) {
+function ReviewList({
+  reviews,
+  t,
+}: {
+  reviews: ReviewItem[];
+  t: (key: string) => string;
+}) {
   if (reviews.length === 0) {
     return (
       <p className="rounded-lg border border-zinc-200 p-3 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-        Замечаний не найдено.
+        {t("panels.assistant.no_reviews")}
       </p>
     );
   }
@@ -1131,7 +1137,9 @@ export function AssistantPanel({
                   disabled={proposalStatus === "loading"}
                   className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                 >
-                  {proposalStatus === "loading" ? "…" : "Предложить структуру"}
+                  {proposalStatus === "loading"
+                    ? "…"
+                    : t("panels.assistant.propose_structure")}
                 </button>
               )}
               {selectedMode === "critic" && (
@@ -1139,7 +1147,7 @@ export function AssistantPanel({
                   onClick={() => onCreateThread("critic")}
                   className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                 >
-                  Начать заново
+                  {t("panels.assistant.start_over")}
                 </button>
               )}
             </div>
@@ -1189,14 +1197,14 @@ export function AssistantPanel({
 
           {selectedMode === "coauthor" && proposalStatus === "error" && (
             <p className="text-sm text-red-600 dark:text-red-400">
-              Не удалось получить предложение. Попробуйте ещё раз.
+              {t("panels.assistant.error_proposal_failed")}
             </p>
           )}
 
           {selectedMode === "coauthor" && structureProposal && (
             <div className="flex flex-col gap-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
               <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Предложенная структура
+                {t("panels.assistant.proposed_structure")}
               </p>
               <div className="flex flex-col gap-2">
                 {structureProposal.chapters.map((ch, ci) => {
@@ -1254,13 +1262,13 @@ export function AssistantPanel({
                   disabled={selectedProposalKeys.size === 0}
                   className="rounded-full bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                 >
-                  Добавить выбранное
+                  {t("panels.assistant.add_selected")}
                 </button>
                 <button
                   onClick={() => handleAcceptProposal(true)}
                   className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                 >
-                  Добавить всё
+                  {t("panels.assistant.add_all")}
                 </button>
               </div>
             </div>
@@ -1308,7 +1316,7 @@ export function AssistantPanel({
                   return (
                     <div key={index} className="flex flex-col gap-2">
                       {reviews ? (
-                        <ReviewList reviews={reviews} />
+                        <ReviewList reviews={reviews} t={t} />
                       ) : (
                         <p className="whitespace-pre-wrap text-sm leading-relaxed text-black dark:text-zinc-50">
                           {message.content}
@@ -1321,7 +1329,7 @@ export function AssistantPanel({
                             onClick={() => onReplaceSceneText(message.content)}
                             className="self-start rounded-full bg-black px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                           >
-                            Вставить в сцену
+                            {t("panels.assistant.insert_into_scene")}
                           </button>
                         )}
                     </div>
@@ -1371,7 +1379,7 @@ export function AssistantPanel({
                 </button>
                 {status === "error" && (
                   <p className="text-sm text-red-600 dark:text-red-400">
-                    Помощник недоступен. Попробуйте ещё раз.
+                    {t("panels.assistant.error_unavailable")}
                   </p>
                 )}
               </div>

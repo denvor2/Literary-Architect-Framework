@@ -108,7 +108,7 @@ function getModeMeta(t: (key: string) => string): Record<
     coauthor: {
       icon: Pen,
       label: t("panels.assistant.coauthor"),
-      description: "Пишет и развивает текст вместе с вами.",
+      description: t("panels.assistant.coauthor_desc"),
       accent: "text-amber-600 dark:text-amber-400",
       activeBorder: "border-amber-400 dark:border-amber-600",
       placeholder: "Что дальше в этой книге? (необязательно)",
@@ -116,7 +116,7 @@ function getModeMeta(t: (key: string) => string): Record<
     editor: {
       icon: Wand2,
       label: t("panels.assistant.editor"),
-      description: "Улучшает грамматику, ясность и стиль.",
+      description: t("panels.assistant.editor_desc"),
       accent: "text-emerald-600 dark:text-emerald-400",
       activeBorder: "border-emerald-400 dark:border-emerald-600",
       placeholder: "Что улучшить в этой сцене? (необязательно)",
@@ -124,7 +124,7 @@ function getModeMeta(t: (key: string) => string): Record<
     critic: {
       icon: Eye,
       label: t("panels.assistant.critic"),
-      description: "Даёт оценку вашему тексту.",
+      description: t("panels.assistant.critic_desc"),
       accent: "text-red-600 dark:text-red-400",
       activeBorder: "border-red-400 dark:border-red-600",
       placeholder: "На что обратить внимание? (необязательно)",
@@ -132,7 +132,7 @@ function getModeMeta(t: (key: string) => string): Record<
     reader: {
       icon: BookOpen,
       label: t("panels.assistant.reader"),
-      description: "Показывает, как отреагирует читатель.",
+      description: t("panels.assistant.reader_desc"),
       accent: "text-blue-600 dark:text-blue-400",
       activeBorder: "border-blue-400 dark:border-blue-600",
       placeholder: "Что именно интересует? (необязательно)",

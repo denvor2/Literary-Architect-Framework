@@ -2,6 +2,7 @@
   "header": {
     "title": "Literary Studio",
     "search_placeholder": "Search in book... (Ctrl+K)",
+    "search_aria": "Search in book",
     "language": "Language",
     "login": "Sign In"
   },
@@ -347,9 +348,13 @@
   "panels": {
     "assistant": {
       "coauthor": "Coauthor",
+      "coauthor_desc": "Writes and develops text together with you.",
       "editor": "Editor",
+      "editor_desc": "Improves grammar, clarity and style.",
       "critic": "Critic",
+      "critic_desc": "Evaluates your text.",
       "reader": "Reader",
+      "reader_desc": "Shows how readers will react.",
       "settings": "Settings",
       "clear": "Clear",
       "delete": "Delete",

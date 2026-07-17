@@ -2,6 +2,7 @@
   "header": {
     "title": "Literary Studio",
     "search_placeholder": "Поиск по книге... (Ctrl+K)",
+    "search_aria": "Поиск по книге",
     "language": "Язык",
     "login": "Войти"
   },
@@ -347,9 +348,13 @@
   "panels": {
     "assistant": {
       "coauthor": "Соавтор",
+      "coauthor_desc": "Пишет и развивает текст вместе с вами.",
       "editor": "Редактор",
+      "editor_desc": "Улучшает грамматику, ясность и стиль.",
       "critic": "Критик",
+      "critic_desc": "Даёт оценку вашему тексту.",
       "reader": "Читатель",
+      "reader_desc": "Показывает, как отреагирует читатель.",
       "settings": "Настройки",
       "clear": "Очистить",
       "delete": "Удалить",

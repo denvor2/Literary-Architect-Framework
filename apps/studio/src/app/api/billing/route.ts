@@ -40,8 +40,16 @@ export async function GET() {
       );
     }
 
+    // Sort plans by tier order: free → basic → pro → premium
+    const tierOrder = { free: 0, basic: 1, pro: 2, premium: 3 };
+    const sortedPlans = plans.sort(
+      (a, b) =>
+        (tierOrder[a.tier as keyof typeof tierOrder] ?? 99) -
+        (tierOrder[b.tier as keyof typeof tierOrder] ?? 99),
+    );
+
     // Format response
-    const response = plans.map((plan) => ({
+    const response = sortedPlans.map((plan) => ({
       id: plan.id,
       name: plan.name,
       tier: plan.tier,

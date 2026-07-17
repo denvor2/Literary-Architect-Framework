@@ -14,15 +14,30 @@ export async function GET() {
       orderBy: { price: "asc" },
     });
 
+    const activePlans = await prisma.plan.findMany({
+      where: { isActive: true },
+      orderBy: { price: "asc" },
+    });
+
     return NextResponse.json({
       total: allPlans.length,
-      plans: allPlans.map((p) => ({
+      active: activePlans.length,
+      allPlans: allPlans.map((p) => ({
         id: p.id,
         name: p.name,
         tier: p.tier,
         price: p.price,
+        rubles: (p.price / 100) * 90,
         isActive: p.isActive,
         maxAssistantRequests: p.maxAssistantRequests,
+        features: p.features,
+      })),
+      activePlans: activePlans.map((p) => ({
+        id: p.id,
+        name: p.name,
+        tier: p.tier,
+        price: p.price,
+        rubles: (p.price / 100) * 90,
       })),
     });
   } catch (error) {

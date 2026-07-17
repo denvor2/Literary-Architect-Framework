@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocaleContext } from "@/context/LocaleContext";
+
 export type AuditFiltersProps = {
   startDate: Date;
   endDate: Date;
@@ -25,6 +27,7 @@ export function AuditFilters({
   userId,
   onUserIdChange,
 }: AuditFiltersProps) {
+  const { t } = useLocaleContext();
   const eventTypes = [
     "login_success",
     "login_failure",
@@ -58,7 +61,7 @@ export function AuditFilters({
       <div className="flex gap-2">
         <div className="flex-1">
           <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            From
+            {t("audit.filters.from")}
           </label>
           <input
             type="datetime-local"
@@ -69,7 +72,7 @@ export function AuditFilters({
         </div>
         <div className="flex-1">
           <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            To
+            {t("audit.filters.to")}
           </label>
           <input
             type="datetime-local"
@@ -83,14 +86,14 @@ export function AuditFilters({
       {/* Event Type Filter */}
       <div>
         <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-          Event Type
+          {t("audit.filters.event_type")}
         </label>
         <select
           value={selectedEventType || ""}
           onChange={(e) => onEventTypeChange(e.target.value || null)}
           className="w-full rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
         >
-          <option value="">All</option>
+          <option value="">{t("audit.filters.all")}</option>
           {eventTypes.map((type) => (
             <option key={type} value={type}>
               {type}
@@ -102,13 +105,13 @@ export function AuditFilters({
       {/* User ID Filter */}
       <div>
         <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-          User ID
+          {t("audit.filters.user_id")}
         </label>
         <input
           type="text"
           value={userId || ""}
           onChange={(e) => onUserIdChange(e.target.value || null)}
-          placeholder="Filter by user ID..."
+          placeholder={t("audit.filters.user_id_placeholder")}
           className="w-full rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
         />
       </div>
@@ -116,13 +119,13 @@ export function AuditFilters({
       {/* Search */}
       <div>
         <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-          Search
+          {t("audit.filters.search")}
         </label>
         <input
           type="text"
           value={searchText}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search in event type, user, metadata..."
+          placeholder={t("audit.filters.search_placeholder")}
           className="w-full rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
         />
       </div>

@@ -77,7 +77,16 @@
   },
   "editor": {
     "create_book": "Create a book to start",
-    "talk_to_assistant": "Create a book to talk to an assistant"
+    "talk_to_assistant": "Create a book to talk to an assistant",
+    "error_request_failed": "Request failed.",
+    "error_prefix": "Error: ",
+    "error_button": "Edit",
+    "book_properties": "Book Properties",
+    "tools": {
+      "comparables": "Find Comparable Works",
+      "brainstorm": "Brainstorm",
+      "uniqueness": "Check Uniqueness"
+    }
   },
   "buttons": {
     "expand": "Expand",
@@ -166,11 +175,6 @@
     "delete_button": "Delete",
     "text_placeholder": "Note text..."
   },
-  "editor": {
-    "error_request_failed": "Request failed.",
-    "error_prefix": "Error: ",
-    "error_button": "Edit"
-  },
   "line_editor": {
     "paste_text": "Paste text excerpt for editing...",
     "editing": "Editing...",
@@ -204,23 +208,25 @@
       "title": "Payment",
       "processing": "Processing payment..."
     },
-    "series_settings": {
-      "title": "Series Settings",
-      "name_label": "Title",
+    "new_book": {
+      "title": "New Book",
+      "title_label": "Book Title",
+      "title_placeholder": "Enter title...",
       "genre_label": "Genre",
       "genre_placeholder": "Choose or enter a genre...",
-      "description_label": "Description",
-      "description_placeholder": "Series description...",
-      "target_audience_label": "Target Audience",
-      "save_button": "Save",
-      "saving": "Saving..."
+      "language_label": "Language",
+      "premise_label": "Synopsis",
+      "premise_placeholder": "Brief plot description...",
+      "series_label": "Series (optional)",
+      "submit": "Create Book"
     },
-    "series_edit": {
-      "title": "Edit Series",
-      "name_label": "Title",
-      "description_label": "Description",
-      "save_button": "Save",
-      "saving": "Saving..."
+    "new_series": {
+      "title": "Create Series",
+      "title_label": "Series Title",
+      "title_placeholder": "Enter series name...",
+      "description_label": "Description (optional)",
+      "description_placeholder": "Series description...",
+      "submit": "Create Series"
     },
     "book_settings": {
       "title": "Book Settings",
@@ -248,29 +254,127 @@
       },
       "title_label": "Title",
       "working_title_label": "Working Title",
-      "short_annotation_label": "Short Annotation",
+      "working_title_placeholder": "Temporary title...",
+      "short_annotation_label": "Description",
+      "short_annotation_label_alt": "Short Annotation",
       "target_audience_label": "Target Audience",
+      "target_audience_as_series": "As in series",
+      "target_audience_select": "-- Select --",
+      "target_audience_children": "Children",
+      "target_audience_ya": "YA (Teens)",
+      "target_audience_teen": "Teen (Young Adults)",
+      "target_audience_adult": "Adult",
+      "target_audience_academic": "Academic",
       "genres_label": "Genres",
+      "genres_inherited": "Using genres from series",
+      "genre_label": "Genre",
       "genre_placeholder": "Enter genre...",
       "add_genre": "Add",
-      "story_bible_status_label": "Story Bible Status",
+      "status_label": "Status",
+      "status_outline": "Outline",
+      "status_draft": "Draft",
+      "status_editing": "Editing",
+      "status_beta": "Beta",
+      "status_published": "Published",
+      "estimated_words_label": "Estimated Words",
+      "estimated_words_placeholder": "Example: 80000",
+      "estimated_chapters_label": "Estimated Chapters",
+      "estimated_chapters_placeholder": "Example: 30",
       "main_plotlines_label": "Main Plotlines",
       "plotline_placeholder": "Enter plotline...",
       "add_plotline": "Add",
       "principle_label": "Principle",
+      "principle_placeholder": "Example: Contrast. Chapters constantly shift POV...",
       "escalation_label": "Escalation",
+      "escalation_placeholder": "Example: Sticks → Dolphins → Xenomorphs → Bears",
       "themes_label": "Themes",
       "theme_placeholder": "Enter theme...",
       "add_theme": "Add",
       "constraints_label": "Constraints",
+      "constraints_description": "What CANNOT be done in this book",
       "constraint_placeholder": "Enter constraint...",
       "add_constraint": "Add",
-      "estimated_words_label": "Estimated Word Count",
-      "estimated_chapters_label": "Estimated Chapters",
+      "estimated_words_label_alt": "Estimated Word Count",
       "isbn_label": "ISBN",
+      "isbn_placeholder": "For published books...",
       "notes_label": "Notes",
+      "notes_placeholder": "Internal notes...",
+      "language_label": "Language",
+      "premise_label": "Synopsis",
+      "annotation_label": "Annotation",
+      "submit": "Save",
       "save_button": "Save",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "cancel_button": "Cancel"
+    },
+    "series_settings": {
+      "title": "Series Settings",
+      "tabs": {
+        "basic": "Basic",
+        "bible": "Story Bible",
+        "constraints": "Constraints",
+        "meta": "Metadata"
+      },
+      "title_label": "Series Settings",
+      "name_label": "Title",
+      "name_label_alt": "Series Title",
+      "description_label": "Description",
+      "description_placeholder": "Series description...",
+      "target_audience_label": "Target Audience",
+      "target_audience_select": "-- Select --",
+      "target_audience_children": "Children",
+      "target_audience_ya": "YA (Teens)",
+      "target_audience_teen": "Teen (Young Adults)",
+      "target_audience_adult": "Adult",
+      "target_audience_academic": "Academic",
+      "genres_label": "Genres",
+      "genre_label": "Genre",
+      "genre_placeholder": "Enter genre and press Enter...",
+      "status_label": "Status",
+      "status_outline": "Outline",
+      "status_in_progress": "In Progress",
+      "status_complete": "Complete",
+      "status_published": "Published",
+      "decisions_label": "Key Decisions",
+      "decisions_placeholder": "Key creative decisions for the entire series...",
+      "throughline_label": "Throughline Elements",
+      "throughline_placeholder": "Add element and press Enter...",
+      "estimated_words_label": "Estimated Total Word Count",
+      "estimated_words_placeholder": "Example: 250000",
+      "constraints_label": "Series Constraints",
+      "constraints_description": "What CANNOT be done in this series",
+      "constraint_placeholder": "Add constraint and press Enter...",
+      "author_label": "Author",
+      "author_placeholder": "Author name (if different from user)...",
+      "notes_label": "Notes",
+      "notes_placeholder": "Internal notes...",
+      "created_label": "Created",
+      "updated_label": "Updated",
+      "submit": "Save",
+      "save_button": "Save",
+      "saving": "Saving...",
+      "cancel_button": "Cancel"
+    },
+    "series_edit": {
+      "title": "Edit Series",
+      "name_label": "Title",
+      "description_label": "Description",
+      "name_placeholder": "Enter series title...",
+      "description_placeholder": "Series description...",
+      "delete_confirm": "Delete Series?",
+      "delete_confirm_text": "Series \"{title}\" will be deleted. Books in this series will remain in your library.",
+      "submit": "Save",
+      "save_button": "Save",
+      "cancel_button": "Cancel",
+      "delete_button": "Delete"
+    },
+    "import": {
+      "title": "Import Project",
+      "description": "Drag and drop a ZIP file or click to select",
+      "submit": "Import",
+      "success": "Project imported successfully",
+      "error": "Error importing file",
+      "error_only_zip": "Only ZIP archives are supported"
     }
   },
   "entities": {
@@ -308,58 +412,9 @@
         "needs_letter": "Password must contain at least one letter",
         "needs_digit": "Password must contain at least one digit"
       },
-      "password_mismatch": "Passwords do not match"
-    }
-  },
-  "dialogs": {
-    "new_book": {
-      "title": "New Book",
-      "title_label": "Book Title",
-      "title_placeholder": "Enter title...",
-      "genre_label": "Genre",
-      "genre_placeholder": "Choose or enter a genre...",
-      "language_label": "Language",
-      "premise_label": "Synopsis",
-      "premise_placeholder": "Brief plot description...",
-      "series_label": "Series (optional)",
-      "submit": "Create Book"
-    },
-    "new_series": {
-      "title": "Create Series",
-      "title_label": "Series Title",
-      "title_placeholder": "Enter series name...",
-      "description_label": "Description (optional)",
-      "description_placeholder": "Series description...",
-      "submit": "Create Series"
-    },
-    "book_settings": {
-      "title": "Book Settings",
-      "title_label": "Title",
-      "genre_label": "Genre",
-      "language_label": "Language",
-      "premise_label": "Synopsis",
-      "annotation_label": "Annotation",
-      "submit": "Save"
-    },
-    "series_settings": {
-      "title": "Series Settings",
-      "title_label": "Title",
-      "description_label": "Description",
-      "submit": "Save"
-    },
-    "series_edit": {
-      "title": "Edit Series",
-      "name_label": "Title",
-      "description_label": "Description",
-      "submit": "Save"
-    },
-    "import": {
-      "title": "Import Project",
-      "description": "Drag and drop a ZIP file or click to select",
-      "submit": "Import",
-      "success": "Project imported successfully",
-      "error": "Error importing file",
-      "error_only_zip": "Only ZIP archives are supported"
+      "password_mismatch": "Passwords do not match",
+      "captcha_title": "CAPTCHA (Phase 1)",
+      "captcha_description": "Placeholder for Google reCAPTCHA v3. A placeholder token will be used during registration."
     }
   },
   "panels": {
@@ -427,14 +482,36 @@
   },
   "export": {
     "title": "Export",
-    "error_generic": "Export error"
+    "error_generic": "Export error",
+    "buttons": {
+      "cancel": "Cancel",
+      "export": "Export"
+    },
+    "messages": {
+      "error": "Error during export",
+      "exporting": "Exporting..."
+    }
   },
-  "editor": {
-    "book_properties": "Book Properties",
-    "tools": {
-      "comparables": "Find Comparable Works",
-      "brainstorm": "Brainstorm",
-      "uniqueness": "Check Uniqueness"
+  "audit": {
+    "title": "Audit Logs",
+    "events_label": "events",
+    "total_events": "Total Events",
+    "event_types": "Event Types",
+    "loading": "Loading...",
+    "no_events_found": "No events found",
+    "event_id_label": "Event ID:",
+    "user_id_label": "User ID:",
+    "created_label": "Created:",
+    "metadata_label": "Metadata:",
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "event_type": "Event Type",
+      "all": "All",
+      "user_id": "User ID",
+      "search": "Search",
+      "user_id_placeholder": "Filter by user ID...",
+      "search_placeholder": "Search in event type, user, metadata..."
     }
   }
 }

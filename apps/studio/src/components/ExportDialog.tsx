@@ -56,7 +56,7 @@ export function ExportDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
         <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">
-          Экспорт «{bookTitle}»
+          {t("export.title")} «{bookTitle}»
         </h2>
 
         <div className="mb-6 space-y-3">

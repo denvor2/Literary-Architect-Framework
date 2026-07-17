@@ -10,10 +10,6 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadPlans();
-  }, []);
-
   async function loadPlans() {
     try {
       const res = await fetch("/api/billing", { credentials: "include" });
@@ -25,6 +21,10 @@ export default function PricingPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    loadPlans();
+  }, []);
 
   async function handleSubscribe(planId: string) {
     setSelectedPlan(planId);

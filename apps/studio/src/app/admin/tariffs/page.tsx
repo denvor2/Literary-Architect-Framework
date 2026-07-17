@@ -10,10 +10,6 @@ export default function AdminTariffsPage() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadPlans();
-  }, []);
-
   async function loadPlans() {
     try {
       const res = await fetch("/api/billing", { credentials: "include" });
@@ -25,6 +21,10 @@ export default function AdminTariffsPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    loadPlans();
+  }, []);
 
   async function handleSave(plan: Plan) {
     try {

@@ -75,10 +75,6 @@
     "empty_ideas": "Пока нет идей",
     "empty_trash": "Корзина пуста"
   },
-  "editor": {
-    "create_book": "Создайте первую книгу, чтобы начать",
-    "talk_to_assistant": "Создайте первую книгу, чтобы поговорить с помощником"
-  },
   "buttons": {
     "expand": "Развернуть",
     "collapse": "Свернуть",
@@ -167,9 +163,17 @@
     "text_placeholder": "Текст заметки..."
   },
   "editor": {
+    "create_book": "Создайте первую книгу, чтобы начать",
+    "talk_to_assistant": "Создайте первую книгу, чтобы поговорить с помощником",
     "error_request_failed": "Запрос не выполнен.",
     "error_prefix": "Ошибка: ",
-    "error_button": "Отредактировать"
+    "error_button": "Отредактировать",
+    "book_properties": "Реквизиты книги",
+    "tools": {
+      "comparables": "Подобрать аналоги",
+      "brainstorm": "Мозговой штурм",
+      "uniqueness": "Проверить на уникальность"
+    }
   },
   "line_editor": {
     "paste_text": "Вставьте отрывок текста для правки...",
@@ -204,23 +208,25 @@
       "title": "Оплата",
       "processing": "Обработка платежа..."
     },
-    "series_settings": {
-      "title": "Параметры серии",
-      "name_label": "Название",
+    "new_book": {
+      "title": "Новая книга",
+      "title_label": "Название книги",
+      "title_placeholder": "Введите название...",
       "genre_label": "Жанр",
       "genre_placeholder": "Выберите или введите жанр...",
-      "description_label": "Описание",
-      "description_placeholder": "Описание серии...",
-      "target_audience_label": "Целевая аудитория",
-      "save_button": "Сохранить",
-      "saving": "Сохранение..."
+      "language_label": "Язык",
+      "premise_label": "Синопсис",
+      "premise_placeholder": "Краткое описание сюжета...",
+      "series_label": "Серия (опционально)",
+      "submit": "Создать книгу"
     },
-    "series_edit": {
-      "title": "Редактировать серию",
-      "name_label": "Название",
-      "description_label": "Описание",
-      "save_button": "Сохранить",
-      "saving": "Сохранение..."
+    "new_series": {
+      "title": "Создать серию",
+      "title_label": "Название серии",
+      "title_placeholder": "Введите название серии...",
+      "description_label": "Описание (опционально)",
+      "description_placeholder": "Описание серии...",
+      "submit": "Создать серию"
     },
     "book_settings": {
       "title": "Параметры книги",
@@ -248,29 +254,126 @@
       },
       "title_label": "Название",
       "working_title_label": "Рабочее название",
-      "short_annotation_label": "Краткая аннотация",
+      "working_title_placeholder": "Временное название...",
+      "short_annotation_label": "Описание",
+      "short_annotation_label_alt": "Краткая аннотация",
       "target_audience_label": "Целевая аудитория",
+      "target_audience_as_series": "Как в серии",
+      "target_audience_select": "-- Выбрать --",
+      "target_audience_children": "Дети",
+      "target_audience_ya": "YA (подростки)",
+      "target_audience_teen": "Teen (молодежь)",
+      "target_audience_adult": "Взрослые",
+      "target_audience_academic": "Научно-популярное",
       "genres_label": "Жанры",
+      "genres_inherited": "Используются жанры из серии",
+      "genre_label": "Жанр",
       "genre_placeholder": "Введите жанр...",
       "add_genre": "Добавить",
-      "story_bible_status_label": "Статус Story Bible",
-      "main_plotlines_label": "Основные сюжетные линии",
+      "status_label": "Статус",
+      "status_outline": "На рассмотрении (outline)",
+      "status_draft": "Черновик",
+      "status_editing": "Редактирование",
+      "status_beta": "Бета",
+      "status_published": "Опубликована",
+      "estimated_words_label": "Прогноз слов",
+      "estimated_words_placeholder": "Например: 80000",
+      "estimated_chapters_label": "Прогноз глав",
+      "estimated_chapters_placeholder": "Например: 30",
+      "main_plotlines_label": "Главные сюжетные линии",
       "plotline_placeholder": "Введите сюжетную линию...",
       "add_plotline": "Добавить",
-      "principle_label": "Принцип",
+      "principle_label": "Главный принцип",
+      "principle_placeholder": "Напр.: Контраст. Главы постоянно меняют POV...",
       "escalation_label": "Эскалация",
+      "escalation_placeholder": "Напр.: Палки → Дельфины → Ксеносы → Медведи",
       "themes_label": "Темы",
       "theme_placeholder": "Введите тему...",
       "add_theme": "Добавить",
       "constraints_label": "Ограничения",
+      "constraints_description": "Что НЕЛЬЗЯ делать в этой книге",
       "constraint_placeholder": "Введите ограничение...",
       "add_constraint": "Добавить",
-      "estimated_words_label": "Ожидаемое количество слов",
-      "estimated_chapters_label": "Ожидаемое количество глав",
       "isbn_label": "ISBN",
+      "isbn_placeholder": "Для опубликованных книг...",
       "notes_label": "Заметки",
+      "notes_placeholder": "Внутренние заметки...",
+      "language_label": "Язык",
+      "premise_label": "Синопсис",
+      "annotation_label": "Аннотация",
+      "submit": "Сохранить",
       "save_button": "Сохранить",
-      "saving": "Сохранение..."
+      "saving": "Сохранение...",
+      "cancel_button": "Отмена"
+    },
+    "series_settings": {
+      "title": "Параметры серии",
+      "tabs": {
+        "basic": "Основное",
+        "bible": "Story Bible",
+        "constraints": "Ограничения",
+        "meta": "Метаданные"
+      },
+      "title_label": "Параметры серии",
+      "name_label": "Название",
+      "name_label_alt": "Название серии",
+      "description_label": "Описание",
+      "description_placeholder": "Описание серии...",
+      "target_audience_label": "Целевая аудитория",
+      "target_audience_select": "-- Выбрать --",
+      "target_audience_children": "Дети",
+      "target_audience_ya": "YA (подростки)",
+      "target_audience_teen": "Teen (молодежь)",
+      "target_audience_adult": "Взрослые",
+      "target_audience_academic": "Научно-популярное",
+      "genres_label": "Жанры",
+      "genre_label": "Жанр",
+      "genre_placeholder": "Введите жанр и нажмите Enter...",
+      "status_label": "Статус",
+      "status_outline": "На рассмотрении (outline)",
+      "status_in_progress": "В разработке",
+      "status_complete": "Завершена",
+      "status_published": "Опубликована",
+      "decisions_label": "Главные решения",
+      "decisions_placeholder": "Ключевые творческие решения для всей серии...",
+      "throughline_label": "Элементы сквозной линии",
+      "throughline_placeholder": "Добавить элемент и нажать Enter...",
+      "estimated_words_label": "Прогноз общего объема слов",
+      "estimated_words_placeholder": "Например: 250000",
+      "constraints_label": "Ограничения серии",
+      "constraints_description": "Что НЕЛЬЗЯ делать в этой серии",
+      "constraint_placeholder": "Добавить ограничение и нажать Enter...",
+      "author_label": "Автор",
+      "author_placeholder": "Имя автора (если отличается от пользователя)...",
+      "notes_label": "Заметки",
+      "notes_placeholder": "Внутренние заметки...",
+      "created_label": "Создано",
+      "updated_label": "Обновлено",
+      "submit": "Сохранить",
+      "save_button": "Сохранить",
+      "saving": "Сохранение...",
+      "cancel_button": "Отмена"
+    },
+    "series_edit": {
+      "title": "Редактировать серию",
+      "name_label": "Название",
+      "description_label": "Описание",
+      "name_placeholder": "Введите название серии...",
+      "description_placeholder": "Описание серии...",
+      "delete_confirm": "Удалить серию?",
+      "delete_confirm_text": "Серия \"{title}\" будет удалена. Книги в этой серии останутся в вашей библиотеке.",
+      "submit": "Сохранить",
+      "save_button": "Сохранить",
+      "cancel_button": "Отмена",
+      "delete_button": "Удалить"
+    },
+    "import": {
+      "title": "Импорт проекта",
+      "description": "Перетащите ZIP файл или нажмите для выбора",
+      "submit": "Импортировать",
+      "success": "Проект успешно импортирован",
+      "error": "Ошибка при импорте файла",
+      "error_only_zip": "Только ZIP архивы поддерживаются"
     }
   },
   "entities": {
@@ -308,58 +411,9 @@
         "needs_letter": "Пароль должен содержать минимум одну букву",
         "needs_digit": "Пароль должен содержать минимум одну цифру"
       },
-      "password_mismatch": "Пароли не совпадают"
-    }
-  },
-  "dialogs": {
-    "new_book": {
-      "title": "Новая книга",
-      "title_label": "Название книги",
-      "title_placeholder": "Введите название...",
-      "genre_label": "Жанр",
-      "genre_placeholder": "Выберите или введите жанр...",
-      "language_label": "Язык",
-      "premise_label": "Синопсис",
-      "premise_placeholder": "Краткое описание сюжета...",
-      "series_label": "Серия (опционально)",
-      "submit": "Создать книгу"
-    },
-    "new_series": {
-      "title": "Создать серию",
-      "title_label": "Название серии",
-      "title_placeholder": "Введите название серии...",
-      "description_label": "Описание (опционально)",
-      "description_placeholder": "Описание серии...",
-      "submit": "Создать серию"
-    },
-    "book_settings": {
-      "title": "Параметры книги",
-      "title_label": "Название",
-      "genre_label": "Жанр",
-      "language_label": "Язык",
-      "premise_label": "Синопсис",
-      "annotation_label": "Аннотация",
-      "submit": "Сохранить"
-    },
-    "series_settings": {
-      "title": "Параметры серии",
-      "title_label": "Название",
-      "description_label": "Описание",
-      "submit": "Сохранить"
-    },
-    "series_edit": {
-      "title": "Редактировать серию",
-      "name_label": "Название",
-      "description_label": "Описание",
-      "submit": "Сохранить"
-    },
-    "import": {
-      "title": "Импорт проекта",
-      "description": "Перетащите ZIP файл или нажмите для выбора",
-      "submit": "Импортировать",
-      "success": "Проект успешно импортирован",
-      "error": "Ошибка при импорте файла",
-      "error_only_zip": "Только ZIP архивы поддерживаются"
+      "password_mismatch": "Пароли не совпадают",
+      "captcha_title": "CAPTCHA (Phase 1)",
+      "captcha_description": "Заполнитель для Google reCAPTCHA v3. При регистрации будет использован токен заполнителя."
     }
   },
   "panels": {
@@ -427,14 +481,36 @@
   },
   "export": {
     "title": "Экспорт",
-    "error_generic": "Ошибка экспорта"
+    "error_generic": "Ошибка экспорта",
+    "buttons": {
+      "cancel": "Отмена",
+      "export": "Экспортировать"
+    },
+    "messages": {
+      "error": "Ошибка при экспорте",
+      "exporting": "Экспортирование..."
+    }
   },
-  "editor": {
-    "book_properties": "Реквизиты книги",
-    "tools": {
-      "comparables": "Подобрать аналоги",
-      "brainstorm": "Мозговой штурм",
-      "uniqueness": "Проверить на уникальность"
+  "audit": {
+    "title": "Журнал аудита",
+    "events_label": "события",
+    "total_events": "Всего событий",
+    "event_types": "Типы событий",
+    "loading": "Загрузка...",
+    "no_events_found": "События не найдены",
+    "event_id_label": "ID события:",
+    "user_id_label": "ID пользователя:",
+    "created_label": "Создано:",
+    "metadata_label": "Метаданные:",
+    "filters": {
+      "from": "От",
+      "to": "До",
+      "event_type": "Тип события",
+      "all": "Все",
+      "user_id": "ID пользователя",
+      "search": "Поиск",
+      "user_id_placeholder": "Фильтровать по ID пользователя...",
+      "search_placeholder": "Поиск в типе события, пользователе, метаданных..."
     }
   }
 }

@@ -1056,7 +1056,7 @@ export function AssistantPanel({
     <>
       <aside className="flex max-h-96 w-full shrink-0 flex-col gap-3 overflow-y-auto border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:h-full lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          Помощники
+          {t("sections.helpers")}
         </h2>
         {/* Sprint-25-Step-02: square icon buttons + hover tooltip, replacing
           the previous 2-column card grid with a description in every card —

@@ -2,10 +2,23 @@
   "title": "Export Book",
   "select_format": "Select export format",
   "format": {
+    "markdown-zip": {
+      "name": "Markdown ZIP Archive",
+      "description": "Structured folder with chapters, characters, ideas, and metadata"
+    },
+    "docx": {
+      "name": "DOCX (Word Document)",
+      "description": "Formatted document ready for print and publication"
+    },
+    "pdf": {
+      "name": "PDF (Portable Document)",
+      "description": "Professionally formatted PDF with illustrations, cover, and metadata for reading"
+    },
+    "fb2": {
+      "name": "FB2 (E-book Format)",
+      "description": "Standard format for e-books and e-readers"
+    },
     "json": "JSON (Backup)",
-    "pdf": "PDF (Document)",
-    "fb2": "FB2 (E-book)",
-    "markdown": "Markdown",
     "plaintext": "Plain Text"
   },
   "options": {

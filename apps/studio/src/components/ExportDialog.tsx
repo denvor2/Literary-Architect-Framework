@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 export type ExportFormat = "markdown-zip" | "docx" | "pdf" | "fb2";
 
@@ -30,6 +31,7 @@ export function ExportDialog({
   onExport,
   onCancel,
 }: ExportDialogProps) {
+  const { t } = useLocaleContext();
   const [selectedFormat, setSelectedFormat] =
     useState<ExportFormat>("markdown-zip");
   const [error, setError] = useState<string | null>(null);
@@ -43,34 +45,12 @@ export function ExportDialog({
       onCancel(); // Close dialog after successful export
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Ошибка при экспорте книги",
+        err instanceof Error ? err.message : t("export.messages.error"),
       );
     }
   }
 
-  const formatDescriptions: Record<
-    ExportFormat,
-    { name: string; description: string }
-  > = {
-    "markdown-zip": {
-      name: "Markdown ZIP архив",
-      description:
-        "Структурированная папка с главами, персонажами, идеями и метаданными",
-    },
-    docx: {
-      name: "DOCX (Word документ)",
-      description: "Отформатированный документ, готовый к печати и публикации",
-    },
-    pdf: {
-      name: "PDF (Портативный документ)",
-      description:
-        "Профессионально отформатированный PDF с иллюстрациями, обложкой и метаданными для чтения",
-    },
-    fb2: {
-      name: "FB2 (E-book формат)",
-      description: "Стандартный формат для электронных книг и читалок",
-    },
-  };
+  const formats: ExportFormat[] = ["markdown-zip", "docx", "pdf", "fb2"];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -80,8 +60,10 @@ export function ExportDialog({
         </h2>
 
         <div className="mb-6 space-y-3">
-          {Object.entries(formatDescriptions).map(
-            ([format, { name, description }]) => (
+          {formats.map((format) => {
+            const name = t(`export.format.${format}.name`);
+            const description = t(`export.format.${format}.description`);
+            return (
               <label
                 key={format}
                 className="flex cursor-pointer items-center gap-3"
@@ -90,8 +72,8 @@ export function ExportDialog({
                   type="radio"
                   name="format"
                   value={format}
-                  checked={selectedFormat === (format as ExportFormat)}
-                  onChange={() => setSelectedFormat(format as ExportFormat)}
+                  checked={selectedFormat === format}
+                  onChange={() => setSelectedFormat(format)}
                   disabled={isLoading}
                   className="h-4 w-4"
                 />
@@ -117,8 +99,8 @@ export function ExportDialog({
                   )}
                 </span>
               </label>
-            ),
-          )}
+            );
+          })}
         </div>
 
         {error && (
@@ -133,14 +115,14 @@ export function ExportDialog({
             disabled={isLoading}
             className="flex-1 rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
           >
-            Отмена
+            {t("export.buttons.cancel")}
           </button>
           <button
             onClick={handleExport}
             disabled={isLoading}
             className="flex-1 rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {isLoading ? "Экспортируется..." : "Экспорт"}
+            {isLoading ? t("export.messages.exporting") : t("export.buttons.export")}
           </button>
         </div>
       </div>

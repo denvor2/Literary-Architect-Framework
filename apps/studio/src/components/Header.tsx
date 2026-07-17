@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Search, LogOut } from "lucide-react";
 import type { Book, Chapter, Character, Idea } from "@/domain/model";
 import type { User } from "@/hooks/useAuthController";
+import { useLocaleContext } from "@/context/LocaleContext";
 import {
   SEARCH_MIN_QUERY_LENGTH,
   searchWorkspace,
@@ -142,6 +143,7 @@ export function Header({
   appVersion = "0.1.0",
   onOpenBookSettings,
 }: HeaderProps) {
+  const { t } = useLocaleContext();
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
 
@@ -283,9 +285,9 @@ export function Header({
               }
               className="rounded-md px-2 py-1 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
               aria-expanded={openMenu === menu.key}
-              aria-label={`Меню ${menu.label}`}
+              aria-label={`Меню ${t(`menu.${menu.key}`)}`}
             >
-              {menu.label}
+              {t(`menu.${menu.key}`)}
             </button>
             {openMenu === menu.key && (
               <div className="absolute left-0 top-full z-50 mt-1 min-w-48 rounded-md border border-zinc-200 bg-white py-1 shadow-md dark:border-zinc-800 dark:bg-zinc-950">

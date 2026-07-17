@@ -75,13 +75,15 @@ const SEVERITY_BADGE: Record<string, string> = {
 const DEFAULT_SEVERITY_BADGE = SEVERITY_BADGE.low;
 
 // Sprint-19-Step-04: thematic lenses for Critic — see ADR-0009.
-const CRITIC_SUBCATEGORIES = [
-  { key: undefined, label: "Все" },
-  { key: "continuity", label: "Связность" },
-  { key: "fact", label: "Достоверность" },
-  { key: "developmental", label: "Развитие" },
-  { key: "style", label: "Стиль" },
-] as const;
+function getCriticSubcategories(t: (key: string) => string) {
+  return [
+    { key: undefined, label: t("panels.assistant.all") },
+    { key: "continuity", label: t("panels.assistant.continuity") },
+    { key: "fact", label: t("panels.assistant.fact") },
+    { key: "developmental", label: t("panels.assistant.developmental") },
+    { key: "style", label: t("panels.assistant.style") },
+  ] as const;
+}
 
 // Sprint-13-Step-05: deliberately just display metadata (icon/label/
 // description/accent/placeholder) — the previous MODE_INFO also carried a
@@ -174,15 +176,23 @@ const EMPTY_SETTINGS_MAP: Record<AssistantMode, AssistantSettingsEntry | null> =
 // paths note: "gear-иконка на каждом режиме"), not just on the currently
 // selected one.
 // Sprint-25-Step-05: replaced emoji gear with lucide Settings icon.
-function GearButton({ onOpen, label }: { onOpen: () => void; label: string }) {
+function GearButton({
+  onOpen,
+  label,
+  t,
+}: {
+  onOpen: () => void;
+  label: string;
+  t: (key: string) => string;
+}) {
   return (
     <button
       onClick={(event) => {
         event.stopPropagation();
         onOpen();
       }}
-      title={`Настройки: ${label}`}
-      aria-label={`Настройки режима «${label}»`}
+      title={`${t("panels.assistant.settings")}: ${label}`}
+      aria-label={`${t("panels.assistant.settings")} режима «${label}»`}
       className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-500 shadow-sm transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
     >
       <Settings className="h-3 w-3" />
@@ -530,7 +540,7 @@ function ReaderPanel({
               )}
               <button
                 onClick={() => toggleCompare(thread.id)}
-                title="Сравнить"
+                title={t("buttons.compare")}
                 className={
                   inCompare
                     ? "text-blue-600 dark:text-blue-400"
@@ -541,7 +551,7 @@ function ReaderPanel({
               </button>
               <button
                 onClick={() => startRename(thread)}
-                title="Переименовать"
+                title={t("buttons.rename")}
                 className="text-zinc-400 dark:text-zinc-600"
               >
                 <Pencil className="h-4 w-4" />
@@ -616,7 +626,7 @@ function ReaderPanel({
               )}
               {thread.messages.length === 0 ? (
                 <p className="text-xs text-zinc-400 dark:text-zinc-600">
-                  Пока нет сообщений.
+                  {t("panels.assistant.no_messages")}
                 </p>
               ) : (
                 thread.messages.slice(-4).map((message, index) => (
@@ -639,7 +649,7 @@ function ReaderPanel({
         <>
           {selectedThread?.persona && (
             <p className="text-xs italic text-zinc-500 dark:text-zinc-400">
-              Персонаж: {selectedThread.persona}
+              {t("panels.assistant.character_label")} {selectedThread.persona}
             </p>
           )}
           <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
@@ -1095,6 +1105,7 @@ export function AssistantPanel({
                 <GearButton
                   label={label}
                   onOpen={() => setSettingsDialogMode(mode)}
+                  t={t}
                 />
               </div>
             );
@@ -1160,7 +1171,7 @@ export function AssistantPanel({
 
           {selectedMode === "critic" && (
             <div className="flex flex-wrap gap-1.5">
-              {CRITIC_SUBCATEGORIES.map((sub) => (
+              {getCriticSubcategories(t).map((sub) => (
                 <button
                   key={sub.key ?? "all"}
                   onClick={() => setCriticSubcategory(sub.key)}

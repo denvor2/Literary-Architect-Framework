@@ -43,10 +43,13 @@
     },
     "help": {
       "shortcuts": "Горячие клавиши",
-      "documentation": "Документация"
+      "documentation": "Документация",
+      "report_bug": "Сообщить об ошибке"
     },
     "about": {
-      "version": "Версия"
+      "version": "Версия",
+      "author": "Автор",
+      "license": "Лицензия"
     }
   },
   "sidebar": {
@@ -219,5 +222,13 @@
   "export": {
     "title": "Экспорт",
     "error_generic": "Ошибка экспорта"
+  },
+  "editor": {
+    "book_properties": "Реквизиты книги",
+    "tools": {
+      "comparables": "Подобрать аналоги",
+      "brainstorm": "Мозговой штурм",
+      "uniqueness": "Проверить на уникальность"
+    }
   }
 }

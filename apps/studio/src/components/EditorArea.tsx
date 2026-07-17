@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import type { Book, Chapter } from "@/domain/model";
 import type { BookFieldName, BookFieldRequestType } from "@/ai/operations";
@@ -5,6 +7,7 @@ import { execute as aiBusExecute } from "@/ai/aiBus";
 import { LANGUAGES } from "@/components/NewBookDialog";
 import { GenreAutocomplete } from "@/components/GenreAutocomplete";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useLocaleContext } from "@/context/LocaleContext";
 
 // Sprint-13-Step-05: pure scene/chapter/book editing again — the AI
 // interaction that used to live here (SceneImprove, MODE_INFO, and the
@@ -40,15 +43,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 // Sprint-25-Step-04: Title's three quick-request buttons (ADR-0011
 // Amendment) — same pill-button visual pattern as CRITIC_SUBCATEGORIES in
-// AssistantPanel.tsx, for consistency.
-const TITLE_QUICK_REQUESTS: readonly {
-  key: BookFieldRequestType;
-  label: string;
-}[] = [
-  { key: "comparables", label: "Подобрать аналоги" },
-  { key: "brainstorm", label: "Мозговой штурм" },
-  { key: "uniqueness", label: "Проверить на уникальность" },
-];
+// AssistantPanel.tsx, for consistency. Moved inside component for localization.
 
 type EditorAreaProps = {
   book?: Book | null;
@@ -139,11 +134,13 @@ export function EditorArea({
   onDismissFieldSuggestion,
   isFieldSuggestionLoading,
 }: EditorAreaProps) {
+  const { t } = useLocaleContext();
+
   if (!book) {
     return (
       <main className="pointer-events-none flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-8">
         <p className="text-lg text-zinc-500 dark:text-zinc-400">
-          Создайте первую книгу, чтобы начать
+          {t("editor.create_book")}
         </p>
       </main>
     );
@@ -173,6 +170,7 @@ export function EditorArea({
       onAcceptFieldSuggestion={onAcceptFieldSuggestion}
       onDismissFieldSuggestion={onDismissFieldSuggestion}
       isFieldSuggestionLoading={isFieldSuggestionLoading}
+      t={t}
     />
   );
 }
@@ -180,6 +178,7 @@ export function EditorArea({
 type UnifiedBookViewProps = Omit<EditorAreaProps, "book" | "chapters"> & {
   book: Book;
   chapters: readonly Chapter[];
+  t: (key: string) => string;
 };
 
 function UnifiedBookView({
@@ -205,8 +204,18 @@ function UnifiedBookView({
   fieldSuggestion,
   onAcceptFieldSuggestion,
   onDismissFieldSuggestion,
+  t,
   isFieldSuggestionLoading,
 }: UnifiedBookViewProps) {
+  const TITLE_QUICK_REQUESTS: readonly {
+    key: BookFieldRequestType;
+    label: string;
+  }[] = [
+    { key: "comparables", label: t("editor.tools.comparables") },
+    { key: "brainstorm", label: t("editor.tools.brainstorm") },
+    { key: "uniqueness", label: t("editor.tools.uniqueness") },
+  ];
+
   const [isDetailsCollapsed, setIsDetailsCollapsed] = useState(false);
 
   // Sprint-25-Step-04: Title-only quick-request state (ADR-0011 Amendment) —

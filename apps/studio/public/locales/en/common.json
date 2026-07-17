@@ -43,10 +43,13 @@
     },
     "help": {
       "shortcuts": "Keyboard Shortcuts",
-      "documentation": "Documentation"
+      "documentation": "Documentation",
+      "report_bug": "Report Bug"
     },
     "about": {
-      "version": "Version"
+      "version": "Version",
+      "author": "Author",
+      "license": "License"
     }
   },
   "sidebar": {
@@ -219,5 +222,13 @@
   "export": {
     "title": "Export",
     "error_generic": "Export error"
+  },
+  "editor": {
+    "book_properties": "Book Properties",
+    "tools": {
+      "comparables": "Find Comparable Works",
+      "brainstorm": "Brainstorm",
+      "uniqueness": "Check Uniqueness"
+    }
   }
 }

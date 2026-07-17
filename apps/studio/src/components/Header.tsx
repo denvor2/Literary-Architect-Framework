@@ -525,7 +525,7 @@ export function Header({
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                     >
-                      🐛 Сообщить об ошибке
+                      🐛 {t("menu_items.help.report_bug")}
                     </button>
                   </>
                 ) : menu.key === "about" ? (
@@ -549,7 +549,7 @@ export function Header({
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                     >
-                      👤 Автор
+                      👤 {t("menu_items.about.author")}
                     </button>
                     <button
                       onClick={() => {
@@ -561,7 +561,7 @@ export function Header({
                       }}
                       className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
                     >
-                      📄 Лицензия
+                      📄 {t("menu_items.about.license")}
                     </button>
                   </>
                 ) : (

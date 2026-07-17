@@ -40,8 +40,6 @@ function getGenreCode(genre?: string): string {
 export function generateFB2(book: Book): string {
   const today = formatDate(new Date());
   const escapedTitle = escapeXML(book.title);
-  const escapedGenre = escapeXML(book.genre || "Fiction");
-  const escapedPremise = escapeXML(book.premise || "");
   const escapedAnnotation = escapeXML(
     book.fullAnnotation || book.shortAnnotation || "",
   );

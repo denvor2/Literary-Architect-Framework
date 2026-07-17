@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import type { Book, Chapter, Character, Idea, Series } from "@/domain/model";
+import type { Book, Series } from "@/domain/model";
 
 export interface ImportResult {
   success: boolean;

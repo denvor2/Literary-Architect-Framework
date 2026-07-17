@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateMarkdownZip } from "@/lib/exporters/markdownExporter";
 import { generateDOCX } from "@/lib/exporters/docxExporter";
 import { generateHybridArchive } from "@/lib/exporters/hybridArchiveExporter";
 import { generatePDF } from "@/lib/exporters/pdfExporter";

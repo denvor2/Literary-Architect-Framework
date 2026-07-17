@@ -11,37 +11,33 @@ import {
 } from "@/lib/i18n";
 
 export function RootClientWrapper({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>("ru");
+  const [locale, setLocale] = useState<Locale>(() => getLocaleFromStorage());
   const [messages, setMessages] = useState<Messages>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize locale from storage on client-side only
-    const storedLocale = getLocaleFromStorage();
-    setLocale(storedLocale);
-
-    getMessages(storedLocale).then((msgs) => {
+    getMessages(locale).then((msgs) => {
       setMessages(msgs);
       setIsLoading(false);
     });
-  }, []);
+  }, [locale]);
 
   const switchLocale = (newLocale: Locale) => {
     setLocale(newLocale);
     setLocaleInStorage(newLocale);
-
-    getMessages(newLocale).then((msgs) => {
-      setMessages(msgs);
-    });
   };
 
   const t = (key: string): string => {
     const keys = key.split(".");
-    let value: any = messages;
+    let value: unknown = messages;
 
     for (const k of keys) {
-      if (value && typeof value === "object") {
-        value = value[k];
+      if (
+        value &&
+        typeof value === "object" &&
+        k in (value as Record<string, unknown>)
+      ) {
+        value = (value as Record<string, unknown>)[k];
       } else {
         return key;
       }

@@ -20,6 +20,11 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "playwright-report/**",
     "e2e/**",
+    // Utility scripts:
+    "check_db.js",
+    "seed-admin.js",
+    "scripts/**",
+    "verify-dark-mode.js",
   ]),
 ]);
 

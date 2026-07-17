@@ -95,11 +95,6 @@ function generateHybridMetadata(
   series: Series | null,
   book: Book,
 ): HybridMetadata {
-  const sceneCount = book.chapters.reduce(
-    (sum, ch) => sum + ch.scenes.length,
-    0,
-  );
-
   return {
     version: "1.0",
     exportDate: new Date().toISOString(),

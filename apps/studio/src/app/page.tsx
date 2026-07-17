@@ -62,10 +62,13 @@ function useIsDesktopLayout(): boolean {
 // Server renders isMobile=false, client hydrates same, then effect updates to true.
 // This defers the state update until after hydration completes.
 function useIsMobileLayout(): boolean {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia(MOBILE_BREAKPOINT_QUERY).matches
+      : false,
+  );
   useEffect(() => {
     const mediaQuery = window.matchMedia(MOBILE_BREAKPOINT_QUERY);
-    setIsMobile(mediaQuery.matches);
     const handleChange = (event: MediaQueryListEvent) =>
       setIsMobile(event.matches);
     mediaQuery.addEventListener("change", handleChange);
@@ -88,10 +91,37 @@ export default function Home() {
   const [activeMobileTab, setActiveMobileTab] = useState<MobileTab>("editor");
 
   // Sprint-35-Menu-Step-03: Theme and font size state
+  const applyTheme = (theme: "light" | "dark" | "auto") => {
+    const html = document.documentElement;
+    if (theme === "light") {
+      html.classList.remove("dark");
+    } else if (theme === "dark") {
+      html.classList.add("dark");
+    } else {
+      // auto: use system preference
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        html.classList.add("dark");
+      } else {
+        html.classList.remove("dark");
+      }
+    }
+  };
+
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark" | "auto">(
-    "auto",
+    () => {
+      if (typeof window === "undefined") return "auto";
+      const saved = localStorage.getItem("theme") as
+        "light" | "dark" | "auto" | null;
+      const theme = saved || "auto";
+      applyTheme(theme);
+      return theme;
+    },
   );
-  const [currentFontSize, setCurrentFontSize] = useState(14);
+  const [currentFontSize, setCurrentFontSize] = useState(() => {
+    if (typeof window === "undefined") return 14;
+    const saved = localStorage.getItem("fontSize");
+    return saved ? parseInt(saved, 10) : 14;
+  });
 
   // Sprint-35-Menu-Step-04: Keyboard Shortcuts dialog state
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
@@ -236,7 +266,11 @@ export default function Home() {
   type SidebarSection =
     "chapters" | "characters" | "ideas" | "series" | "trash";
   const [expandedSidebarSection, setExpandedSidebarSection] =
-    useState<SidebarSection | null>("series");
+    useState<SidebarSection | null>(() => {
+      if (typeof window === "undefined") return "series";
+      const stored = localStorage.getItem("sidebar-expanded-section");
+      return (stored as SidebarSection) || "series";
+    });
 
   // Persist expanded section to localStorage
   useEffect(() => {
@@ -244,16 +278,6 @@ export default function Home() {
       localStorage.setItem("sidebar-expanded-section", expandedSidebarSection);
     }
   }, [expandedSidebarSection]);
-
-  // Load expanded section from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(
-      "sidebar-expanded-section",
-    ) as SidebarSection | null;
-    if (stored) {
-      setExpandedSidebarSection(stored);
-    }
-  }, []);
 
   // Sprint-16-17-Step-03: сворачиваемость на всех уровнях единого вида.
   // Эфемерное UI-состояние (как isFocusMode) — не часть Workspace, не
@@ -485,27 +509,6 @@ export default function Home() {
       // Imported book is already complete with all nested data
       const importedBook = importedData.book as Book;
 
-      // Create book with imported data
-      // First create the book structure
-      const createBookPayload = {
-        title: importedBook.title,
-        genre: importedBook.genre,
-        language: importedBook.language,
-        premise: importedBook.premise,
-        shortAnnotation: importedBook.shortAnnotation,
-        fullAnnotation: importedBook.fullAnnotation,
-        tags: importedBook.tags,
-        seriesId: importedBook.seriesId,
-      };
-
-      // Since we have full data, we update workspace directly via internal state
-      // This is a temporary solution - ideally we'd have an importBook function
-      const maxId = books.reduce(
-        (max, b) => Math.max(max, parseInt(b.id) || 0),
-        0,
-      );
-      const newBookId = String(maxId + 1);
-
       // Directly add to workspace by creating through UI
       // For now, use createBook as placeholder and the import API will handle it
       console.log("[IMPORT] Imported book:", importedBook.title);
@@ -576,7 +579,7 @@ export default function Home() {
         }
 
         const blob = await response.blob();
-        downloadFile(blob, filename, "application/zip");
+        downloadFile(blob, filename);
       }
 
       if (format === "docx") {
@@ -597,11 +600,7 @@ export default function Home() {
         }
 
         const blob = await response.blob();
-        downloadFile(
-          blob,
-          filename,
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        );
+        downloadFile(blob, filename);
       }
 
       if (format === "pdf") {
@@ -621,7 +620,7 @@ export default function Home() {
         }
 
         const blob = await response.blob();
-        downloadFile(blob, filename, "application/pdf");
+        downloadFile(blob, filename);
       }
 
       if (format === "fb2") {
@@ -641,7 +640,7 @@ export default function Home() {
         }
 
         const blob = await response.blob();
-        downloadFile(blob, filename, "application/x-fb2+xml");
+        downloadFile(blob, filename);
       }
 
       setIsExportDialogOpen(false);
@@ -651,7 +650,7 @@ export default function Home() {
   }
 
   // Sprint-36-Export-Step-01: Helper to download a file
-  function downloadFile(blob: Blob, filename: string, mimeType: string) {
+  function downloadFile(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -717,32 +716,6 @@ export default function Home() {
       setAuthDialogMode("login");
     }
   }, [auth.isLoading, auth.isLoggedIn]);
-
-  // Sprint-35-Menu-Step-03: Load and apply theme/font size from localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as
-      "light" | "dark" | "auto" | null;
-    const savedFontSize = localStorage.getItem("fontSize");
-    if (savedTheme) setCurrentTheme(savedTheme);
-    if (savedFontSize) setCurrentFontSize(parseInt(savedFontSize, 10));
-    applyTheme(savedTheme || "auto");
-  }, []);
-
-  function applyTheme(theme: "light" | "dark" | "auto") {
-    const html = document.documentElement;
-    if (theme === "light") {
-      html.classList.remove("dark");
-    } else if (theme === "dark") {
-      html.classList.add("dark");
-    } else {
-      // auto: use system preference
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        html.classList.add("dark");
-      } else {
-        html.classList.remove("dark");
-      }
-    }
-  }
 
   function handleThemeChange(theme: "light" | "dark" | "auto") {
     setCurrentTheme(theme);

@@ -16,7 +16,6 @@ import {
   getSyncWarning,
   loadWorkspace,
   saveWorkspace,
-  writeLocalEphemeralState,
   readLocalEphemeralState,
   type SyncWarning,
 } from "@/storage/workspaceStorage";

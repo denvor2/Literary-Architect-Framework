@@ -137,42 +137,48 @@ export type Series = {
  * Normalize Series data — apply defaults for missing fields
  * Ensures all optional fields are properly typed and null-safe
  */
-export function normalizeSeries(data: any): Series {
+export function normalizeSeries(data: unknown): Series {
+  const typed = data as Record<string, unknown>;
   return {
-    id: data.id ?? "",
-    userId: data.userId ?? "",
-    title: data.title ?? "",
-    description: data.description ?? "",
-    order: data.order ?? 0,
-    createdAt: data.createdAt
-      ? typeof data.createdAt === "string"
-        ? data.createdAt
-        : data.createdAt.toISOString()
+    id: (typed.id as string) ?? "",
+    userId: (typed.userId as string) ?? "",
+    title: (typed.title as string) ?? "",
+    description: (typed.description as string) ?? "",
+    order: (typed.order as number) ?? 0,
+    createdAt: typed.createdAt
+      ? typeof typed.createdAt === "string"
+        ? typed.createdAt
+        : typed.createdAt instanceof Date
+          ? typed.createdAt.toISOString()
+          : new Date().toISOString()
       : new Date().toISOString(),
-    updatedAt: data.updatedAt
-      ? typeof data.updatedAt === "string"
-        ? data.updatedAt
-        : data.updatedAt.toISOString()
+    updatedAt: typed.updatedAt
+      ? typeof typed.updatedAt === "string"
+        ? typed.updatedAt
+        : typed.updatedAt instanceof Date
+          ? typed.updatedAt.toISOString()
+          : new Date().toISOString()
       : new Date().toISOString(),
-    targetAudience: data.targetAudience ?? undefined,
-    genre: data.genre && Array.isArray(data.genre) ? data.genre : undefined,
+    targetAudience: (typed.targetAudience as string | undefined) ?? undefined,
+    genre: typed.genre && Array.isArray(typed.genre) ? typed.genre : undefined,
     estimatedTotalWordCount:
-      typeof data.estimatedTotalWordCount === "number"
-        ? data.estimatedTotalWordCount
+      typeof typed.estimatedTotalWordCount === "number"
+        ? typed.estimatedTotalWordCount
         : undefined,
-    status: data.status ?? undefined,
-    decisions: data.decisions ?? undefined,
+    status: (typed.status as SeriesStatus | undefined) ?? undefined,
+    decisions: (typed.decisions as string | undefined) ?? undefined,
     throughlineElements:
-      data.throughlineElements && Array.isArray(data.throughlineElements)
-        ? data.throughlineElements
+      typed.throughlineElements && Array.isArray(typed.throughlineElements)
+        ? typed.throughlineElements
         : undefined,
     seriesConstraints:
-      data.seriesConstraints && Array.isArray(data.seriesConstraints)
-        ? data.seriesConstraints
+      typed.seriesConstraints && Array.isArray(typed.seriesConstraints)
+        ? typed.seriesConstraints
         : undefined,
-    notes: data.notes ?? undefined,
-    firstPublishedDate: data.firstPublishedDate ?? undefined,
-    author: data.author ?? undefined,
+    notes: (typed.notes as string | undefined) ?? undefined,
+    firstPublishedDate:
+      (typed.firstPublishedDate as Date | undefined) ?? undefined,
+    author: (typed.author as string | undefined) ?? undefined,
   };
 }
 
@@ -180,55 +186,62 @@ export function normalizeSeries(data: any): Series {
  * Normalize Book data — apply defaults for missing fields
  * Ensures all optional fields are properly typed and null-safe
  */
-export function normalizeBook(data: any): Book {
+export function normalizeBook(data: unknown): Book {
+  const typed = data as Record<string, unknown>;
   return {
-    id: data.id ?? "",
-    title: data.title ?? "",
-    genre: data.genre ?? "",
-    language: data.language ?? "",
-    premise: data.premise ?? "",
-    shortAnnotation: data.shortAnnotation ?? "",
-    fullAnnotation: data.fullAnnotation ?? "",
-    tags: Array.isArray(data.tags) ? data.tags : [],
-    chapters: Array.isArray(data.chapters) ? data.chapters : [],
-    characters: Array.isArray(data.characters) ? data.characters : [],
-    assistantThreads: data.assistantThreads ?? {
+    id: (typed.id as string) ?? "",
+    title: (typed.title as string) ?? "",
+    genre: (typed.genre as string) ?? "",
+    language: (typed.language as string) ?? "",
+    premise: (typed.premise as string) ?? "",
+    shortAnnotation: (typed.shortAnnotation as string) ?? "",
+    fullAnnotation: (typed.fullAnnotation as string) ?? "",
+    tags: Array.isArray(typed.tags) ? (typed.tags as readonly string[]) : [],
+    chapters: Array.isArray(typed.chapters)
+      ? (typed.chapters as readonly Chapter[])
+      : [],
+    characters: Array.isArray(typed.characters)
+      ? (typed.characters as readonly Character[])
+      : [],
+    assistantThreads: (typed.assistantThreads as AssistantThreads) ?? {
       coauthor: [],
       editor: [],
       critic: [],
       reader: [],
     },
-    ideas: Array.isArray(data.ideas) ? data.ideas : [],
-    seriesId: data.seriesId ?? undefined,
-    deletedAt: data.deletedAt ?? undefined,
-    workingTitle: data.workingTitle ?? undefined,
-    targetAudience: data.targetAudience ?? undefined,
+    ideas: Array.isArray(typed.ideas) ? (typed.ideas as readonly Idea[]) : [],
+    seriesId: (typed.seriesId as string | undefined) ?? undefined,
+    deletedAt: (typed.deletedAt as Date | undefined) ?? undefined,
+    workingTitle: (typed.workingTitle as string | undefined) ?? undefined,
+    targetAudience: (typed.targetAudience as string | undefined) ?? undefined,
     genreArray:
-      data.genreArray && Array.isArray(data.genreArray)
-        ? data.genreArray
+      typed.genreArray && Array.isArray(typed.genreArray)
+        ? typed.genreArray
         : undefined,
     estimatedWordCount:
-      typeof data.estimatedWordCount === "number"
-        ? data.estimatedWordCount
+      typeof typed.estimatedWordCount === "number"
+        ? typed.estimatedWordCount
         : undefined,
     estimatedChapters:
-      typeof data.estimatedChapters === "number"
-        ? data.estimatedChapters
+      typeof typed.estimatedChapters === "number"
+        ? typed.estimatedChapters
         : undefined,
-    storyBibleStatus: data.storyBibleStatus ?? undefined,
+    storyBibleStatus:
+      (typed.storyBibleStatus as BookStatus | undefined) ?? undefined,
     mainPlotlines:
-      data.mainPlotlines && Array.isArray(data.mainPlotlines)
-        ? data.mainPlotlines
+      typed.mainPlotlines && Array.isArray(typed.mainPlotlines)
+        ? typed.mainPlotlines
         : undefined,
-    principle: data.principle ?? undefined,
-    escalation: data.escalation ?? undefined,
-    themes: data.themes && Array.isArray(data.themes) ? data.themes : undefined,
+    principle: (typed.principle as string | undefined) ?? undefined,
+    escalation: (typed.escalation as string | undefined) ?? undefined,
+    themes:
+      typed.themes && Array.isArray(typed.themes) ? typed.themes : undefined,
     bookConstraints:
-      data.bookConstraints && Array.isArray(data.bookConstraints)
-        ? data.bookConstraints
+      typed.bookConstraints && Array.isArray(typed.bookConstraints)
+        ? typed.bookConstraints
         : undefined,
-    notes: data.notes ?? undefined,
-    publishedDate: data.publishedDate ?? undefined,
-    isbn: data.isbn ?? undefined,
+    notes: (typed.notes as string | undefined) ?? undefined,
+    publishedDate: (typed.publishedDate as Date | undefined) ?? undefined,
+    isbn: (typed.isbn as string | undefined) ?? undefined,
   };
 }

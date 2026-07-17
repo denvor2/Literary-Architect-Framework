@@ -132,6 +132,7 @@ export function Sidebar({
   onPermanentlyDeleteIdea,
   onMoveBookToSeries,
 }: SidebarProps) {
+  const { t } = useLocaleContext();
   // Sprint-33-Step-07: Drag-drop state tracking
   const [draggedBookId, setDraggedBookId] = useState<string | null>(null);
   const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
@@ -237,7 +238,8 @@ export function Sidebar({
           <div className="flex items-center gap-2">
             <BookOpen size={16} className="text-zinc-500" />
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Книги ({books.length}), Серии ({series.length})
+              {t("sidebar.books")} ({books.length}), {t("sidebar.series")} (
+              {series.length})
             </h2>
           </div>
           <span className="text-zinc-500 dark:text-zinc-400">
@@ -514,7 +516,7 @@ export function Sidebar({
           <div className="flex items-center gap-2">
             <FileText size={16} className="text-zinc-500" />
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Главы ({chapters.length})
+              {t("sidebar.chapters")} ({chapters.length})
             </h2>
           </div>
           <span className="text-zinc-500 dark:text-zinc-400">
@@ -525,7 +527,7 @@ export function Sidebar({
           <>
             {chapters.length === 0 ? (
               <p className="text-sm text-zinc-400 dark:text-zinc-600">
-                Пока нет глав
+                {t("sidebar.empty_chapters")}
               </p>
             ) : (
               <>
@@ -668,7 +670,7 @@ export function Sidebar({
           <div className="flex items-center gap-2">
             <User size={16} className="text-zinc-500" />
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Персонажи ({characters.length})
+              {t("sidebar.characters")} ({characters.length})
             </h2>
           </div>
           <span className="text-zinc-500 dark:text-zinc-400">
@@ -753,7 +755,7 @@ export function Sidebar({
           <div className="flex items-center gap-2">
             <Lightbulb size={16} className="text-zinc-500" />
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Идеи ({ideas.length})
+              {t("sidebar.ideas")} ({ideas.length})
             </h2>
           </div>
           <span className="text-zinc-500 dark:text-zinc-400">
@@ -784,7 +786,7 @@ export function Sidebar({
           <div className="flex items-center gap-2">
             <Trash size={16} className="text-zinc-500" />
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Корзина{" "}
+              {t("sidebar.trash")}{" "}
               {(() => {
                 const total =
                   deletedBooks.length +
@@ -840,7 +842,7 @@ export function Sidebar({
 
               return totalUnique === 0 ? (
                 <p className="text-sm text-zinc-400 dark:text-zinc-600">
-                  Корзина пуста
+                  {t("sidebar.empty_trash")}
                 </p>
               ) : (
                 <ul className="flex flex-col gap-2">

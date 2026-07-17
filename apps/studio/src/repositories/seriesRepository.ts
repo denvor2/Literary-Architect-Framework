@@ -5,6 +5,7 @@
 
 import { prisma } from "@/lib/db";
 import type { Series as DomainSeries, SeriesStatus } from "@/domain/model";
+import type { Prisma } from "@/generated/prisma/client";
 
 // Domain-like Series type (not yet in domain/model.ts — that's Step-03б).
 // Mirrors Prisma model but with createdAt as ISO string (not Date object).
@@ -183,7 +184,9 @@ export async function listSeriesWithStoryBible(
 }
 
 // Helper: Convert Prisma series to domain series with all Story Bible fields
-function toDomainSeriesWithStoryBible(prismaSeries: any): DomainSeries {
+function toDomainSeriesWithStoryBible(
+  prismaSeries: Prisma.SeriesGetPayload<Record<string, unknown>>,
+): DomainSeries {
   return {
     id: prismaSeries.id,
     userId: prismaSeries.userId,

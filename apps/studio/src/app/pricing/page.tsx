@@ -18,16 +18,7 @@ export default function PricingPage() {
     try {
       const res = await fetch("/api/billing", { credentials: "include" });
       const data = (await res.json()) as { plans?: Plan[] };
-      const sortedPlans = (data.plans || []).sort((a, b) => a.price - b.price);
-      console.log(
-        "Загруженные планы:",
-        sortedPlans.map((p) => ({
-          name: p.name,
-          price: p.price,
-          isActive: p.isActive,
-        })),
-      );
-      setPlans(sortedPlans);
+      setPlans(data.plans || []);
     } catch (error) {
       console.error("Ошибка загрузки планов:", error);
     } finally {
@@ -154,14 +145,7 @@ function PlanCard({
   const isRecommended = plan.name === "Pro";
   const pricePerMonth = (plan.price / 100).toFixed(2);
 
-  const descriptions: Record<string, string> = {
-    Free: "Идеально для начинающих писателей",
-    Basic: "Для активных авторов с 3 помощниками",
-    Pro: "Профессиональный уровень с 5 помощниками",
-    Premium: "Неограниченные возможности для авторов",
-  };
-
-  const description = descriptions[plan.name] || plan.description;
+  const description = plan.description || "Описание плана";
 
   return (
     <div
@@ -217,14 +201,18 @@ function PlanCard({
         <li className="flex items-start gap-3">
           <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
           <span className="text-sm text-zinc-700 dark:text-zinc-300">
-            {features.includes("unlimited_books")
-              ? "Неограниченное"
-              : features.includes("up_to_50_books")
-                ? "До 50"
-                : features.includes("up_to_10_books")
-                  ? "До 10"
-                  : "До 3"}{" "}
+            {plan.maxBooks === 0 ? "Неограниченное" : `До ${plan.maxBooks}`}{" "}
             количество книг
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+          <span className="text-sm text-zinc-700 dark:text-zinc-300">
+            {plan.maxAssistants === 0
+              ? "Неограниченные"
+              : plan.maxAssistants === 1
+                ? "1 AI помощник"
+                : `${plan.maxAssistants} AI помощников`}
           </span>
         </li>
         {features.map((feature, idx) => (

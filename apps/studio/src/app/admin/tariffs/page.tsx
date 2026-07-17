@@ -136,6 +136,38 @@ function PlanCard({
           </div>
           <div>
             <label className="text-xs font-semibold text-zinc-500">
+              Макс книг (0 = неограниченно)
+            </label>
+            <input
+              type="number"
+              value={formData.maxBooks}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  maxBooks: Number(e.target.value),
+                })
+              }
+              className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-zinc-500">
+              Макс помощников (0 = неограниченно)
+            </label>
+            <input
+              type="number"
+              value={formData.maxAssistants}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  maxAssistants: Number(e.target.value),
+                })
+              }
+              className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-zinc-500">
               Активно
             </label>
             <input

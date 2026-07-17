@@ -46,6 +46,8 @@ export async function PUT(
       name?: unknown;
       price?: unknown;
       maxAssistantRequests?: unknown;
+      maxBooks?: unknown;
+      maxAssistants?: unknown;
       isActive?: unknown;
       features?: unknown;
       description?: unknown;
@@ -90,6 +92,32 @@ export async function PUT(
         );
       }
       updateData.maxAssistantRequests = body.maxAssistantRequests;
+    }
+
+    if (body.maxBooks !== undefined) {
+      if (typeof body.maxBooks !== "number" || body.maxBooks < 0) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "maxBooks must be a non-negative number",
+          },
+          { status: 400 },
+        );
+      }
+      updateData.maxBooks = body.maxBooks;
+    }
+
+    if (body.maxAssistants !== undefined) {
+      if (typeof body.maxAssistants !== "number" || body.maxAssistants < 0) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "maxAssistants must be a non-negative number",
+          },
+          { status: 400 },
+        );
+      }
+      updateData.maxAssistants = body.maxAssistants;
     }
 
     if (body.isActive !== undefined) {

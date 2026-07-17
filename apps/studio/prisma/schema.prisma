@@ -168,6 +168,8 @@ model Plan {
   tier                 String             @unique
   price                Int                @default(0)
   billingPeriodDays    Int                @default(30)
+  maxBooks             Int                @default(0)
+  maxAssistants        Int                @default(0)
   maxAssistantRequests Int                @default(0)
   maxCharactersPerReq  Int                @default(0)
   features             String[]           @default([])

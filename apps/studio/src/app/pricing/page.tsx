@@ -162,7 +162,7 @@ function PlanCard({
           ★ Рекомендуем
         </div>
       )}
-      <h3 className="mb-2 text-xl font-bold text-black dark:text-white">
+      <h3 className="mb-2 text-center text-xl font-bold text-black dark:text-white">
         {plan.name}
       </h3>
 

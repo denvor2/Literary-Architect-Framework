@@ -211,6 +211,12 @@ function PlanCard({
         <li className="flex items-start gap-3">
           <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
           <span className="text-sm text-zinc-700 dark:text-zinc-300">
+            {getAssistantsList(plan.maxAssistants)}
+          </span>
+        </li>
+        <li className="flex items-start gap-3">
+          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+          <span className="text-sm text-zinc-700 dark:text-zinc-300">
             Главы, сцены, персонажи, идеи
           </span>
         </li>
@@ -254,6 +260,24 @@ function PlanCard({
         {isFree ? "Начать бесплатно" : "Подписаться"}
       </button>
     </div>
+  );
+}
+
+function getAssistantsList(maxAssistants: number): string {
+  const assistants = ["Соавтор", "Редактор", "Критик", "Читатель"];
+
+  if (maxAssistants === 0) {
+    return "Неограниченные помощники + собственные";
+  }
+
+  if (maxAssistants <= 4) {
+    return assistants.slice(0, maxAssistants).join(", ");
+  }
+
+  const remaining = maxAssistants - 4;
+  return (
+    assistants.join(", ") +
+    ` + ${remaining} ${remaining === 1 ? "свой" : "своих"}`
   );
 }
 

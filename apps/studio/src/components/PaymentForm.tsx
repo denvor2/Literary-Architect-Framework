@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useLocaleContext } from "@/context/LocaleContext";
 
 export type PaymentFormProps = {
   /** Phase 2: Used for Stripe Payment Element integration */
@@ -13,7 +12,6 @@ export type PaymentFormProps = {
 };
 
 export function PaymentForm(props: PaymentFormProps) {
-  const { t } = useLocaleContext();
   const { planName, amount, clientSecret, onPaymentComplete, onPaymentError } =
     props;
   const [isLoading, setIsLoading] = useState(false);

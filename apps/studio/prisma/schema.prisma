@@ -82,16 +82,46 @@ model Chapter {
   @@index([bookId])
 }
 
-model CustomAssistant {
-  id           String   @id @default(cuid())
-  userId       String
-  name         String
-  systemPrompt String   @db.Text
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model CustomExpert {
+  id              String    @id @default(cuid())
+  userId          String
+  name            String
+  systemPrompt    String    @db.Text
+  typicalRequests String[]  @default([])
+  icon            String    @default("🤖")
+  isPublic        Boolean   @default(false)
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  User            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, name])
+  @@index([userId])
+  @@index([isPublic, deletedAt])
+}
+
+model PublicExpert {
+  id              String   @id @default(cuid())
+  creatorId       String
+  originalId      String?
+  name            String
+  systemPrompt    String   @db.Text
+  typicalRequests String[] @default([])
+  icon            String   @default("🤖")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([creatorId])
+}
+
+model UserPublicExpert {
+  id        String   @id @default(cuid())
+  userId    String
+  publicId  String
+  addedAt   DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, publicId])
   @@index([userId])
 }
 
@@ -244,7 +274,8 @@ model User {
   Payment          Payment[]
   Series           Series[]
   UserSubscription UserSubscription?
-  CustomAssistant  CustomAssistant[]
+  CustomExpert     CustomExpert[]
+  UserPublicExpert UserPublicExpert[]
 
   @@index([email])
 }

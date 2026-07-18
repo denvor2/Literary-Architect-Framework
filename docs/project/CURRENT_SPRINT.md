@@ -1,6 +1,6 @@
 # Current Sprint
 
-**Sprint 37 — Export Localization & i18n Framework** — **in progress**
+**Sprint 38 — Statistics, Custom Helpers, Design Polish** — **in progress**
 
 This file is a living document, replaced at the start of every sprint — it describes only the
 sprint in progress plus the immediately preceding sprint's closing summary (below). History for
@@ -10,11 +10,27 @@ earlier sprints lives in `docs/reports/SPRINT_06_REPORT.md` and this file's own 
 completed Step Card, mid-sprint, see [CURRENT_STEP.md](CURRENT_STEP.md) instead; do not treat
 this file alone as current mid-sprint.**
 
-- **Status:** In progress — Step-01 ✅ complete, Step-02 ✅ complete, Step-03 ready
-- **Phase:** Phase 1 (MVP)
-- **Scope:** Implement i18n framework (next-intl), language switching (EN/RU), localize UI & export dialogs
+- **Status:** In progress — Step-01 (Statistics) ✅ complete, Step-02 (Custom Helpers) ready, Step-03 (Design mobile) pending, Step-04 (Design polish) pending
+- **Phase:** Phase 1 (MVP) → Phase 2 (Polish & Features)
+- **Scope:** Word/character statistics, custom AI helpers, responsive design for mobile/tablet, design polish (dark mode, icons, accessibility)
 
-## Sprint 37 Progress
+## Sprint 38 Progress
+
+### Step-01: Word & Character Statistics ✅ COMPLETE (2026-07-18)
+
+Real-time word and character count display in footer showing: words, characters with spaces, characters without spaces. Calculates statistics for active book by summing all Scene.text. Compact responsive footer supports mobile/tablet/desktop with dark mode. E2E tests cover load → display, edit → update, switch book → refresh scenarios.
+
+- **Implementation:** StatsFooter.tsx component + calculateStats() helper function
+- **Features:** Thousand separators (1,234), responsive design, dark mode support, real-time updates
+- **Testing:** 9 E2E test scenarios covering all use cases
+- **Status:** Archived to done/ (commit 589461d, 2026-07-18)
+- **Validation:** TypeScript ✓ ESLint ✓ Prettier ✓ Build ✓
+
+**Note:** Foundation for Step-02 (Custom helpers will have their own stats). Statistics update instantly as user edits scenes.
+
+---
+
+## Sprint 37 Progress (CLOSED ✅)
 
 ### Step-02: Complete UI Localization (EN/RU Coverage) ✅ COMPLETE (2026-07-18)
 

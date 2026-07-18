@@ -82,6 +82,19 @@ model Chapter {
   @@index([bookId])
 }
 
+model CustomAssistant {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  systemPrompt String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
 model Character {
   id          String @id
   bookId      String
@@ -231,6 +244,7 @@ model User {
   Payment          Payment[]
   Series           Series[]
   UserSubscription UserSubscription?
+  CustomAssistant  CustomAssistant[]
 
   @@index([email])
 }

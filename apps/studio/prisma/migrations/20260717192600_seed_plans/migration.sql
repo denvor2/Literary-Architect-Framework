@@ -1,5 +1,8 @@
 -- Update PlanTier enum to include 'basic'
-ALTER TYPE "PlanTier" ADD VALUE 'basic' BEFORE 'premium';
+ALTER TYPE "PlanTier" ADD VALUE IF NOT EXISTS 'basic' BEFORE 'premium';
+
+-- Clear existing plans to avoid duplicates
+DELETE FROM "Plan" WHERE "name" IN ('Free', 'Basic', 'Pro', 'Premium');
 
 -- Insert default tariff plans
 INSERT INTO "Plan"
@@ -20,4 +23,4 @@ VALUES
   ('plan_premium_001', 'Premium', 'premium', 1000, 30, 0,
    ARRAY['unlimited_editing', 'ten_assistants', 'custom_prompts', 'priority_support', 'advanced_analytics'],
    'Enterprise solutions', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-ON CONFLICT ("tier") DO NOTHING;
+ON CONFLICT DO NOTHING;

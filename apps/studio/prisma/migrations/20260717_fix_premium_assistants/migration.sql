@@ -1,2 +1,2 @@
--- Fix Premium plan assistants to 4
-UPDATE "Plan" SET "maxAssistants" = 4 WHERE "tier" = 'premium';
+-- This migration was a duplicate of logic already in 20260717230000_add_book_assistant_limits
+-- Keeping as empty migration to maintain migration history integrity

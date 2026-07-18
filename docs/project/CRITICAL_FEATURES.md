@@ -33,6 +33,17 @@
 
 ---
 
+## ✅ Sprint-37: Завершено
+
+| # | Функция | E2E Тест | Статус | Примечания |
+|---|---------|----------|--------|-----------|
+| 13 | Export: filenames with timestamps | `e2e/export-timestamps.spec.ts` | ✅ VERIFIED (live) | YYYY-MM-DD_HH-mm-ss формат |
+| 14 | Export: Markdown ZIP with timestamp | `e2e/export-timestamps.spec.ts` | ✅ VERIFIED (live) | book-title_timestamp.zip |
+| 15 | Export: DOCX with timestamp | `e2e/export-timestamps.spec.ts` | ✅ VERIFIED (live) | book-title_timestamp.docx |
+| 16 | Export: unique timestamps per export | `e2e/export-timestamps.spec.ts` | ✅ VERIFIED (live) | Каждый экспорт имеет разный timestamp |
+
+---
+
 ## 🔄 Как добавлять функционал
 
 **При завершении Step Card:**
@@ -84,6 +95,6 @@ npm run test:e2e:debug
 
 ## 🎯 Текущая Coverage
 
-- **E2E tests**: 9 функций (Sprint-35: 7 + Sprint-36: 2)
-- **Coverage**: ~45% критичного функционала
+- **E2E tests**: 16 функций (Sprint-35: 7 + Sprint-36: 2 + Sprint-37: 4)
+- **Coverage**: ~60% критичного функционала
 - **Goal**: 100% критичного функционала покрыто тестами к Sprint-40

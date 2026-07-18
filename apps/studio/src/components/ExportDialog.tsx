@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useLocaleContext } from "@/context/LocaleContext";
 
-export type ExportFormat = "markdown-zip" | "docx" | "pdf" | "fb2";
+export type ExportFormat = "markdown-zip" | "docx" | "pdf" | "fb2" | "json";
 
 export interface ExportDialogProps {
   bookTitle: string;
@@ -50,7 +50,13 @@ export function ExportDialog({
     }
   }
 
-  const formats: ExportFormat[] = ["markdown-zip", "docx", "pdf", "fb2"];
+  const formats: ExportFormat[] = [
+    "markdown-zip",
+    "docx",
+    "pdf",
+    "fb2",
+    "json",
+  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -93,7 +99,9 @@ export function ExportDialog({
                           ? "docx"
                           : format === "pdf"
                             ? "pdf"
-                            : "fb2",
+                            : format === "fb2"
+                              ? "fb2"
+                              : "json",
                       )}
                     </div>
                   )}

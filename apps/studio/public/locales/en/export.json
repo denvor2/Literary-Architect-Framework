@@ -18,7 +18,10 @@
       "name": "FB2 (E-book Format)",
       "description": "Standard format for e-books and e-readers"
     },
-    "json": "JSON (Backup)",
+    "json": {
+      "name": "JSON (Backup)",
+      "description": "Full book structure for backup and restoration"
+    },
     "plaintext": "Plain Text"
   },
   "options": {

@@ -645,6 +645,47 @@ export default function Home() {
         downloadFile(blob, filename);
       }
 
+      if (format === "json") {
+        // JSON export: direct download without API call
+        const filename = generateFilename(book.title, "json");
+        const jsonData = {
+          title: book.title,
+          genre: book.genre,
+          premise: book.premise,
+          language: book.language,
+          shortAnnotation: book.shortAnnotation,
+          fullAnnotation: book.fullAnnotation,
+          tags: book.tags,
+          seriesId: book.seriesId,
+          chapters: book.chapters.map((ch) => ({
+            id: ch.id,
+            title: ch.title,
+            subtitle: ch.subtitle,
+            scenes: ch.scenes.map((sc) => ({
+              id: sc.id,
+              title: sc.title,
+              text: sc.text,
+            })),
+          })),
+          characters: book.characters.map((c) => ({
+            id: c.id,
+            name: c.name,
+            description: c.description,
+            notes: c.notes,
+            photoUrl: c.photoUrl,
+          })),
+          ideas: book.ideas.map((i) => ({
+            id: i.id,
+            text: i.text,
+            createdAt: i.createdAt,
+          })),
+        };
+
+        const jsonString = JSON.stringify(jsonData, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        downloadFile(blob, filename);
+      }
+
       setIsExportDialogOpen(false);
     } finally {
       setIsExportLoading(false);

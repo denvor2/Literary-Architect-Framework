@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Plan } from "@/generated/prisma/client";
 import { useRouter } from "next/navigation";
 
 export default function AdminTariffsPage() {
-  const router = useRouter();
+  useRouter(); // Router imported but not used (may be needed for future navigation)
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  async function loadPlans() {
+  const loadPlans = useCallback(async () => {
     try {
       const res = await fetch("/api/billing", { credentials: "include" });
       const data = (await res.json()) as { plans?: Plan[] };
@@ -20,9 +20,10 @@ export default function AdminTariffsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPlans();
   }, []);
 

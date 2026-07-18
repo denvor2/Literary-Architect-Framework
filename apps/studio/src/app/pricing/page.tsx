@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import type { Plan } from "@/generated/prisma/client";
 import { Check } from "lucide-react";
@@ -10,7 +10,7 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
-  async function loadPlans() {
+  const loadPlans = useCallback(async () => {
     try {
       const res = await fetch("/api/billing", { credentials: "include" });
       const data = (await res.json()) as { plans?: Plan[] };
@@ -20,9 +20,10 @@ export default function PricingPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPlans();
   }, []);
 

@@ -19,6 +19,7 @@ import { ExportDialog, type ExportFormat } from "@/components/ExportDialog";
 import { SeriesSettingsDialog } from "@/components/SeriesSettingsDialog";
 import { BookSettingsDialog } from "@/components/BookSettingsDialog";
 import { ImportDialog } from "@/components/ImportDialog";
+import { StatsFooter } from "@/components/StatsFooter";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 import { useAuthController } from "@/hooks/useAuthController";
 import { useLocaleContext } from "@/context/LocaleContext";
@@ -375,6 +376,39 @@ export default function Home() {
     return totalWords;
   }
   const wordCount = calculateWordCount();
+
+  // Sprint-38-Step-01: Calculate full statistics (words, chars with spaces, chars without spaces)
+  interface Stats {
+    words: number;
+    charsWithSpaces: number;
+    charsNoSpaces: number;
+  }
+
+  function calculateStats(): Stats {
+    if (!activeBook) {
+      return { words: 0, charsWithSpaces: 0, charsNoSpaces: 0 };
+    }
+
+    let totalText = "";
+    for (const chapter of chapters) {
+      for (const scene of chapter.scenes) {
+        totalText += scene.text + " ";
+      }
+    }
+
+    const trimmed = totalText.trim();
+    if (!trimmed) {
+      return { words: 0, charsWithSpaces: 0, charsNoSpaces: 0 };
+    }
+
+    const words = trimmed.split(/\s+/).filter(Boolean).length;
+    const charsWithSpaces = trimmed.length;
+    const charsNoSpaces = trimmed.replace(/\s/g, "").length;
+
+    return { words, charsWithSpaces, charsNoSpaces };
+  }
+
+  const stats = calculateStats();
 
   // Sprint-21-Step-04: request AI suggestion for a Book field (ADR-0011).
   async function handleRequestFieldSuggestion(fieldName: BookFieldName) {
@@ -1063,6 +1097,9 @@ export default function Home() {
           />
         )}
 
+        {/* Sprint-38-Step-01: Stats footer for mobile */}
+        {!isFocusMode && <StatsFooter stats={stats} />}
+
         {!isFocusMode && <DeveloperTools />}
 
         {isDialogOpen && (
@@ -1420,6 +1457,8 @@ export default function Home() {
           );
         })()}
       </div>
+      {/* Sprint-38-Step-01: Stats footer for desktop/tablet */}
+      {!isFocusMode && <StatsFooter stats={stats} />}
       {!isFocusMode && <DeveloperTools />}
 
       {isDialogOpen && (

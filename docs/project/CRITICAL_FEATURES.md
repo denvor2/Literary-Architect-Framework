@@ -44,6 +44,18 @@
 
 ---
 
+## 🔄 Sprint-38: В процессе
+
+| # | Функция | E2E Тест | Статус | Примечания |
+|---|---------|----------|--------|-----------|
+| 17 | Word & Character Stats: footer display | `e2e/word-stats.spec.ts` | ✅ VERIFIED (logic) | Step-01: слов, знаков, без пробелов |
+| 18 | Stats: real-time updates on edit | `e2e/word-stats.spec.ts` | ✅ VERIFIED (logic) | Обновляется при редактировании сцены |
+| 19 | Stats: multi-scene/chapter aggregation | `e2e/word-stats.spec.ts` | ✅ VERIFIED (logic) | Суммирует текст всех сцен в книге |
+| 20 | Stats: number formatting with commas | `e2e/word-stats.spec.ts` | ✅ VERIFIED (logic) | 1,234 format для крупных чисел |
+| 21 | Stats: responsive & dark mode | `e2e/word-stats.spec.ts` | ✅ VERIFIED (logic) | Mobile/tablet/desktop + dark theme |
+
+---
+
 ## 🔄 Как добавлять функционал
 
 **При завершении Step Card:**
@@ -95,6 +107,6 @@ npm run test:e2e:debug
 
 ## 🎯 Текущая Coverage
 
-- **E2E tests**: 16 функций (Sprint-35: 7 + Sprint-36: 2 + Sprint-37: 4)
-- **Coverage**: ~60% критичного функционала
+- **E2E tests**: 21 функция (Sprint-35: 7 + Sprint-36: 2 + Sprint-37: 4 + Sprint-38: 5)
+- **Coverage**: ~65% критичного функционала
 - **Goal**: 100% критичного функционала покрыто тестами к Sprint-40

@@ -17,6 +17,9 @@ const globalForPrisma = globalThis as unknown as {
 
 function createPrismaClient(): PrismaClient | undefined {
   const connectionString = process.env.DATABASE_URL;
+  console.log("[db] Attempting to create Prisma client...");
+  console.log("[db] DATABASE_URL:", connectionString ? "✓ set" : "✗ not set");
+
   if (!connectionString) {
     // DATABASE_URL not configured - log a warning but don't throw.
     // The app will fall back to localStorage. This is expected in
@@ -30,7 +33,9 @@ function createPrismaClient(): PrismaClient | undefined {
   }
   try {
     const adapter = new PrismaPg({ connectionString });
-    return new PrismaClient({ adapter });
+    const client = new PrismaClient({ adapter });
+    console.log("[db] ✓ Prisma client created successfully");
+    return client;
   } catch (error) {
     // Connection failed - log error but don't crash.
     // The app will use localStorage fallback.

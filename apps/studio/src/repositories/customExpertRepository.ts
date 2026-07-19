@@ -48,7 +48,7 @@ export const customExpertRepository = {
 
     // Проверить уникальность имени
     const existing = await prisma.customExpert.findFirst({
-      where: { userId, name: name.trim() },
+      where: { userId, name: name.trim(), deletedAt: null },
     });
     if (existing) {
       throw new Error(`Эксперт с именем "${name}" уже существует`);
@@ -69,17 +69,22 @@ export const customExpertRepository = {
     // Если публичный — создать копию в PublicExpert
     let publicId: string | undefined;
     if (isPublic) {
-      const publicExpert = await prisma.publicExpert.create({
-        data: {
-          creatorId: userId,
-          originalId: expert.id,
-          name: expert.name,
-          systemPrompt: expert.systemPrompt,
-          typicalRequests: expert.typicalRequests,
-          icon: expert.icon,
-        },
-      });
-      publicId = publicExpert.id;
+      try {
+        const publicExpert = await prisma.publicExpert.create({
+          data: {
+            creatorId: userId,
+            originalId: expert.id,
+            name: expert.name,
+            systemPrompt: expert.systemPrompt,
+            typicalRequests: expert.typicalRequests,
+            icon: expert.icon,
+          },
+        });
+        publicId = publicExpert.id;
+      } catch (error) {
+        console.error("[createExpert] Failed to create public expert:", error);
+        throw error;
+      }
     }
 
     return { ...expert, publicId };

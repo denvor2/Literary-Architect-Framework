@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import * as aiBus from "@/ai/aiBus";
 import type { AssistantThread, Book, ChatMessage } from "@/domain/model";
 import { useLocaleContext } from "@/context/LocaleContext";
+import { CustomExpertsDialog } from "@/components/dialogs/CustomExpertsDialog";
 import {
   Pen,
   Wand2,
@@ -824,6 +825,7 @@ export function AssistantPanel({
   const [criticSubcategory, setCriticSubcategory] = useState<
     string | undefined
   >(undefined);
+  const [isExpertsDialogOpen, setIsExpertsDialogOpen] = useState(false);
   // Sprint-20-Step-03: structure proposal state — ephemeral, not persisted.
   const [structureProposal, setStructureProposal] = useState<{
     chapters: Array<{
@@ -1116,6 +1118,14 @@ export function AssistantPanel({
               </div>
             );
           })}
+          <button
+            onClick={() => setIsExpertsDialogOpen(true)}
+            title="Мои эксперты"
+            aria-label="Мои эксперты"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-lg transition-colors hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
+          >
+            ⚙️
+          </button>
         </div>
         {/* Description now shown only for the currently active mode, moved
           out from inside every card (Product Owner's stated goal: reclaim
@@ -1399,6 +1409,10 @@ export function AssistantPanel({
           t={t}
         />
       )}
+      <CustomExpertsDialog
+        isOpen={isExpertsDialogOpen}
+        onClose={() => setIsExpertsDialogOpen(false)}
+      />
     </>
   );
 }

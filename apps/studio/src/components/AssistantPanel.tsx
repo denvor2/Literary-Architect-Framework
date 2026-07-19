@@ -996,32 +996,69 @@ export function AssistantPanel({
     // Если выбран личный эксперт - использовать его системный промпт
     const selectedExpert = selectedExpertId ? personalExperts.find((e) => e.id === selectedExpertId) : null;
     if (selectedExpert?.systemPrompt) {
-      // Для личного эксперта просто добавляем его промпт как контекст в сообщение
+      // Для личного эксперта добавляем его промпт как контекст в сообщение
       const expertContext = `[Используется эксперт: ${selectedExpert.name}]\n${selectedExpert.systemPrompt}\n\n`;
       const enhancedInput = expertContext + (input.trim() || "Помогите");
 
       setStatus("loading");
       try {
-        const outgoingMessages: ChatMessage[] = [
-          ...messages,
-          { role: "user", content: enhancedInput },
-        ];
-        onAppendMessage(selectedMode, { role: "user", content: enhancedInput });
+        const trimmedInput = input.trim();
+        const outgoingMessages: ChatMessage[] = trimmedInput
+          ? [...messages, { role: "user", content: enhancedInput }]
+          : [...messages];
 
-        // Использовать первый системный режим (coauthor) для запроса
-        const result = await aiBus.execute({
-          operation: {
-            type: "coauthor_draft",
-            payload: {
-              sceneText: sceneText || "",
-              bookContext: book!,
-              messages: outgoingMessages,
+        if (trimmedInput) {
+          onAppendMessage(selectedMode, { role: "user", content: enhancedInput });
+        }
+
+        let resultText: string;
+
+        // Использовать операцию выбранного РЕЖИМА, но с системным промптом эксперта
+        if (selectedMode === "coauthor") {
+          const result = await aiBus.execute({
+            operation: {
+              type: "coauthor_draft",
+              payload: {
+                sceneText: sceneText || "",
+                bookContext: book!,
+                messages: outgoingMessages,
+              },
             },
-          },
-          context: {},
-        });
+            context: {},
+          });
+          resultText = result.response.text;
+        } else if (selectedMode === "editor") {
+          const result = await aiBus.execute({
+            operation: {
+              type: "improve_text",
+              payload: {
+                sceneText,
+                bookContext: book!,
+                messages: outgoingMessages,
+              },
+            },
+            context: {},
+          });
+          resultText = result.response.text;
+        } else if (selectedMode === "critic") {
+          const result = await aiBus.execute({
+            operation: {
+              type: "critic_review",
+              payload: {
+                sceneText: scopedText,
+                messages: outgoingMessages,
+                bookLanguage: book!.language,
+                subcategory: criticSubcategory,
+              },
+            },
+            context: {},
+          });
+          resultText = result.response.text;
+        } else {
+          throw new Error("Unknown mode");
+        }
 
-        onAppendMessage(selectedMode, { role: "assistant", content: result.response.text });
+        onAppendMessage(selectedMode, { role: "assistant", content: resultText });
         setInput("");
         setStatus("idle");
       } catch (error) {

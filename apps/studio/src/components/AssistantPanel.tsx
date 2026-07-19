@@ -1193,7 +1193,6 @@ export function AssistantPanel({
                     setSelectedExpertId(null);
                     onSelectMode(mode);
                   }}
-                  disabled={selectedExpertId !== null && !isActive}
                   title={selectedExpertId && !isActive ? "Отменить выбор эксперта для изменения режима" : label}
                   aria-label={label}
                   aria-pressed={isActive}

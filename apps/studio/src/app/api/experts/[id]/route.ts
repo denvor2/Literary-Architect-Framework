@@ -34,33 +34,38 @@ export async function PUT(
     const body = await req.json();
     const { name, systemPrompt, typicalRequests, icon, isPublic } = body;
 
-    if (
-      !name &&
-      !systemPrompt &&
-      !typicalRequests &&
-      !icon &&
-      isPublic === undefined
-    ) {
+    const data: Record<string, unknown> = {};
+    if (name !== undefined && name) data.name = name;
+    if (systemPrompt !== undefined && systemPrompt) data.systemPrompt = systemPrompt;
+    if (typicalRequests !== undefined && Array.isArray(typicalRequests)) data.typicalRequests = typicalRequests;
+    if (icon !== undefined && icon) data.icon = icon;
+    if (isPublic !== undefined) data.isPublic = isPublic;
+
+    if (Object.keys(data).length === 0) {
       return NextResponse.json(
         { error: "At least one field must be provided" },
         { status: 400 },
       );
     }
 
-    const data: Record<string, unknown> = {};
-    if (name !== undefined) data.name = name;
-    if (systemPrompt !== undefined) data.systemPrompt = systemPrompt;
-    if (typicalRequests !== undefined) data.typicalRequests = typicalRequests;
-    if (icon !== undefined) data.icon = icon;
-    if (isPublic !== undefined) data.isPublic = isPublic;
-
     const expert = await customExpertRepository.updateExpert(id, user.id, data);
 
     return NextResponse.json(expert);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to update expert";
-    console.error("PUT /api/experts/:id error:", message);
+    const errorMsg = error instanceof Error ? error.message : "Failed to update expert";
+    const isConstraintError = errorMsg.includes("duplicate key") || errorMsg.includes("23505");
+
+    let message = errorMsg;
+    if (isConstraintError) {
+      message = "Эксперт с таким именем уже существует у вас";
+    }
+
+    console.error("PUT /api/experts/:id error:", {
+      message: errorMsg,
+      isConstraint: isConstraintError,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

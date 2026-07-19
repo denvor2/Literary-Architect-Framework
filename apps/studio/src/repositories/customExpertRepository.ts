@@ -118,14 +118,16 @@ export const customExpertRepository = {
       }
       data.name = data.name.trim();
 
-      // Проверить уникальность
-      const dup = (await (prisma as any).$queryRaw`
-        SELECT id FROM "CustomExpert"
-        WHERE "userId" = ${userId} AND name = ${data.name} AND id != ${id}
-      `) as Array<{ id: string }>;
+      // Проверить уникальность только если имя изменилось
+      if (data.name !== expert[0].name) {
+        const dup = (await (prisma as any).$queryRaw`
+          SELECT id FROM "CustomExpert"
+          WHERE "userId" = ${userId} AND name = ${data.name} AND id != ${id} AND "deletedAt" IS NULL
+        `) as Array<{ id: string }>;
 
-      if (dup.length > 0) {
-        throw new Error(`Эксперт с именем "${data.name}" уже существует`);
+        if (dup.length > 0) {
+          throw new Error(`Эксперт с именем "${data.name}" уже существует`);
+        }
       }
     }
 
@@ -141,13 +143,27 @@ export const customExpertRepository = {
     }
 
     if (data.typicalRequests !== undefined) {
-      if (
-        !Array.isArray(data.typicalRequests) ||
-        data.typicalRequests.length > 10
-      ) {
+      if (!Array.isArray(data.typicalRequests)) {
+        throw new Error("Типовые запросы должны быть массивом");
+      }
+
+      // Фильтруем пустые запросы
+      const filtered = data.typicalRequests
+        .map((r) => (typeof r === "string" ? r.trim() : ""))
+        .filter((r) => r.length > 0);
+
+      if (filtered.length > 10) {
         throw new Error("Максимум 10 типовых запросов");
       }
-      data.typicalRequests = data.typicalRequests.map((r) => r.trim());
+
+      // Валидируем каждый запрос
+      filtered.forEach((req) => {
+        if (req.length < 10 || req.length > 200) {
+          throw new Error(`Каждый запрос должен быть 10-200 символов (получен: "${req}" - ${req.length} символов)`);
+        }
+      });
+
+      data.typicalRequests = filtered;
     }
 
     // UPDATE с raw SQL

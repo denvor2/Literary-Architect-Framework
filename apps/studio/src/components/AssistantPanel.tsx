@@ -1458,7 +1458,7 @@ export function AssistantPanel({
           ) : (
             <>
               <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
-                {messages.length === 0 && (
+                {messages.length === 0 && selectedExpertId === null && (
                   <p className="text-xs text-zinc-400 dark:text-zinc-600">
                     {meta.description}
                   </p>

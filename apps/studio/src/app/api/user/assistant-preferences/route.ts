@@ -27,20 +27,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("[assistant-preferences GET] user fields:", {
-      id: user.id,
-      lastSelectedMode: user.lastSelectedMode,
-      lastSelectedExpertId: user.lastSelectedExpertId,
-      allUserKeys: Object.keys(user),
-    });
-
-    const response = {
+    return NextResponse.json({
       lastSelectedMode: user.lastSelectedMode || "coauthor",
       lastSelectedExpertId: user.lastSelectedExpertId || null,
-    };
-    console.log("[assistant-preferences GET] response:", response);
-
-    return NextResponse.json(response);
+    });
   } catch (error) {
     console.error("GET /api/user/assistant-preferences error:", error);
     return NextResponse.json(
@@ -73,25 +63,7 @@ export async function PUT(req: NextRequest) {
     }
 
     // Update user preferences using raw SQL to bypass ORM issues
-    console.log("[assistant-preferences PUT] Сохраняем:", {
-      userId: user.id,
-      lastSelectedMode,
-      lastSelectedExpertId,
-    });
-
-    // Прочитаем ПЕРЕД update
-    const beforeUpdate = await (prisma as any).$queryRaw`
-      SELECT "lastSelectedMode", "lastSelectedExpertId" FROM "User" WHERE id = ${user.id}
-    ` as Array<{ lastSelectedMode: string | null; lastSelectedExpertId: string | null }>;
-    console.log("[assistant-preferences PUT] ПЕРЕД UPDATE:", beforeUpdate[0]);
-
-    console.log("[assistant-preferences PUT] UPDATE parameters:", {
-      mode: lastSelectedMode || "coauthor",
-      expertId: lastSelectedExpertId,
-      userId: user.id,
-    });
-
-    // Явно передаём значения для UPDATE
+    // Явно передаём значения для UPDATE (избегаем логики || которая превращает значения в null)
     const modeToSave = lastSelectedMode || "coauthor";
     const expertIdToSave = lastSelectedExpertId; // может быть null или string
 
@@ -101,12 +73,6 @@ export async function PUT(req: NextRequest) {
           "lastSelectedExpertId" = ${expertIdToSave}
       WHERE id = ${user.id}
     `;
-
-    // Прочитаем ПОСЛЕ update
-    const afterUpdate = await (prisma as any).$queryRaw`
-      SELECT "lastSelectedMode", "lastSelectedExpertId" FROM "User" WHERE id = ${user.id}
-    ` as Array<{ lastSelectedMode: string | null; lastSelectedExpertId: string | null }>;
-    console.log("[assistant-preferences PUT] ПОСЛЕ UPDATE:", afterUpdate[0]);
 
     return NextResponse.json({
       lastSelectedMode: lastSelectedMode || "coauthor",

@@ -841,7 +841,6 @@ export function AssistantPanel({
         const res = await fetch("/api/experts", { credentials: "include" });
         if (res.ok) {
           const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string; systemPrompt?: string; typicalRequests?: string[] }> };
-          console.log("[AssistantPanel] Загружены эксперты:", data.experts);
           setPersonalExperts(data.experts);
         }
       } catch (error) {
@@ -875,30 +874,23 @@ export function AssistantPanel({
 
   // Загружаем сохраненный выбор эксперта при монтировании
   useEffect(() => {
-    console.log("[AssistantPanel] useEffect loadPreferences ЗАПУЩЕН");
     const loadPreferences = async () => {
-      console.log("[AssistantPanel] loadPreferences: начинаем загрузку");
       try {
         const res = await fetch("/api/user/assistant-preferences", {
           credentials: "include",
         });
-        console.log("[AssistantPanel] loadPreferences: res.ok =", res.ok, "status =", res.status);
         if (res.ok) {
           const data = (await res.json()) as {
             lastSelectedMode: string;
             lastSelectedExpertId: string | null;
           };
-          console.log("[AssistantPanel] loadPreferences: data =", data);
           // Восстанавливаем выбранного эксперта если он был сохранен
           if (data.lastSelectedExpertId) {
-            console.log("[AssistantPanel] Восстанавливаем эксперта:", data.lastSelectedExpertId);
             setSelectedExpertId(data.lastSelectedExpertId);
-          } else {
-            console.log("[AssistantPanel] Нет сохраненного эксперта, используем режим:", data.lastSelectedMode);
           }
         }
       } catch (error) {
-        console.error("[AssistantPanel] loadPreferences error:", error);
+        console.error("Failed to load preferences:", error);
       }
     };
 
@@ -907,11 +899,9 @@ export function AssistantPanel({
 
   // Сохраняем выбор при изменении
   useEffect(() => {
-    console.log("[AssistantPanel] savePreferences useEffect: selectedMode =", selectedMode, "selectedExpertId =", selectedExpertId);
     const savePreferences = async () => {
-      console.log("[AssistantPanel] Сохраняем preferences (в savePreferences): selectedMode =", selectedMode, "selectedExpertId =", selectedExpertId);
       try {
-        const res = await fetch("/api/user/assistant-preferences", {
+        await fetch("/api/user/assistant-preferences", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -920,7 +910,6 @@ export function AssistantPanel({
             lastSelectedExpertId: selectedExpertId,
           }),
         });
-        console.log("[AssistantPanel] Сохранили preferences, status =", res.status);
       } catch (error) {
         console.error("Failed to save preferences:", error);
       }
@@ -1009,12 +998,6 @@ export function AssistantPanel({
   const displayedTypicalRequests = selectedExpertId
     ? (personalExperts.find((e) => e.id === selectedExpertId)?.typicalRequests as string[] | undefined) ?? []
     : selectedTypicalRequests;
-
-  // Debug logging
-  if (selectedExpertId && displayedTypicalRequests.length === 0) {
-    const expert = personalExperts.find((e) => e.id === selectedExpertId);
-    console.log("[AssistantPanel] selectedExpertId:", selectedExpertId, "найден эксперт:", expert?.name, "typicalRequests:", expert?.typicalRequests);
-  }
   const thread = activeThreads?.[selectedMode];
   const messages = thread?.messages ?? [];
   // Editor/Co-author always work on the whole current scene; Critic/Reader
@@ -1315,7 +1298,6 @@ export function AssistantPanel({
               <div key={mode} className="relative">
                 <button
                   onClick={() => {
-                    console.log("[AssistantPanel] Клик на режим:", mode, "selectedExpertId было:", selectedExpertId);
                     setSelectedExpertId(null);
                     onSelectMode(mode);
                   }}
@@ -1364,7 +1346,6 @@ export function AssistantPanel({
                   <button
                     key={expert.id}
                     onClick={() => {
-                      console.log("[AssistantPanel] Клик на эксперта:", expert.name, "id:", expert.id, "isSelected:", isSelected);
                       setSelectedExpertId(isSelected ? null : expert.id);
                     }}
                     className={`flex items-center gap-1 rounded border px-2 py-1 transition-colors ${

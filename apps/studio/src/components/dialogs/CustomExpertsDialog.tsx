@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useLocaleContext } from "@/context/LocaleContext";
 import type { CustomExpert, PublicExpert } from "@/generated/prisma/client";
 
 interface CustomExpertsDialogProps {
@@ -17,7 +16,6 @@ export function CustomExpertsDialog({
   onClose,
   editingExpertId,
 }: CustomExpertsDialogProps) {
-  const { t } = useLocaleContext();
   const [tab, setTab] = useState<"mine" | "available">("mine");
   const [myExperts, setMyExperts] = useState<Expert[]>([]);
   const [publicExperts, setPublicExperts] = useState<PublicExpert[]>([]);
@@ -33,6 +31,29 @@ export function CustomExpertsDialog({
   });
 
   const hasLoadedRef = useRef(false);
+
+  const loadExperts = async () => {
+    setLoading(true);
+    try {
+      const [myRes, pubRes] = await Promise.all([
+        fetch("/api/experts", { credentials: "include" }),
+        fetch("/api/experts/public", { credentials: "include" }),
+      ]);
+
+      if (myRes.ok) {
+        const data = (await myRes.json()) as { experts: Expert[] };
+        setMyExperts(data.experts);
+      }
+      if (pubRes.ok) {
+        const data = (await pubRes.json()) as { experts: PublicExpert[] };
+        setPublicExperts(data.experts);
+      }
+    } catch (error) {
+      console.error("Failed to load experts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen && !hasLoadedRef.current) {
@@ -68,29 +89,6 @@ export function CustomExpertsDialog({
       });
     }
   }, [isOpen, editingExpertId, myExperts]);
-
-  const loadExperts = async () => {
-    setLoading(true);
-    try {
-      const [myRes, pubRes] = await Promise.all([
-        fetch("/api/experts", { credentials: "include" }),
-        fetch("/api/experts/public", { credentials: "include" }),
-      ]);
-
-      if (myRes.ok) {
-        const data = (await myRes.json()) as { experts: Expert[] };
-        setMyExperts(data.experts);
-      }
-      if (pubRes.ok) {
-        const data = (await pubRes.json()) as { experts: PublicExpert[] };
-        setPublicExperts(data.experts);
-      }
-    } catch (error) {
-      console.error("Failed to load experts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCreate = async () => {
     if (!formData.name.trim() || !formData.systemPrompt.trim()) {

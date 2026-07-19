@@ -5,6 +5,8 @@ import type {
 } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 
+console.log("[customExpertRepository] Module loaded. prisma type:", typeof prisma);
+
 export const customExpertRepository = {
   // ==================== ЛИЧНЫЕ ЭКСПЕРТЫ ====================
 
@@ -25,6 +27,13 @@ export const customExpertRepository = {
     isPublic: boolean,
   ): Promise<CustomExpert & { publicId?: string }> {
     if (!prisma) throw new Error("Database connection unavailable");
+
+    // Try to access the model through descriptor
+    const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(prisma), 'customExpert');
+    console.log("[customExpertRepository] customExpert descriptor:", descriptor ? "exists" : "not found");
+    if (descriptor) {
+      console.log("[customExpertRepository] descriptor type:", descriptor.get ? "getter" : "value");
+    }
 
     // Валидация
     if (!name || name.trim().length < 1 || name.length > 50) {
@@ -47,7 +56,7 @@ export const customExpertRepository = {
     });
 
     // Проверить уникальность имени
-    const existing = await prisma.customExpert.findFirst({
+    const existing = await (prisma as any).customExpert?.findFirst({
       where: { userId, name: name.trim(), deletedAt: null },
     });
     if (existing) {

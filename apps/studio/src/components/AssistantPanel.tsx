@@ -1183,7 +1183,8 @@ export function AssistantPanel({
         <div className="flex gap-2">
           {ASSISTANT_MODES.map((mode) => {
             const info = MODE_META[mode];
-            const isActive = mode === selectedMode;
+            // Режим не активен если выбран эксперт
+            const isActive = selectedExpertId === null && mode === selectedMode;
             const label = displayNameFor(mode);
             return (
               <div key={mode} className="relative">
@@ -1267,8 +1268,10 @@ export function AssistantPanel({
 
         {/* Description now shown only for the currently active mode, moved
           out from inside every card (Product Owner's stated goal: reclaim
-          vertical space in the ~320px-wide panel). */}
-        <p className={`text-xs ${meta.accent}`}>{meta.description}</p>
+          vertical space in the ~320px-wide panel). Hidden when expert is selected. */}
+        {selectedExpertId === null && (
+          <p className={`text-xs ${meta.accent}`}>{meta.description}</p>
+        )}
 
         <div className="flex flex-1 flex-col gap-3 overflow-y-auto border-t border-zinc-200 pt-3 dark:border-zinc-800">
           <div className="flex items-center justify-between">

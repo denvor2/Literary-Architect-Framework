@@ -1231,8 +1231,10 @@ export function AssistantPanel({
         <div className="flex gap-2">
           {ASSISTANT_MODES.map((mode) => {
             const info = MODE_META[mode];
-            // Режим не активен если выбран эксперт
+            // Режим активен если эксперт не выбран И это текущий режим
             const isActive = selectedExpertId === null && mode === selectedMode;
+            // Режим неактивен если эксперт не выбран И это не текущий режим
+            const isInactive = selectedExpertId === null && mode !== selectedMode;
             const label = displayNameFor(mode);
             return (
               <div key={mode} className="relative">
@@ -1249,10 +1251,12 @@ export function AssistantPanel({
                       ? `${info.activeBorder} bg-white dark:bg-black`
                       : selectedExpertId
                         ? "border-zinc-200 bg-zinc-50 opacity-40 dark:border-zinc-800 dark:bg-zinc-900"
-                        : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
+                        : isInactive
+                          ? "border-zinc-200 bg-zinc-50 opacity-40 dark:border-zinc-800 dark:bg-zinc-900"
+                          : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
                   }`}
                 >
-                  <info.icon className={`h-5 w-5 ${selectedExpertId && !isActive ? "text-zinc-400 dark:text-zinc-600" : "text-zinc-700 dark:text-zinc-300"}`} />
+                  <info.icon className={`h-5 w-5 ${(selectedExpertId && !isActive) || isInactive ? "text-zinc-400 dark:text-zinc-600" : "text-zinc-700 dark:text-zinc-300"}`} />
                 </button>
                 <GearButton
                   label={label}

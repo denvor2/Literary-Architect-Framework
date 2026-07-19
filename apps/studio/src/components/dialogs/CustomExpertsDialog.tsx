@@ -235,27 +235,100 @@ export function CustomExpertsDialog({
               ))}
 
               {showForm && (
-                <div className="space-y-2 rounded border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="Имя"
-                    maxLength={50}
-                    className="w-full rounded border px-2 py-1 dark:bg-zinc-900 dark:text-white"
-                  />
-                  <textarea
-                    value={formData.systemPrompt}
-                    onChange={(e) =>
-                      setFormData({ ...formData, systemPrompt: e.target.value })
-                    }
-                    placeholder="Промпт"
-                    maxLength={5000}
-                    rows={3}
-                    className="w-full rounded border px-2 py-1 dark:bg-zinc-900 dark:text-white"
-                  />
+                <div className="space-y-3 rounded border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950">
+                  {/* Иконка и имя */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={formData.icon}
+                      onChange={(e) =>
+                        setFormData({ ...formData, icon: e.target.value.slice(0, 2) })
+                      }
+                      placeholder="🤖"
+                      maxLength={2}
+                      className="w-12 rounded border px-2 py-1 text-center dark:bg-zinc-900 dark:text-white"
+                    />
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="Имя эксперта (напр. Эксперт по боевикам)"
+                      maxLength={50}
+                      className="flex-1 rounded border px-2 py-1 dark:bg-zinc-900 dark:text-white"
+                    />
+                  </div>
+
+                  {/* Промпт с примером */}
+                  <div>
+                    <label className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      Системный промпт
+                    </label>
+                    <textarea
+                      value={formData.systemPrompt}
+                      onChange={(e) =>
+                        setFormData({ ...formData, systemPrompt: e.target.value })
+                      }
+                      placeholder={`Пример хорошего промпта:
+
+Ты опытный редактор боевиков с 10-летним опытом. Твоя роль — улучшать боевые сцены, делая их более захватывающими и реалистичными. Проверь пунктуацию, логику развития событий и темп действия.`}
+                      maxLength={5000}
+                      rows={4}
+                      className="w-full rounded border px-2 py-1 text-xs dark:bg-zinc-900 dark:text-white"
+                    />
+                  </div>
+
+                  {/* Типовые запросы */}
+                  <div>
+                    <label className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                      Типовые запросы (10-200 символов)
+                    </label>
+                    <div className="space-y-1">
+                      {formData.typicalRequests.map((request, idx) => (
+                        <div key={idx} className="flex gap-1">
+                          <input
+                            type="text"
+                            value={request}
+                            onChange={(e) => {
+                              const newRequests = [...formData.typicalRequests];
+                              newRequests[idx] = e.target.value;
+                              setFormData({ ...formData, typicalRequests: newRequests });
+                            }}
+                            placeholder="напр. Улучшить боевую сцену"
+                            maxLength={200}
+                            className="flex-1 rounded border px-2 py-1 text-xs dark:bg-zinc-900 dark:text-white"
+                          />
+                          <button
+                            onClick={() => {
+                              const newRequests = formData.typicalRequests.filter(
+                                (_, i) => i !== idx
+                              );
+                              setFormData({ ...formData, typicalRequests: newRequests });
+                            }}
+                            className="rounded border border-red-300 px-2 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      {formData.typicalRequests.length < 10 && (
+                        <button
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              typicalRequests: [...formData.typicalRequests, ""],
+                            });
+                          }}
+                          className="w-full rounded border border-dashed border-zinc-300 py-1 text-xs text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                        >
+                          + Добавить
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Видимость и кнопки */}
                   <label className="flex gap-2">
                     <input
                       type="checkbox"
@@ -266,12 +339,13 @@ export function CustomExpertsDialog({
                     />
                     <span className="text-sm">Доступен другим</span>
                   </label>
+
                   <div className="flex gap-2">
                     <button
                       onClick={handleCreate}
-                      className="flex-1 rounded bg-black px-2 py-1 text-white"
+                      className="flex-1 rounded bg-black px-2 py-1 text-white dark:bg-white dark:text-black"
                     >
-                      Создать
+                      {formData.name ? "Сохранить" : "Создать"}
                     </button>
                     <button
                       onClick={() => setShowForm(false)}

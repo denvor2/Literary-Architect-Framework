@@ -10,14 +10,6 @@ console.log("[customExpertRepository] Module loaded. prisma type:", typeof prism
 export const customExpertRepository = {
   // ==================== ЛИЧНЫЕ ЭКСПЕРТЫ ====================
 
-  async loadMyExperts(userId: string): Promise<CustomExpert[]> {
-    if (!prisma) throw new Error("Database connection unavailable");
-    return prisma.customExpert.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { createdAt: "asc" },
-    });
-  },
-
   async createExpert(
     userId: string,
     name: string,
@@ -232,15 +224,33 @@ export const customExpertRepository = {
 
   async loadPublicExperts(excludeUserId?: string): Promise<PublicExpert[]> {
     if (!prisma) throw new Error("Database connection unavailable");
-    return prisma.publicExpert.findMany({
-      where: excludeUserId ? { creatorId: { not: excludeUserId } } : undefined,
-      orderBy: { createdAt: "desc" },
-    });
+
+    if (excludeUserId) {
+      return (await (prisma as any).$queryRaw`
+        SELECT id, "creatorId", "originalId", name, "systemPrompt", "typicalRequests", icon, "createdAt", "updatedAt"
+        FROM "PublicExpert"
+        WHERE "creatorId" != ${excludeUserId}
+        ORDER BY "createdAt" DESC
+      `) as PublicExpert[];
+    } else {
+      return (await (prisma as any).$queryRaw`
+        SELECT id, "creatorId", "originalId", name, "systemPrompt", "typicalRequests", icon, "createdAt", "updatedAt"
+        FROM "PublicExpert"
+        ORDER BY "createdAt" DESC
+      `) as PublicExpert[];
+    }
   },
 
   async getPublicExpert(id: string): Promise<PublicExpert | null> {
     if (!prisma) return null;
-    return prisma.publicExpert.findUnique({ where: { id } });
+
+    const result = (await (prisma as any).$queryRaw`
+      SELECT id, "creatorId", "originalId", name, "systemPrompt", "typicalRequests", icon, "createdAt", "updatedAt"
+      FROM "PublicExpert"
+      WHERE id = ${id}
+    `) as PublicExpert[];
+
+    return result.length > 0 ? result[0] : null;
   },
 
   // ==================== МИНИ ЭКСПЕРТЫ (ДОБАВЛЕННЫЕ) ====================
@@ -284,25 +294,42 @@ export const customExpertRepository = {
   ): Promise<UserPublicExpert> {
     if (!prisma) throw new Error("Database connection unavailable");
 
-    // Проверить что публичный эксперт существует
-    const publicExpert = await prisma.publicExpert.findUnique({
-      where: { id: publicId },
-    });
-    if (!publicExpert) {
+    // Проверить что публичный эксперт существует (raw SQL)
+    const publicExpert = (await (prisma as any).$queryRaw`
+      SELECT id FROM "PublicExpert" WHERE id = ${publicId}
+    `) as Array<{ id: string }>;
+
+    if (!publicExpert.length) {
       throw new Error("Публичный эксперт не найден");
     }
 
     // Проверить что не добавлен уже
-    const existing = await prisma.userPublicExpert.findFirst({
-      where: { userId, publicId },
-    });
-    if (existing) {
+    const existing = (await (prisma as any).$queryRaw`
+      SELECT id FROM "UserPublicExpert" WHERE "userId" = ${userId} AND "publicId" = ${publicId}
+    `) as Array<{ id: string }>;
+
+    if (existing.length > 0) {
       throw new Error("Этот эксперт уже добавлен");
     }
 
-    return prisma.userPublicExpert.create({
-      data: { userId, publicId },
-    });
+    // Generate ID
+    const { customAlphabet } = await import("nanoid");
+    const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
+    const recordId = nanoid();
+
+    // Create record (raw SQL)
+    await (prisma as any).$executeRaw`
+      INSERT INTO "UserPublicExpert" (id, "userId", "publicId", "createdAt", "updatedAt")
+      VALUES (${recordId}, ${userId}, ${publicId}, NOW(), NOW())
+    `;
+
+    return {
+      id: recordId,
+      userId,
+      publicId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any;
   },
 
   async removePublicExpertFromMe(
@@ -311,13 +338,18 @@ export const customExpertRepository = {
   ): Promise<void> {
     if (!prisma) throw new Error("Database connection unavailable");
 
-    const record = await prisma.userPublicExpert.findFirst({
-      where: { userId, publicId },
-    });
-    if (!record) {
+    // Find record
+    const record = (await (prisma as any).$queryRaw`
+      SELECT id FROM "UserPublicExpert" WHERE "userId" = ${userId} AND "publicId" = ${publicId}
+    `) as Array<{ id: string }>;
+
+    if (!record.length) {
       throw new Error("Эксперт не найден в вашем списке");
     }
 
-    await prisma.userPublicExpert.delete({ where: { id: record.id } });
+    // Delete record
+    await (prisma as any).$executeRaw`
+      DELETE FROM "UserPublicExpert" WHERE id = ${record[0].id}
+    `;
   },
 };

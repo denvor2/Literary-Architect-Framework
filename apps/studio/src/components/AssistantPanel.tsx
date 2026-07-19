@@ -996,19 +996,21 @@ export function AssistantPanel({
     // Если выбран личный эксперт - использовать его системный промпт
     const selectedExpert = selectedExpertId ? personalExperts.find((e) => e.id === selectedExpertId) : null;
     if (selectedExpert?.systemPrompt) {
-      // Для личного эксперта добавляем его промпт как контекст в сообщение
-      const expertContext = `[Используется эксперт: ${selectedExpert.name}]\n${selectedExpert.systemPrompt}\n\n`;
-      const enhancedInput = expertContext + (input.trim() || "Помогите");
-
       setStatus("loading");
       try {
         const trimmedInput = input.trim();
+        // Добавляем контекст эксперта как assistant message перед пользовательским запросом
+        const expertContextMsg: ChatMessage = {
+          role: "assistant",
+          content: `[Используется эксперт: ${selectedExpert.name}]\n${selectedExpert.systemPrompt}`,
+        };
+
         const outgoingMessages: ChatMessage[] = trimmedInput
-          ? [...messages, { role: "user", content: enhancedInput }]
-          : [...messages];
+          ? [...messages, expertContextMsg, { role: "user", content: trimmedInput }]
+          : [...messages, expertContextMsg];
 
         if (trimmedInput) {
-          onAppendMessage(selectedMode, { role: "user", content: enhancedInput });
+          onAppendMessage(selectedMode, { role: "user", content: trimmedInput });
         }
 
         let resultText: string;

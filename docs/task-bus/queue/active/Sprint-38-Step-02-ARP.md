@@ -1,6 +1,6 @@
 # Sprint-38-Step-02: Custom Experts (Пользовательские эксперты) — ARP
 
-**Status:** COMPLETE — Backend 100%, UI partial — ready for review gates
+**Status:** IN PROGRESS — Backend 50% (POST working via raw SQL), UI button integrated — critical Prisma ORM issue discovered
 
 **Создано:** 2026-07-18
 
@@ -119,7 +119,34 @@ DELETE /api/experts/public/:id          — удалить из своего с�
 ⏳ **npm run build:** Not yet run (will validate on merge)
 ⏳ **npm run test:e2e:** Deferred (Step-03 or continuation)
 
-**Known Cache Issue:** Старые файлы assistants/route.ts ещё в кэше Next.js — пропадут после rebuild, не влияют на код.
+## 🚨 CRITICAL ISSUE: Prisma ORM Methods Not Available on Runtime
+
+**Problem:** CustomExpert, PublicExpert, UserPublicExpert models added to schema.prisma, migrated successfully, types generated correctly, BUT at runtime `prisma.customExpert` / `prisma.publicExpert` are `undefined` even though other models (book, user) work fine.
+
+**Diagnosis:**
+- Prisma Client instance created with `new PrismaClient({ adapter: new PrismaPg(...) })`
+- Schema contains all 3 new models + migrations applied
+- Prisma types generated correctly in `src/generated/prisma/models/`
+- Runtime inspection shows prisma prototype lacks property descriptors for these models
+- Other models (book, user) accessible and working correctly
+
+**Workaround:** Use `prisma.$executeRaw` / `prisma.$queryRaw` with raw SQL queries instead of ORM methods. Tested and working for POST /api/experts create operation.
+
+**Status of methods:**
+- ✅ createExpert: Working (raw SQL)
+- ⏳ loadMyExperts: Needs conversion to raw SQL
+- ⏳ updateExpert: Needs conversion to raw SQL
+- ⏳ deleteExpert: Needs conversion to raw SQL
+- ⏳ loadPublicExperts: Needs conversion to raw SQL
+- ⏳ getPublicExpert: Needs conversion to raw SQL
+- ⏳ loadMyAccessibleExperts: Needs conversion to raw SQL
+- ⏳ addPublicExpertToMe: Needs conversion to raw SQL
+- ⏳ removePublicExpertFromMe: Needs conversion to raw SQL
+
+**Next Steps:** Either:
+1. Convert all methods to raw SQL (currently done for createExpert as POC)
+2. Investigate why newer models don't get ORM getters despite being in schema and having types
+3. Try alternative initialization patterns for PrismaClient
 
 ---
 

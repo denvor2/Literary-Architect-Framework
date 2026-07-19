@@ -1,6 +1,6 @@
 # Sprint-38-Step-02: Custom Experts (Пользовательские эксперты) — ARP
 
-**Status:** IN PROGRESS — Backend 50% (POST working via raw SQL), UI button integrated — critical Prisma ORM issue discovered
+**Status:** IN PROGRESS — Backend 60% (POST/GET/DELETE via raw SQL), UI button integrated, critical Prisma ORM workarounded
 
 **Создано:** 2026-07-18
 
@@ -133,15 +133,14 @@ DELETE /api/experts/public/:id          — удалить из своего с�
 **Workaround:** Use `prisma.$executeRaw` / `prisma.$queryRaw` with raw SQL queries instead of ORM methods. Tested and working for POST /api/experts create operation.
 
 **Status of methods:**
-- ✅ createExpert: Working (raw SQL)
-- ⏳ loadMyExperts: Needs conversion to raw SQL
-- ⏳ updateExpert: Needs conversion to raw SQL
-- ⏳ deleteExpert: Needs conversion to raw SQL
-- ⏳ loadPublicExperts: Needs conversion to raw SQL
-- ⏳ getPublicExpert: Needs conversion to raw SQL
-- ⏳ loadMyAccessibleExperts: Needs conversion to raw SQL
-- ⏳ addPublicExpertToMe: Needs conversion to raw SQL
-- ⏳ removePublicExpertFromMe: Needs conversion to raw SQL
+- ✅ createExpert: Working (raw SQL) — POST /api/experts
+- ✅ loadMyAccessibleExperts: Working (raw SQL) — GET /api/experts returns own + added experts
+- ✅ deleteExpert: Working (raw SQL) — DELETE /api/experts/:id soft deletes
+- ⏳ updateExpert: Needs conversion to raw SQL — PUT /api/experts/:id
+- ⏳ loadPublicExperts: Needs conversion to raw SQL — GET /api/experts/public
+- ⏳ getPublicExpert: Needs conversion to raw SQL — GET /api/experts/public/:id
+- ⏳ addPublicExpertToMe: Needs conversion to raw SQL — POST /api/experts/public/:id
+- ⏳ removePublicExpertFromMe: Needs conversion to raw SQL — DELETE /api/experts/public/:id
 
 **Next Steps:** Either:
 1. Convert all methods to raw SQL (currently done for createExpert as POC)
@@ -162,16 +161,23 @@ DELETE /api/experts/public/:id          — удалить из своего с�
 
 ## Следующие шаги
 
-**Для STATUS: OK commit:**
-- [ ] architect-reviewer: проверить scope, честность ARP
-- [ ] tester: независимая re-drive (create → publish → add → remove → delete)
+**To Complete Step-02 (raw SQL conversion for remaining methods):**
+- [ ] Convert updateExpert to raw SQL
+- [ ] Convert loadPublicExperts to raw SQL
+- [ ] Convert getPublicExpert to raw SQL
+- [ ] Convert addPublicExpertToMe to raw SQL
+- [ ] Convert removePublicExpertFromMe to raw SQL
+- [ ] Test all public expert operations (browse, add, remove)
+- [ ] E2E test creation: create → delete personal, create → publish → add as another user
+- [ ] Manual browser test: ⚙️ button appearance, dialog open/close, create form validation
 
-**Post-commit (Step-02 Continuation или Step-03):**
+**Post-commit (Step-03 or Continuation):**
+- [ ] Fix Prisma ORM issue (root cause analysis — why new models missing getters)
+- [ ] Revert methods to ORM if issue fixed
 - [ ] Интеграция в ExpertPanel (система + личные + публичные в дропдауне)
-- [ ] E2E тесты (8+ сценариев)
 - [ ] Использование выбранного эксперта в чате
 - [ ] Admin endpoint для модерации PublicExpert
-- [ ] Поиск в каталоге публичных
+- [ ] Поиск и фильтр в каталоге публичных
 
 ---
 

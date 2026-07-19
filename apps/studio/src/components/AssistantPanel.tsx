@@ -826,10 +826,11 @@ export function AssistantPanel({
     string | undefined
   >(undefined);
   const [isExpertsDialogOpen, setIsExpertsDialogOpen] = useState(false);
-  const [personalExperts, setPersonalExperts] = useState<Array<{ id: string; name: string; icon: string }>>(
+  const [personalExperts, setPersonalExperts] = useState<Array<{ id: string; name: string; icon: string; systemPrompt?: string }>>(
     []
   );
   const [loadingExperts, setLoadingExperts] = useState(false);
+  const [selectedExpertId, setSelectedExpertId] = useState<string | null>(null);
 
   // Загрузить личных экспертов при монтировании
   useEffect(() => {
@@ -838,7 +839,7 @@ export function AssistantPanel({
       try {
         const res = await fetch("/api/experts", { credentials: "include" });
         if (res.ok) {
-          const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string }> };
+          const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string; systemPrompt?: string }> };
           setPersonalExperts(data.experts);
         }
       } catch (error) {
@@ -938,6 +939,44 @@ export function AssistantPanel({
   const canSend = selectedMode === "coauthor" || scopedText.trim().length > 0;
 
   async function handleSend() {
+    // Если выбран личный эксперт - использовать его системный промпт
+    const selectedExpert = selectedExpertId ? personalExperts.find((e) => e.id === selectedExpertId) : null;
+    if (selectedExpert?.systemPrompt) {
+      // Для личного эксперта просто добавляем его промпт как контекст в сообщение
+      const expertContext = `[Используется эксперт: ${selectedExpert.name}]\n${selectedExpert.systemPrompt}\n\n`;
+      const enhancedInput = expertContext + (input.trim() || "Помогите");
+
+      setStatus("loading");
+      try {
+        const outgoingMessages: ChatMessage[] = [
+          ...messages,
+          { role: "user", content: enhancedInput },
+        ];
+        onAppendMessage(selectedMode, { role: "user", content: enhancedInput });
+
+        // Использовать первый системный режим (coauthor) для запроса
+        const result = await aiBus.execute({
+          operation: {
+            type: "coauthor_draft",
+            payload: {
+              sceneText: sceneText || "",
+              bookContext: book!,
+              messages: outgoingMessages,
+            },
+          },
+          context: {},
+        });
+
+        onAppendMessage(selectedMode, { role: "assistant", content: result.response.text });
+        setInput("");
+        setStatus("idle");
+      } catch (error) {
+        console.error("Ошибка запроса к эксперту:", error);
+        setStatus("error");
+      }
+      return;
+    }
+
     setStatus("loading");
     try {
       const trimmedInput = input.trim();
@@ -1178,30 +1217,38 @@ export function AssistantPanel({
           <div className="flex flex-col gap-2 border-t border-zinc-200 pt-2 dark:border-zinc-800">
             <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Мои эксперты</p>
             <div className="flex flex-wrap gap-1">
-              {personalExperts.map((expert) => (
-                <div
-                  key={expert.id}
-                  className="flex items-center gap-1 rounded border border-zinc-200 bg-zinc-50 px-2 py-1 dark:border-zinc-800 dark:bg-zinc-900"
-                >
-                  <span className="text-sm">{expert.icon} {expert.name}</span>
-                  <div className="flex gap-0.5">
-                    <button
-                      onClick={() => setIsExpertsDialogOpen(true)}
-                      title="Редактировать"
-                      className="rounded px-1 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                    >
-                      ⚙️
-                    </button>
-                    <button
-                      onClick={() => handleDeleteExpert(expert.id, expert.name)}
-                      title="Удалить"
-                      className="rounded px-1 py-0.5 text-xs text-red-500 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              ))}
+              {personalExperts.map((expert) => {
+                const isSelected = selectedExpertId === expert.id;
+                return (
+                  <button
+                    key={expert.id}
+                    onClick={() => setSelectedExpertId(isSelected ? null : expert.id)}
+                    className={`flex items-center gap-1 rounded border px-2 py-1 transition-colors ${
+                      isSelected
+                        ? "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950"
+                        : "border-zinc-200 bg-zinc-50 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                    }`}
+                  >
+                    <span className="text-sm">{expert.icon} {expert.name}</span>
+                    <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => setIsExpertsDialogOpen(true)}
+                        title="Редактировать"
+                        className="rounded px-1 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                      >
+                        ⚙️
+                      </button>
+                      <button
+                        onClick={() => handleDeleteExpert(expert.id, expert.name)}
+                        title="Удалить"
+                        className="rounded px-1 py-0.5 text-xs text-red-500 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

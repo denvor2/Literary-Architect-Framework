@@ -1283,6 +1283,7 @@ export function AssistantPanel({
             <div className="flex flex-wrap gap-1">
               {personalExperts.map((expert) => {
                 const isSelected = selectedExpertId === expert.id;
+                const isModeActive = selectedExpertId === null;
                 return (
                   <button
                     key={expert.id}
@@ -1290,10 +1291,12 @@ export function AssistantPanel({
                     className={`flex items-center gap-1 rounded border px-2 py-1 transition-colors ${
                       isSelected
                         ? "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950"
-                        : "border-zinc-200 bg-zinc-50 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                        : isModeActive
+                          ? "border-zinc-200 bg-zinc-100 opacity-40 dark:border-zinc-800 dark:bg-zinc-900"
+                          : "border-zinc-200 bg-zinc-50 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
                     }`}
                   >
-                    <span className="text-sm">{expert.icon} {expert.name}</span>
+                    <span className={`text-sm ${isModeActive && !isSelected ? "text-zinc-400 dark:text-zinc-600" : ""}`}>{expert.icon} {expert.name}</span>
                     <div className="flex gap-0.5">
                       <button
                         onClick={(e) => {

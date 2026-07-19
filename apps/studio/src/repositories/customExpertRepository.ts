@@ -165,18 +165,19 @@ export const customExpertRepository = {
   async deleteExpert(id: string, userId: string): Promise<void> {
     if (!prisma) throw new Error("Database connection unavailable");
 
-    const expert = await prisma.customExpert.findFirst({
-      where: { id, userId },
-    });
-    if (!expert) {
+    // Check ownership
+    const expert = (await (prisma as any).$queryRaw`
+      SELECT id FROM "CustomExpert" WHERE id = ${id} AND "userId" = ${userId}
+    `) as Array<{ id: string }>;
+
+    if (!expert.length) {
       throw new Error("Эксперт не найден или вы не владелец");
     }
 
     // Soft delete
-    await prisma.customExpert.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+    await (prisma as any).$executeRaw`
+      UPDATE "CustomExpert" SET "deletedAt" = NOW() WHERE id = ${id}
+    `;
   },
 
   // ==================== ПУБЛИЧНЫЕ ЭКСПЕРТЫ ====================
@@ -201,23 +202,30 @@ export const customExpertRepository = {
   ): Promise<(CustomExpert | PublicExpert)[]> {
     if (!prisma) throw new Error("Database connection unavailable");
 
-    // Мои эксперты
-    const mine = await prisma.customExpert.findMany({
-      where: { userId, deletedAt: null },
-    });
+    // Мои эксперты (raw SQL)
+    const mine = (await (prisma as any).$queryRaw`
+      SELECT id, "userId", name, "systemPrompt", "typicalRequests", icon, "isPublic", "deletedAt", "createdAt", "updatedAt"
+      FROM "CustomExpert"
+      WHERE "userId" = ${userId} AND "deletedAt" IS NULL
+      ORDER BY "createdAt" ASC
+    `) as CustomExpert[];
 
     // Добавленные от других
-    const addedRecords = await prisma.userPublicExpert.findMany({
-      where: { userId },
-    });
+    const addedRecords = (await (prisma as any).$queryRaw`
+      SELECT "publicId" FROM "UserPublicExpert" WHERE "userId" = ${userId}
+    `) as Array<{ publicId: string }>;
 
-    const addedIds = addedRecords.map((r) => r.publicId);
-    const added =
-      addedIds.length > 0
-        ? await prisma.publicExpert.findMany({
-            where: { id: { in: addedIds } },
-          })
-        : [];
+    let added: PublicExpert[] = [];
+    if (addedRecords.length > 0) {
+      const addedIds = addedRecords.map((r) => r.publicId);
+      // Use IN with placeholders for each ID
+      const ids_str = addedIds.join(',');
+      added = (await (prisma as any).$queryRaw`
+        SELECT id, "creatorId", "originalId", name, "systemPrompt", "typicalRequests", icon, "createdAt", "updatedAt"
+        FROM "PublicExpert"
+        WHERE id = ANY(${addedIds}::text[])
+      `) as PublicExpert[];
+    }
 
     return [...mine, ...added];
   },

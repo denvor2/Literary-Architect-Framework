@@ -1255,7 +1255,7 @@ export function AssistantPanel({
 
   return (
     <>
-      <aside className="flex max-h-96 w-full shrink-0 flex-col gap-3 overflow-y-auto border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:h-full lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
+      <aside className="flex max-h-96 w-full shrink-0 flex-col gap-3 overflow-y-auto border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:h-full lg:max-h-none lg:flex-1 lg:max-w-2xl lg:border-l lg:border-t-0">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
           {t("sections.helpers")}
         </h2>
@@ -1629,7 +1629,7 @@ export function AssistantPanel({
                   value={input}
                   onChange={(event) => setInput(event.target.value)}
                   placeholder={meta.placeholder}
-                  rows={2}
+                  rows={5}
                   disabled={status === "loading"}
                   className="w-full resize-none rounded-md border border-zinc-300 bg-white p-2 text-sm text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-zinc-400"
                 />

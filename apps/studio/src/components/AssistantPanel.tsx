@@ -1189,16 +1189,19 @@ export function AssistantPanel({
               <div key={mode} className="relative">
                 <button
                   onClick={() => onSelectMode(mode)}
-                  title={label}
+                  disabled={selectedExpertId !== null && !isActive}
+                  title={selectedExpertId && !isActive ? "Отменить выбор эксперта для изменения режима" : label}
                   aria-label={label}
                   aria-pressed={isActive}
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-lg transition-colors ${
                     isActive
                       ? `${info.activeBorder} bg-white dark:bg-black`
-                      : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
+                      : selectedExpertId
+                        ? "border-zinc-200 bg-zinc-50 opacity-40 dark:border-zinc-800 dark:bg-zinc-900"
+                        : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
                   }`}
                 >
-                  <info.icon className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
+                  <info.icon className={`h-5 w-5 ${selectedExpertId && !isActive ? "text-zinc-400 dark:text-zinc-600" : "text-zinc-700 dark:text-zinc-300"}`} />
                 </button>
                 <GearButton
                   label={label}
@@ -1270,10 +1273,23 @@ export function AssistantPanel({
         <div className="flex flex-1 flex-col gap-3 overflow-y-auto border-t border-zinc-200 pt-3 dark:border-zinc-800">
           <div className="flex items-center justify-between">
             <div
-              className={`flex items-center gap-1.5 text-xs font-medium ${meta.accent}`}
+              className={`flex items-center gap-1.5 text-xs font-medium ${
+                selectedExpertId ? "text-blue-600 dark:text-blue-400" : meta.accent
+              }`}
             >
-              <meta.icon className="h-4 w-4" />
-              <span>{displayNameFor(selectedMode)}</span>
+              {selectedExpertId ? (
+                <>
+                  <span className="text-sm">
+                    {personalExperts.find((e) => e.id === selectedExpertId)?.icon}
+                  </span>
+                  <span>{personalExperts.find((e) => e.id === selectedExpertId)?.name}</span>
+                </>
+              ) : (
+                <>
+                  <meta.icon className="h-4 w-4" />
+                  <span>{displayNameFor(selectedMode)}</span>
+                </>
+              )}
             </div>
             <div className="ml-auto flex gap-1.5">
               {selectedMode === "coauthor" && (

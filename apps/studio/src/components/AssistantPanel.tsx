@@ -1229,21 +1229,17 @@ export function AssistantPanel({
             <div className="flex flex-wrap gap-1">
               {personalExperts.map((expert) => {
                 const isSelected = selectedExpertId === expert.id;
-                const isModeSelected = selectedExpertId === null;
                 return (
                   <button
                     key={expert.id}
                     onClick={() => setSelectedExpertId(isSelected ? null : expert.id)}
-                    disabled={isModeSelected}
                     className={`flex items-center gap-1 rounded border px-2 py-1 transition-colors ${
                       isSelected
                         ? "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950"
-                        : isModeSelected
-                          ? "border-zinc-200 bg-zinc-100 opacity-40 dark:border-zinc-800 dark:bg-zinc-900"
-                          : "border-zinc-200 bg-zinc-50 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                        : "border-zinc-200 bg-zinc-50 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
                     }`}
                   >
-                    <span className={`text-sm ${isModeSelected ? "text-zinc-400 dark:text-zinc-600" : ""}`}>{expert.icon} {expert.name}</span>
+                    <span className="text-sm">{expert.icon} {expert.name}</span>
                     <div className="flex gap-0.5">
                       <button
                         onClick={(e) => {
@@ -1251,9 +1247,8 @@ export function AssistantPanel({
                           setEditingExpertId(expert.id);
                           setIsExpertsDialogOpen(true);
                         }}
-                        disabled={isModeSelected}
                         title="Редактировать"
-                        className={`rounded px-1 py-0.5 text-xs ${isModeSelected ? "text-zinc-300 dark:text-zinc-700 opacity-40" : "text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800"}`}
+                        className="rounded px-1 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800"
                       >
                         ⚙️
                       </button>
@@ -1262,9 +1257,8 @@ export function AssistantPanel({
                           e.stopPropagation();
                           handleDeleteExpert(expert.id, expert.name);
                         }}
-                        disabled={isModeSelected}
                         title="Удалить"
-                        className={`rounded px-1 py-0.5 text-xs ${isModeSelected ? "text-red-300 dark:text-red-700 opacity-40" : "text-red-500 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950"}`}
+                        className="rounded px-1 py-0.5 text-xs text-red-500 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950"
                       >
                         🗑️
                       </button>

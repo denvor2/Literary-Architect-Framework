@@ -840,7 +840,7 @@ export function AssistantPanel({
       try {
         const res = await fetch("/api/experts", { credentials: "include" });
         if (res.ok) {
-          const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string; systemPrompt?: string }> };
+          const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string; systemPrompt?: string; typicalRequests?: string[] }> };
           setPersonalExperts(data.experts);
         }
       } catch (error) {
@@ -1240,9 +1240,10 @@ export function AssistantPanel({
                     }`}
                   >
                     <span className="text-sm">{expert.icon} {expert.name}</span>
-                    <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-0.5">
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setEditingExpertId(expert.id);
                           setIsExpertsDialogOpen(true);
                         }}
@@ -1252,7 +1253,10 @@ export function AssistantPanel({
                         ⚙️
                       </button>
                       <button
-                        onClick={() => handleDeleteExpert(expert.id, expert.name)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteExpert(expert.id, expert.name);
+                        }}
                         title="Удалить"
                         className="rounded px-1 py-0.5 text-xs text-red-500 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950"
                       >

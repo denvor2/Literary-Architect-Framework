@@ -826,6 +826,31 @@ export function AssistantPanel({
     string | undefined
   >(undefined);
   const [isExpertsDialogOpen, setIsExpertsDialogOpen] = useState(false);
+  const [personalExperts, setPersonalExperts] = useState<Array<{ id: string; name: string; icon: string }>>(
+    []
+  );
+  const [loadingExperts, setLoadingExperts] = useState(false);
+
+  // Загрузить личных экспертов при монтировании
+  useEffect(() => {
+    const loadExperts = async () => {
+      setLoadingExperts(true);
+      try {
+        const res = await fetch("/api/experts", { credentials: "include" });
+        if (res.ok) {
+          const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string }> };
+          setPersonalExperts(data.experts);
+        }
+      } catch (error) {
+        console.error("Ошибка загрузки экспертов:", error);
+      } finally {
+        setLoadingExperts(false);
+      }
+    };
+
+    loadExperts();
+  }, [isExpertsDialogOpen]); // Перезагружаем после закрытия диалога (если изменения)
+
   // Sprint-20-Step-03: structure proposal state — ephemeral, not persisted.
   const [structureProposal, setStructureProposal] = useState<{
     chapters: Array<{
@@ -1078,6 +1103,26 @@ export function AssistantPanel({
     setSelectedProposalKeys(new Set());
   }
 
+  async function handleDeleteExpert(expertId: string, expertName: string) {
+    if (!confirm(`Удалить эксперта "${expertName}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/experts/${expertId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        setPersonalExperts((prev) => prev.filter((e) => e.id !== expertId));
+      } else {
+        alert("Ошибка удаления эксперта");
+      }
+    } catch (error) {
+      console.error("Ошибка при удалении эксперта:", error);
+      alert("Ошибка при удалении");
+    }
+  }
+
   return (
     <>
       <aside className="flex max-h-96 w-full shrink-0 flex-col gap-3 overflow-y-auto border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 lg:h-full lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
@@ -1120,13 +1165,47 @@ export function AssistantPanel({
           })}
           <button
             onClick={() => setIsExpertsDialogOpen(true)}
-            title="Мои эксперты"
-            aria-label="Мои эксперты"
+            title="Управлять экспертами"
+            aria-label="Управлять экспертами"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-lg transition-colors hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
           >
             ⚙️
           </button>
         </div>
+
+        {/* Личные эксперты - отображение в виде дополнительных опций */}
+        {personalExperts.length > 0 && (
+          <div className="flex flex-col gap-2 border-t border-zinc-200 pt-2 dark:border-zinc-800">
+            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Мои эксперты</p>
+            <div className="flex flex-wrap gap-1">
+              {personalExperts.map((expert) => (
+                <div
+                  key={expert.id}
+                  className="flex items-center gap-1 rounded border border-zinc-200 bg-zinc-50 px-2 py-1 dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                  <span className="text-sm">{expert.icon} {expert.name}</span>
+                  <div className="flex gap-0.5">
+                    <button
+                      onClick={() => setIsExpertsDialogOpen(true)}
+                      title="Редактировать"
+                      className="rounded px-1 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                    >
+                      ⚙️
+                    </button>
+                    <button
+                      onClick={() => handleDeleteExpert(expert.id, expert.name)}
+                      title="Удалить"
+                      className="rounded px-1 py-0.5 text-xs text-red-500 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Description now shown only for the currently active mode, moved
           out from inside every card (Product Owner's stated goal: reclaim
           vertical space in the ~320px-wide panel). */}

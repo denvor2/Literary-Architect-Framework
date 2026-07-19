@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocaleContext } from "@/context/LocaleContext";
 import type { CustomExpert, PublicExpert } from "@/generated/prisma/client";
 
@@ -32,32 +32,40 @@ export function CustomExpertsDialog({
     isPublic: false,
   });
 
+  const hasLoadedRef = useRef(false);
+
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !hasLoadedRef.current) {
+      hasLoadedRef.current = true;
       loadExperts();
-      // Если открыли для редактирования - заполнить форму
-      if (editingExpertId) {
-        const expert = myExperts.find((e) => e.id === editingExpertId);
-        if (expert) {
-          setFormData({
-            name: expert.name,
-            systemPrompt: expert.systemPrompt,
-            typicalRequests: expert.typicalRequests || [""],
-            icon: expert.icon,
-            isPublic: expert.isPublic,
-          });
-          setShowForm(true);
-        }
-      } else {
-        setShowForm(false);
+    } else if (!isOpen) {
+      hasLoadedRef.current = false; // Сбросить флаг при закрытии
+    }
+  }, [isOpen]);
+
+  // Отдельный эффект для обработки редактирования
+  useEffect(() => {
+    if (isOpen && editingExpertId) {
+      const expert = myExperts.find((e) => e.id === editingExpertId);
+      if (expert) {
         setFormData({
-          name: "",
-          systemPrompt: "",
-          typicalRequests: [""],
-          icon: "🤖",
-          isPublic: false,
+          name: expert.name,
+          systemPrompt: expert.systemPrompt,
+          typicalRequests: expert.typicalRequests || [""],
+          icon: expert.icon,
+          isPublic: expert.isPublic,
         });
+        setShowForm(true);
       }
+    } else if (isOpen && !editingExpertId) {
+      setShowForm(false);
+      setFormData({
+        name: "",
+        systemPrompt: "",
+        typicalRequests: [""],
+        icon: "🤖",
+        isPublic: false,
+      });
     }
   }, [isOpen, editingExpertId, myExperts]);
 

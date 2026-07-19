@@ -875,16 +875,20 @@ export function AssistantPanel({
 
   // Загружаем сохраненный выбор эксперта при монтировании
   useEffect(() => {
+    console.log("[AssistantPanel] useEffect loadPreferences ЗАПУЩЕН");
     const loadPreferences = async () => {
+      console.log("[AssistantPanel] loadPreferences: начинаем загрузку");
       try {
         const res = await fetch("/api/user/assistant-preferences", {
           credentials: "include",
         });
+        console.log("[AssistantPanel] loadPreferences: res.ok =", res.ok, "status =", res.status);
         if (res.ok) {
           const data = (await res.json()) as {
             lastSelectedMode: string;
             lastSelectedExpertId: string | null;
           };
+          console.log("[AssistantPanel] loadPreferences: data =", data);
           // Восстанавливаем выбранного эксперта если он был сохранен
           if (data.lastSelectedExpertId) {
             console.log("[AssistantPanel] Восстанавливаем эксперта:", data.lastSelectedExpertId);
@@ -894,7 +898,7 @@ export function AssistantPanel({
           }
         }
       } catch (error) {
-        console.error("Failed to load preferences:", error);
+        console.error("[AssistantPanel] loadPreferences error:", error);
       }
     };
 
@@ -903,9 +907,11 @@ export function AssistantPanel({
 
   // Сохраняем выбор при изменении
   useEffect(() => {
+    console.log("[AssistantPanel] savePreferences useEffect: selectedMode =", selectedMode, "selectedExpertId =", selectedExpertId);
     const savePreferences = async () => {
+      console.log("[AssistantPanel] Сохраняем preferences (в savePreferences): selectedMode =", selectedMode, "selectedExpertId =", selectedExpertId);
       try {
-        await fetch("/api/user/assistant-preferences", {
+        const res = await fetch("/api/user/assistant-preferences", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -914,6 +920,7 @@ export function AssistantPanel({
             lastSelectedExpertId: selectedExpertId,
           }),
         });
+        console.log("[AssistantPanel] Сохранили preferences, status =", res.status);
       } catch (error) {
         console.error("Failed to save preferences:", error);
       }
@@ -1308,6 +1315,7 @@ export function AssistantPanel({
               <div key={mode} className="relative">
                 <button
                   onClick={() => {
+                    console.log("[AssistantPanel] Клик на режим:", mode, "selectedExpertId было:", selectedExpertId);
                     setSelectedExpertId(null);
                     onSelectMode(mode);
                   }}
@@ -1355,7 +1363,10 @@ export function AssistantPanel({
                 return (
                   <button
                     key={expert.id}
-                    onClick={() => setSelectedExpertId(isSelected ? null : expert.id)}
+                    onClick={() => {
+                      console.log("[AssistantPanel] Клик на эксперта:", expert.name, "id:", expert.id, "isSelected:", isSelected);
+                      setSelectedExpertId(isSelected ? null : expert.id);
+                    }}
                     className={`flex items-center gap-1 rounded border px-2 py-1 transition-colors ${
                       isSelected
                         ? "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950"

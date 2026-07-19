@@ -28,13 +28,6 @@ export const customExpertRepository = {
   ): Promise<CustomExpert & { publicId?: string }> {
     if (!prisma) throw new Error("Database connection unavailable");
 
-    // Try to access the model through descriptor
-    const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(prisma), 'customExpert');
-    console.log("[customExpertRepository] customExpert descriptor:", descriptor ? "exists" : "not found");
-    if (descriptor) {
-      console.log("[customExpertRepository] descriptor type:", descriptor.get ? "getter" : "value");
-    }
-
     // Валидация
     if (!name || name.trim().length < 1 || name.length > 50) {
       throw new Error("Имя эксперта должно быть от 1 до 50 символов");
@@ -55,48 +48,51 @@ export const customExpertRepository = {
       }
     });
 
-    // Проверить уникальность имени
-    const existing = await (prisma as any).customExpert?.findFirst({
-      where: { userId, name: name.trim(), deletedAt: null },
-    });
-    if (existing) {
+    // Проверить уникальность имени using raw query since ORM model not available
+    const { customAlphabet } = await import("nanoid");
+    const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 21);
+
+    const typicalRequestsArray = typicalRequests.map((r) => r.trim());
+
+    const existingCheck = await (prisma as any).$queryRaw`
+      SELECT id FROM "CustomExpert" WHERE "userId" = ${userId} AND name = ${name.trim()} AND "deletedAt" IS NULL
+    ` as Array<{ id: string }>;
+    if (existingCheck.length > 0) {
       throw new Error(`Эксперт с именем "${name}" уже существует`);
     }
 
-    // Создать эксперта
-    const expert = await prisma.customExpert.create({
-      data: {
-        userId,
-        name: name.trim(),
-        systemPrompt: systemPrompt.trim(),
-        typicalRequests: typicalRequests.map((r) => r.trim()),
-        icon: icon || "🤖",
-        isPublic,
-      },
-    });
+    // Create using raw query
+    const expertId = nanoid();
 
-    // Если публичный — создать копию в PublicExpert
+    await (prisma as any).$executeRaw`
+      INSERT INTO "CustomExpert" (id, "userId", name, "systemPrompt", "typicalRequests", icon, "isPublic", "createdAt", "updatedAt")
+      VALUES (${expertId}, ${userId}, ${name.trim()}, ${systemPrompt.trim()}, ${typicalRequestsArray}, ${icon || "🤖"}, ${isPublic}, NOW(), NOW())
+    `;
+
+    // If public, create copy
     let publicId: string | undefined;
     if (isPublic) {
-      try {
-        const publicExpert = await prisma.publicExpert.create({
-          data: {
-            creatorId: userId,
-            originalId: expert.id,
-            name: expert.name,
-            systemPrompt: expert.systemPrompt,
-            typicalRequests: expert.typicalRequests,
-            icon: expert.icon,
-          },
-        });
-        publicId = publicExpert.id;
-      } catch (error) {
-        console.error("[createExpert] Failed to create public expert:", error);
-        throw error;
-      }
+      const pubId = nanoid();
+      await (prisma as any).$executeRaw`
+        INSERT INTO "PublicExpert" (id, "creatorId", "originalId", name, "systemPrompt", "typicalRequests", icon, "createdAt", "updatedAt")
+        VALUES (${pubId}, ${userId}, ${expertId}, ${name.trim()}, ${systemPrompt.trim()}, ${typicalRequestsArray}, ${icon || "🤖"}, NOW(), NOW())
+      `;
+      publicId = pubId;
     }
 
-    return { ...expert, publicId };
+    return {
+      id: expertId,
+      userId,
+      name: name.trim(),
+      systemPrompt: systemPrompt.trim(),
+      typicalRequests: typicalRequests.map((r) => r.trim()),
+      icon: icon || "🤖",
+      isPublic,
+      deletedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      publicId,
+    } as any;
   },
 
   async updateExpert(

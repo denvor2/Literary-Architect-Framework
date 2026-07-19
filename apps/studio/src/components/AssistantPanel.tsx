@@ -853,6 +853,54 @@ export function AssistantPanel({
     loadExperts();
   }, [isExpertsDialogOpen]); // Перезагружаем после закрытия диалога (если изменения)
 
+  // Загружаем сохраненный выбор эксперта при монтировании
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        const res = await fetch("/api/user/assistant-preferences", {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const data = (await res.json()) as {
+            lastSelectedMode: string;
+            lastSelectedExpertId: string | null;
+          };
+          // Восстанавливаем выбранного эксперта если он был сохранен
+          if (data.lastSelectedExpertId) {
+            setSelectedExpertId(data.lastSelectedExpertId);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load preferences:", error);
+      }
+    };
+
+    loadPreferences();
+  }, []); // Только при монтировании
+
+  // Сохраняем выбор при изменении
+  useEffect(() => {
+    const savePreferences = async () => {
+      try {
+        await fetch("/api/user/assistant-preferences", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            lastSelectedMode: selectedMode,
+            lastSelectedExpertId: selectedExpertId,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to save preferences:", error);
+      }
+    };
+
+    // Debounce сохранение чтобы не слишком часто вызывать API
+    const timer = setTimeout(savePreferences, 500);
+    return () => clearTimeout(timer);
+  }, [selectedMode, selectedExpertId]);
+
   // Sprint-20-Step-03: structure proposal state — ephemeral, not persisted.
   const [structureProposal, setStructureProposal] = useState<{
     chapters: Array<{

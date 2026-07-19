@@ -262,20 +262,22 @@ model Series {
 }
 
 model User {
-  id               String            @id
-  createdAt        DateTime          @default(now())
-  email            String            @unique
-  passwordHash     String?
-  role             Role              @default(user)
-  isBlocked        Boolean           @default(false)
-  updatedAt        DateTime
-  Book             Book[]
-  Event            Event[]
-  Payment          Payment[]
-  Series           Series[]
-  UserSubscription UserSubscription?
-  CustomExpert     CustomExpert[]
-  UserPublicExpert UserPublicExpert[]
+  id                    String            @id
+  createdAt             DateTime          @default(now())
+  email                 String            @unique
+  passwordHash          String?
+  role                  Role              @default(user)
+  isBlocked             Boolean           @default(false)
+  updatedAt             DateTime
+  lastSelectedMode      String?           @default("coauthor") // "coauthor" | "editor" | "critic" | "reader"
+  lastSelectedExpertId  String?           // null if mode is selected, expert id if expert is selected
+  Book                  Book[]
+  Event                 Event[]
+  Payment               Payment[]
+  Series                Series[]
+  UserSubscription      UserSubscription?
+  CustomExpert          CustomExpert[]
+  UserPublicExpert      UserPublicExpert[]
 
   @@index([email])
 }

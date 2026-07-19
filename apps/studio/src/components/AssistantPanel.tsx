@@ -841,6 +841,7 @@ export function AssistantPanel({
         const res = await fetch("/api/experts", { credentials: "include" });
         if (res.ok) {
           const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string; systemPrompt?: string; typicalRequests?: string[] }> };
+          console.log("[AssistantPanel] Загружены эксперты:", data.experts);
           setPersonalExperts(data.experts);
         }
       } catch (error) {
@@ -851,7 +852,26 @@ export function AssistantPanel({
     };
 
     loadExperts();
-  }, [isExpertsDialogOpen]); // Перезагружаем после закрытия диалога (если изменения)
+  }, []); // Загружаем один раз при монтировании
+
+  // Перезагружаем экспертов после закрытия диалога (если изменения)
+  useEffect(() => {
+    if (!isExpertsDialogOpen) {
+      const loadExperts = async () => {
+        try {
+          const res = await fetch("/api/experts", { credentials: "include" });
+          if (res.ok) {
+            const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string; systemPrompt?: string; typicalRequests?: string[] }> };
+            setPersonalExperts(data.experts);
+          }
+        } catch (error) {
+          console.error("Ошибка загрузки экспертов:", error);
+        }
+      };
+
+      loadExperts();
+    }
+  }, [isExpertsDialogOpen]);
 
   // Загружаем сохраненный выбор эксперта при монтировании
   useEffect(() => {
@@ -867,7 +887,10 @@ export function AssistantPanel({
           };
           // Восстанавливаем выбранного эксперта если он был сохранен
           if (data.lastSelectedExpertId) {
+            console.log("[AssistantPanel] Восстанавливаем эксперта:", data.lastSelectedExpertId);
             setSelectedExpertId(data.lastSelectedExpertId);
+          } else {
+            console.log("[AssistantPanel] Нет сохраненного эксперта, используем режим:", data.lastSelectedMode);
           }
         }
       } catch (error) {
@@ -979,6 +1002,12 @@ export function AssistantPanel({
   const displayedTypicalRequests = selectedExpertId
     ? (personalExperts.find((e) => e.id === selectedExpertId)?.typicalRequests as string[] | undefined) ?? []
     : selectedTypicalRequests;
+
+  // Debug logging
+  if (selectedExpertId && displayedTypicalRequests.length === 0) {
+    const expert = personalExperts.find((e) => e.id === selectedExpertId);
+    console.log("[AssistantPanel] selectedExpertId:", selectedExpertId, "найден эксперт:", expert?.name, "typicalRequests:", expert?.typicalRequests);
+  }
   const thread = activeThreads?.[selectedMode];
   const messages = thread?.messages ?? [];
   // Editor/Co-author always work on the whole current scene; Critic/Reader

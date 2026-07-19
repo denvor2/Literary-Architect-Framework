@@ -108,10 +108,14 @@ export const customExpertRepository = {
   ): Promise<CustomExpert> {
     if (!prisma) throw new Error("Database connection unavailable");
 
-    const expert = await prisma.customExpert.findFirst({
-      where: { id, userId, deletedAt: null },
-    });
-    if (!expert) {
+    // Проверить что эксперт существует и принадлежит пользователю (raw SQL)
+    const expert = (await (prisma as any).$queryRaw`
+      SELECT id, name, "systemPrompt", "typicalRequests", icon, "isPublic"
+      FROM "CustomExpert"
+      WHERE id = ${id} AND "userId" = ${userId} AND "deletedAt" IS NULL
+    `) as Array<CustomExpert>;
+
+    if (!expert.length) {
       throw new Error("Эксперт не найден или вы не владелец");
     }
 
@@ -123,14 +127,12 @@ export const customExpertRepository = {
       data.name = data.name.trim();
 
       // Проверить уникальность
-      const dup = await prisma.customExpert.findFirst({
-        where: {
-          userId,
-          name: data.name,
-          id: { not: id },
-        },
-      });
-      if (dup) {
+      const dup = (await (prisma as any).$queryRaw`
+        SELECT id FROM "CustomExpert"
+        WHERE "userId" = ${userId} AND name = ${data.name} AND id != ${id}
+      `) as Array<{ id: string }>;
+
+      if (dup.length > 0) {
         throw new Error(`Эксперт с именем "${data.name}" уже существует`);
       }
     }
@@ -156,10 +158,56 @@ export const customExpertRepository = {
       data.typicalRequests = data.typicalRequests.map((r) => r.trim());
     }
 
-    return prisma.customExpert.update({
-      where: { id },
-      data,
-    });
+    // UPDATE с raw SQL
+    const updates: string[] = [];
+    const updateValues: any[] = [id];
+
+    if (data.name !== undefined) {
+      updates.push(`name = $${updateValues.length + 1}`);
+      updateValues.push(data.name);
+    }
+    if (data.systemPrompt !== undefined) {
+      updates.push(`"systemPrompt" = $${updateValues.length + 1}`);
+      updateValues.push(data.systemPrompt);
+    }
+    if (data.typicalRequests !== undefined) {
+      updates.push(`"typicalRequests" = $${updateValues.length + 1}`);
+      updateValues.push(data.typicalRequests);
+    }
+    if (data.icon !== undefined) {
+      updates.push(`icon = $${updateValues.length + 1}`);
+      updateValues.push(data.icon);
+    }
+    if (data.isPublic !== undefined) {
+      updates.push(`"isPublic" = $${updateValues.length + 1}`);
+      updateValues.push(data.isPublic);
+    }
+
+    if (updates.length === 0) {
+      return expert[0];
+    }
+
+    const currentExpert = expert[0];
+
+    // UPDATE через raw SQL - обновляем все переданные поля
+    await (prisma as any).$executeRaw`
+      UPDATE "CustomExpert"
+      SET
+        name = ${data.name !== undefined ? data.name : currentExpert.name},
+        "systemPrompt" = ${data.systemPrompt !== undefined ? data.systemPrompt : currentExpert.systemPrompt},
+        "typicalRequests" = ${data.typicalRequests !== undefined ? data.typicalRequests : currentExpert.typicalRequests},
+        icon = ${data.icon !== undefined ? data.icon : currentExpert.icon},
+        "isPublic" = ${data.isPublic !== undefined ? data.isPublic : currentExpert.isPublic},
+        "updatedAt" = NOW()
+      WHERE id = ${id}
+    `;
+
+    // Вернуть обновленный объект
+    return {
+      ...currentExpert,
+      ...data,
+      updatedAt: new Date(),
+    } as CustomExpert;
   },
 
   async deleteExpert(id: string, userId: string): Promise<void> {

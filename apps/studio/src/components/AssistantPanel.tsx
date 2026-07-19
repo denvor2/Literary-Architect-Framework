@@ -826,7 +826,8 @@ export function AssistantPanel({
     string | undefined
   >(undefined);
   const [isExpertsDialogOpen, setIsExpertsDialogOpen] = useState(false);
-  const [personalExperts, setPersonalExperts] = useState<Array<{ id: string; name: string; icon: string; systemPrompt?: string }>>(
+  const [editingExpertId, setEditingExpertId] = useState<string | undefined>();
+  const [personalExperts, setPersonalExperts] = useState<Array<{ id: string; name: string; icon: string; systemPrompt?: string; typicalRequests?: string[] }>>(
     []
   );
   const [loadingExperts, setLoadingExperts] = useState(false);
@@ -925,6 +926,11 @@ export function AssistantPanel({
   }
   const selectedTypicalRequests =
     settingsMap[selectedMode]?.typicalRequests ?? [];
+
+  // Показывать типовые запросы эксперта если он выбран, иначе режима
+  const displayedTypicalRequests = selectedExpertId
+    ? (personalExperts.find((e) => e.id === selectedExpertId)?.typicalRequests as string[] | undefined) ?? []
+    : selectedTypicalRequests;
   const thread = activeThreads?.[selectedMode];
   const messages = thread?.messages ?? [];
   // Editor/Co-author always work on the whole current scene; Critic/Reader
@@ -1232,7 +1238,10 @@ export function AssistantPanel({
                     <span className="text-sm">{expert.icon} {expert.name}</span>
                     <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
                       <button
-                        onClick={() => setIsExpertsDialogOpen(true)}
+                        onClick={() => {
+                          setEditingExpertId(expert.id);
+                          setIsExpertsDialogOpen(true);
+                        }}
                         title="Редактировать"
                         className="rounded px-1 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800"
                       >
@@ -1291,10 +1300,11 @@ export function AssistantPanel({
 
           {/* Sprint-33-Step-06: Display typicalRequests as clickable pills below mode name.
             For Critic, typicalRequests typically match CRITIC_SUBCATEGORIES labels
-            but serve a different purpose: prepopulating input, not filtering results. */}
-          {selectedTypicalRequests.length > 0 && (
+            but serve a different purpose: prepopulating input, not filtering results.
+            Sprint-38-Step-02-Cont: Also show typicalRequests from selected personal expert */}
+          {displayedTypicalRequests.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {selectedTypicalRequests.map((request) => (
+              {displayedTypicalRequests.map((request) => (
                 <button
                   key={request}
                   onClick={() => {
@@ -1537,7 +1547,11 @@ export function AssistantPanel({
       )}
       <CustomExpertsDialog
         isOpen={isExpertsDialogOpen}
-        onClose={() => setIsExpertsDialogOpen(false)}
+        onClose={() => {
+          setIsExpertsDialogOpen(false);
+          setEditingExpertId(undefined);
+        }}
+        editingExpertId={editingExpertId}
       />
     </>
   );

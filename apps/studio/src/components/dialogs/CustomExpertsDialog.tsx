@@ -7,6 +7,7 @@ import type { CustomExpert, PublicExpert } from "@/generated/prisma/client";
 interface CustomExpertsDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  editingExpertId?: string; // ID эксперта для редактирования
 }
 
 type Expert = CustomExpert & { isOwn?: boolean };
@@ -14,6 +15,7 @@ type Expert = CustomExpert & { isOwn?: boolean };
 export function CustomExpertsDialog({
   isOpen,
   onClose,
+  editingExpertId,
 }: CustomExpertsDialogProps) {
   const { t } = useLocaleContext();
   const [tab, setTab] = useState<"mine" | "available">("mine");
@@ -33,8 +35,31 @@ export function CustomExpertsDialog({
   useEffect(() => {
     if (isOpen) {
       loadExperts();
+      // Если открыли для редактирования - заполнить форму
+      if (editingExpertId) {
+        const expert = myExperts.find((e) => e.id === editingExpertId);
+        if (expert) {
+          setFormData({
+            name: expert.name,
+            systemPrompt: expert.systemPrompt,
+            typicalRequests: expert.typicalRequests || [""],
+            icon: expert.icon,
+            isPublic: expert.isPublic,
+          });
+          setShowForm(true);
+        }
+      } else {
+        setShowForm(false);
+        setFormData({
+          name: "",
+          systemPrompt: "",
+          typicalRequests: [""],
+          icon: "🤖",
+          isPublic: false,
+        });
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, editingExpertId, myExperts]);
 
   const loadExperts = async () => {
     setLoading(true);
@@ -66,8 +91,12 @@ export function CustomExpertsDialog({
     }
 
     try {
-      const res = await fetch("/api/experts", {
-        method: "POST",
+      const isEditing = !!editingExpertId;
+      const url = isEditing ? `/api/experts/${editingExpertId}` : "/api/experts";
+      const method = isEditing ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
@@ -89,12 +118,15 @@ export function CustomExpertsDialog({
           isPublic: false,
         });
         setShowForm(false);
+        if (isEditing) {
+          onClose(); // Закрыть диалог после редактирования
+        }
       } else {
         const error = await res.json();
         alert(`Ошибка: ${(error as { error?: string }).error}`);
       }
     } catch (error) {
-      console.error("Failed to create expert:", error);
+      console.error("Failed to save expert:", error);
     }
   };
 

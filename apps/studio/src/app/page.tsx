@@ -1155,8 +1155,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Mobile main content area — add padding-top for fixed header (56px for state A, 64px for state B) */}
-        <div className="flex flex-1 flex-col overflow-hidden pt-14">
+        {/* Mobile main content area — add padding-top for fixed header (56px for state A, 64px for state B) and padding-bottom for fixed tab bar (60px) */}
+        <div className="flex flex-1 flex-col overflow-hidden pt-14 pb-16">
           {/* Hamburger button for mobile drawer */}
           {!isFocusMode && (
             <button
@@ -1268,9 +1268,6 @@ export default function Home() {
             progress={0}
           />
         )}
-
-        {/* Sprint-38-Step-01: Stats footer for mobile */}
-        {!isFocusMode && <StatsFooter stats={stats} />}
 
         {!isFocusMode && <DeveloperTools />}
 

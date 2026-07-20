@@ -327,7 +327,7 @@ export function Header({
 
       return (
         <header
-          className="pointer-events-auto fixed top-0 left-0 right-0 z-30 flex h-16 shrink-0 items-center justify-between bg-white px-2.5 py-2 dark:bg-black"
+          className="pointer-events-auto fixed top-0 left-0 right-0 z-50 flex h-16 shrink-0 items-center justify-between bg-white px-2.5 py-2 dark:bg-black"
           style={{
             paddingTop: "8px",
             paddingBottom: "8px",
@@ -398,7 +398,7 @@ export function Header({
     // State A: No book (just logo, avatar, settings)
     return (
       <header
-        className="pointer-events-auto fixed top-0 left-0 right-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-3 dark:border-zinc-800 dark:bg-black"
+        className="pointer-events-auto fixed top-0 left-0 right-0 z-50 flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-3 dark:border-zinc-800 dark:bg-black"
         style={{ paddingTop: "10px", paddingBottom: "10px" }}
       >
         {/* Logo */}

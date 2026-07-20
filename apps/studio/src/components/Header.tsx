@@ -258,10 +258,13 @@ export function Header({
   const activeBook = books.find((b) => b.id === activeBookId);
 
   return (
-    <header className="pointer-events-auto relative z-40 flex h-14 shrink-0 items-center gap-4 border-b border-zinc-200 bg-white px-6 dark:border-zinc-800 dark:bg-black">
-      <div className="flex items-center gap-3">
-        <span className="text-lg font-semibold tracking-tight text-black dark:text-zinc-50">
+    <header className="pointer-events-auto relative z-40 flex h-14 shrink-0 items-center gap-2 border-b border-zinc-200 bg-white px-3 sm:gap-4 sm:px-6 dark:border-zinc-800 dark:bg-black">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <span className="hidden text-lg font-semibold tracking-tight text-black sm:inline dark:text-zinc-50">
           Literary Studio
+        </span>
+        <span className="text-sm font-semibold tracking-tight text-black sm:hidden dark:text-zinc-50">
+          Lib
         </span>
         {/* Sprint-34-Step-05: Gear button for active book settings */}
         {activeBook && (
@@ -276,7 +279,7 @@ export function Header({
         )}
       </div>
 
-      <nav ref={menuBarRef} className="flex items-center gap-1">
+      <nav ref={menuBarRef} className="hidden items-center gap-1 sm:flex">
         {MENUS.map((menu) => (
           <div key={menu.key} className="relative">
             <button
@@ -578,7 +581,10 @@ export function Header({
         ))}
       </nav>
 
-      <div ref={searchRef} className="relative flex flex-col gap-1">
+      <div
+        ref={searchRef}
+        className="hidden flex-col gap-1 md:flex md:relative"
+      >
         <div className="relative">
           <input
             ref={searchInputRef}
@@ -593,7 +599,7 @@ export function Header({
             }}
             placeholder={t("header.search_placeholder")}
             aria-label={t("header.search_aria")}
-            className="w-64 rounded-md border border-zinc-300 bg-white px-3 py-1.5 pr-9 text-sm text-black outline-none placeholder:text-zinc-400 focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 dark:focus:ring-zinc-400"
+            className="w-48 rounded-md border border-zinc-300 bg-white px-3 py-1.5 pr-9 text-sm text-black outline-none placeholder:text-zinc-400 focus:ring-1 focus:ring-zinc-400 lg:w-64 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 dark:focus:ring-zinc-400"
           />
           <button
             type="button"
@@ -678,7 +684,7 @@ export function Header({
         </div>
         <label
           htmlFor="search-main-text-only"
-          className="hidden select-none items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400"
+          className="hidden select-none items-center gap-1.5 text-xs text-zinc-500 md:flex dark:text-zinc-400"
         >
           <input
             id="search-main-text-only"
@@ -691,20 +697,22 @@ export function Header({
         </label>
       </div>
 
-      <div className="ml-auto flex items-center gap-4">
+      <div className="ml-auto flex flex-shrink-0 items-center gap-2 sm:gap-4">
         <LanguageSwitcher />
         {currentUser ? (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {billingController.currentPlan && (
-              <CurrentPlanDisplay
-                planName={billingController.currentPlan.name}
-                daysUntilExpiry={billingController.daysUntilExpiry}
-                isExpired={billingController.isExpired}
-                tier={billingController.currentPlan.tier}
-                onUpgradeClick={() => setIsPlanDialogOpen(true)}
-              />
+              <div className="hidden sm:block">
+                <CurrentPlanDisplay
+                  planName={billingController.currentPlan.name}
+                  daysUntilExpiry={billingController.daysUntilExpiry}
+                  isExpired={billingController.isExpired}
+                  tier={billingController.currentPlan.tier}
+                  onUpgradeClick={() => setIsPlanDialogOpen(true)}
+                />
+              </div>
             )}
-            <div className="flex flex-col items-end">
+            <div className="hidden flex-col items-end sm:flex">
               <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
                 {currentUser.email}
               </span>
@@ -719,7 +727,7 @@ export function Header({
               <a
                 href="/admin"
                 title="Администраторская панель"
-                className="rounded-md border border-amber-300 px-3 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950"
+                className="hidden rounded-md border border-amber-300 px-3 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-50 sm:inline-block dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950"
               >
                 Admin
               </a>
@@ -735,7 +743,7 @@ export function Header({
         ) : (
           <button
             onClick={onOpenLogin}
-            className="rounded-md border border-zinc-300 px-3 py-1 text-sm font-medium text-black transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
+            className="rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-black transition-colors hover:bg-zinc-100 sm:px-3 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900"
             aria-label="Вход в приложение"
           >
             Войти

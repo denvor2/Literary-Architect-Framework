@@ -827,9 +827,15 @@ export function AssistantPanel({
   >(undefined);
   const [isExpertsDialogOpen, setIsExpertsDialogOpen] = useState(false);
   const [editingExpertId, setEditingExpertId] = useState<string | undefined>();
-  const [personalExperts, setPersonalExperts] = useState<Array<{ id: string; name: string; icon: string; systemPrompt?: string; typicalRequests?: string[] }>>(
-    []
-  );
+  const [personalExperts, setPersonalExperts] = useState<
+    Array<{
+      id: string;
+      name: string;
+      icon: string;
+      systemPrompt?: string;
+      typicalRequests?: string[];
+    }>
+  >([]);
   const [loadingExperts, setLoadingExperts] = useState(false);
   const [selectedExpertId, setSelectedExpertId] = useState<string | null>(null);
 
@@ -840,7 +846,15 @@ export function AssistantPanel({
       try {
         const res = await fetch("/api/experts", { credentials: "include" });
         if (res.ok) {
-          const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string; systemPrompt?: string; typicalRequests?: string[] }> };
+          const data = (await res.json()) as {
+            experts: Array<{
+              id: string;
+              name: string;
+              icon: string;
+              systemPrompt?: string;
+              typicalRequests?: string[];
+            }>;
+          };
           setPersonalExperts(data.experts);
         }
       } catch (error) {
@@ -860,7 +874,15 @@ export function AssistantPanel({
         try {
           const res = await fetch("/api/experts", { credentials: "include" });
           if (res.ok) {
-            const data = (await res.json()) as { experts: Array<{ id: string; name: string; icon: string; systemPrompt?: string; typicalRequests?: string[] }> };
+            const data = (await res.json()) as {
+              experts: Array<{
+                id: string;
+                name: string;
+                icon: string;
+                systemPrompt?: string;
+                typicalRequests?: string[];
+              }>;
+            };
             setPersonalExperts(data.experts);
           }
         } catch (error) {
@@ -996,7 +1018,8 @@ export function AssistantPanel({
 
   // Показывать типовые запросы эксперта если он выбран, иначе режима
   const displayedTypicalRequests = selectedExpertId
-    ? (personalExperts.find((e) => e.id === selectedExpertId)?.typicalRequests as string[] | undefined) ?? []
+    ? ((personalExperts.find((e) => e.id === selectedExpertId)
+        ?.typicalRequests as string[] | undefined) ?? [])
     : selectedTypicalRequests;
   const thread = activeThreads?.[selectedMode];
   const messages = thread?.messages ?? [];
@@ -1013,7 +1036,9 @@ export function AssistantPanel({
 
   async function handleSend() {
     // Если выбран личный эксперт - использовать его системный промпт
-    const selectedExpert = selectedExpertId ? personalExperts.find((e) => e.id === selectedExpertId) : null;
+    const selectedExpert = selectedExpertId
+      ? personalExperts.find((e) => e.id === selectedExpertId)
+      : null;
     if (selectedExpert?.systemPrompt) {
       setStatus("loading");
       try {
@@ -1025,11 +1050,18 @@ export function AssistantPanel({
         };
 
         const outgoingMessages: ChatMessage[] = trimmedInput
-          ? [...messages, expertContextMsg, { role: "user", content: trimmedInput }]
+          ? [
+              ...messages,
+              expertContextMsg,
+              { role: "user", content: trimmedInput },
+            ]
           : [...messages, expertContextMsg];
 
         if (trimmedInput) {
-          onAppendMessage(selectedMode, { role: "user", content: trimmedInput });
+          onAppendMessage(selectedMode, {
+            role: "user",
+            content: trimmedInput,
+          });
         }
 
         let resultText: string;
@@ -1079,7 +1111,10 @@ export function AssistantPanel({
           throw new Error("Unknown mode");
         }
 
-        onAppendMessage(selectedMode, { role: "assistant", content: resultText });
+        onAppendMessage(selectedMode, {
+          role: "assistant",
+          content: resultText,
+        });
         setInput("");
         setStatus("idle");
       } catch (error) {
@@ -1292,7 +1327,8 @@ export function AssistantPanel({
             // Режим активен если эксперт не выбран И это текущий режим
             const isActive = selectedExpertId === null && mode === selectedMode;
             // Режим неактивен если эксперт не выбран И это не текущий режим
-            const isInactive = selectedExpertId === null && mode !== selectedMode;
+            const isInactive =
+              selectedExpertId === null && mode !== selectedMode;
             const label = displayNameFor(mode);
             return (
               <div key={mode} className="relative">
@@ -1301,10 +1337,14 @@ export function AssistantPanel({
                     setSelectedExpertId(null);
                     onSelectMode(mode);
                   }}
-                  title={selectedExpertId && !isActive ? "Отменить выбор эксперта для изменения режима" : label}
+                  title={
+                    selectedExpertId && !isActive
+                      ? "Отменить выбор эксперта для изменения режима"
+                      : label
+                  }
                   aria-label={label}
                   aria-pressed={isActive}
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-lg transition-colors ${
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-lg transition-colors sm:h-10 sm:w-10 ${
                     isActive
                       ? `${info.activeBorder} bg-white dark:bg-black`
                       : selectedExpertId
@@ -1314,7 +1354,9 @@ export function AssistantPanel({
                           : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
                   }`}
                 >
-                  <info.icon className={`h-5 w-5 ${(selectedExpertId && !isActive) || isInactive ? "text-zinc-400 dark:text-zinc-600" : "text-zinc-700 dark:text-zinc-300"}`} />
+                  <info.icon
+                    className={`h-5 w-5 ${(selectedExpertId && !isActive) || isInactive ? "text-zinc-400 dark:text-zinc-600" : "text-zinc-700 dark:text-zinc-300"}`}
+                  />
                 </button>
                 <GearButton
                   label={label}
@@ -1328,7 +1370,7 @@ export function AssistantPanel({
             onClick={() => setIsExpertsDialogOpen(true)}
             title="Управлять экспертами"
             aria-label="Управлять экспертами"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-lg transition-colors hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-lg transition-colors hover:border-zinc-300 hover:bg-zinc-100 sm:h-10 sm:w-10 dark:border-zinc-800 dark:bg-black dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
           >
             ⚙️
           </button>
@@ -1337,7 +1379,9 @@ export function AssistantPanel({
         {/* Личные эксперты - отображение в виде дополнительных опций */}
         {personalExperts.length > 0 && (
           <div className="flex flex-col gap-2 border-t border-zinc-200 pt-2 dark:border-zinc-800">
-            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Мои эксперты</p>
+            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              Мои эксперты
+            </p>
             <div className="flex flex-wrap gap-1">
               {personalExperts.map((expert) => {
                 const isSelected = selectedExpertId === expert.id;
@@ -1348,7 +1392,7 @@ export function AssistantPanel({
                     onClick={() => {
                       setSelectedExpertId(isSelected ? null : expert.id);
                     }}
-                    className={`flex items-center gap-1 rounded border px-2 py-1 transition-colors ${
+                    className={`flex min-h-10 items-center gap-1 rounded border px-2 py-2 transition-colors sm:py-1 ${
                       isSelected
                         ? "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950"
                         : isModeActive
@@ -1356,7 +1400,11 @@ export function AssistantPanel({
                           : "border-zinc-200 bg-zinc-50 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
                     }`}
                   >
-                    <span className={`text-sm ${isModeActive && !isSelected ? "text-zinc-400 dark:text-zinc-600" : ""}`}>{expert.icon} {expert.name}</span>
+                    <span
+                      className={`text-sm ${isModeActive && !isSelected ? "text-zinc-400 dark:text-zinc-600" : ""}`}
+                    >
+                      {expert.icon} {expert.name}
+                    </span>
                     <div className="flex gap-0.5">
                       <button
                         onClick={(e) => {
@@ -1365,7 +1413,7 @@ export function AssistantPanel({
                           setIsExpertsDialogOpen(true);
                         }}
                         title="Редактировать"
-                        className="rounded px-1 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        className="rounded px-1 py-2 text-xs text-zinc-500 hover:bg-zinc-200 sm:py-0.5 dark:text-zinc-400 dark:hover:bg-zinc-800"
                       >
                         ⚙️
                       </button>
@@ -1375,7 +1423,7 @@ export function AssistantPanel({
                           handleDeleteExpert(expert.id, expert.name);
                         }}
                         title="Удалить"
-                        className="rounded px-1 py-0.5 text-xs text-red-500 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950"
+                        className="rounded px-1 py-2 text-xs text-red-500 hover:bg-red-100 sm:py-0.5 dark:text-red-400 dark:hover:bg-red-950"
                       >
                         🗑️
                       </button>
@@ -1398,15 +1446,25 @@ export function AssistantPanel({
           <div className="flex items-center justify-between">
             <div
               className={`flex items-center gap-1.5 text-xs font-medium ${
-                selectedExpertId ? "text-blue-600 dark:text-blue-400" : meta.accent
+                selectedExpertId
+                  ? "text-blue-600 dark:text-blue-400"
+                  : meta.accent
               }`}
             >
               {selectedExpertId ? (
                 <>
                   <span className="text-sm">
-                    {personalExperts.find((e) => e.id === selectedExpertId)?.icon}
+                    {
+                      personalExperts.find((e) => e.id === selectedExpertId)
+                        ?.icon
+                    }
                   </span>
-                  <span>{personalExperts.find((e) => e.id === selectedExpertId)?.name}</span>
+                  <span>
+                    {
+                      personalExperts.find((e) => e.id === selectedExpertId)
+                        ?.name
+                    }
+                  </span>
                 </>
               ) : (
                 <>

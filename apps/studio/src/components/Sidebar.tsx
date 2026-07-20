@@ -225,12 +225,12 @@ export function Sidebar({
   }
 
   return (
-    <aside className="flex min-h-screen w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 md:w-56 md:p-3 md:gap-4">
+    <aside className="flex min-h-screen w-full flex-col gap-4 overflow-y-auto border-r border-zinc-200 bg-zinc-50 p-3 sm:w-64 sm:p-4 sm:gap-6 md:w-56 md:p-3 md:gap-4 dark:border-zinc-800 dark:bg-zinc-950">
       {/* SERIES SECTION WITH NESTED BOOKS (NO SEPARATE BOOKS SECTION) */}
       <div className="flex flex-col gap-2">
         <button
           onClick={() => onToggleSidebarSection?.("series")}
-          className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
+          className="mb-2 flex min-h-10 items-center justify-between rounded-md px-1 py-2 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900 sm:py-1"
           aria-label={
             expandedSidebarSection === "series"
               ? t("buttons.collapse_series")
@@ -238,7 +238,7 @@ export function Sidebar({
           }
         >
           <div className="flex items-center gap-2">
-            <BookOpen size={16} className="text-zinc-500" />
+            <BookOpen size={16} className="shrink-0 text-zinc-500" />
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               {t("sidebar.books")} ({books.length}), {t("sidebar.series")} (
               {series.length})
@@ -254,7 +254,7 @@ export function Sidebar({
             <div className="flex gap-1">
               <button
                 onClick={() => onNewBook?.()}
-                className="flex-1 rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                className="flex-1 rounded-md border border-zinc-300 px-2 py-2 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 sm:py-1 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                 aria-label="Создать новую книгу"
                 title="Новая книга"
               >
@@ -262,7 +262,7 @@ export function Sidebar({
               </button>
               <button
                 onClick={() => onCreateSeries?.()}
-                className="flex-1 rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                className="flex-1 rounded-md border border-zinc-300 px-2 py-2 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 sm:py-1 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                 aria-label={`${t("buttons.create")} ${t("entities.series")}`}
                 title={`${t("sidebar.new_series")}`}
               >
@@ -304,7 +304,7 @@ export function Sidebar({
                                 ? t("buttons.expand_one_series")
                                 : t("buttons.collapse_one_series")
                             }
-                            className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                            className="shrink-0 rounded-md border border-zinc-300 px-1 py-2 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 sm:py-0.5 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                           >
                             {isSeriesCollapsed ? "▸" : "▾"}
                           </button>
@@ -510,7 +510,7 @@ export function Sidebar({
       <div className="flex flex-col gap-2">
         <button
           onClick={() => onToggleSidebarSection?.("chapters")}
-          className="mb-2 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-md px-1 py-1 transition-colors"
+          className="mb-2 flex min-h-10 items-center justify-between rounded-md px-1 py-2 transition-colors hover:bg-zinc-100 sm:py-1 dark:hover:bg-zinc-900"
           aria-label={
             expandedSidebarSection === "chapters"
               ? t("buttons.collapse_all_chapters")
@@ -537,7 +537,7 @@ export function Sidebar({
               <>
                 <button
                   onClick={() => onCreateChapter?.()}
-                  className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  className="rounded-md border border-zinc-300 px-2 py-2 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 sm:py-0.5 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                   aria-label={t("buttons.new_chapter")}
                 >
                   {t("buttons.new_chapter")}
@@ -564,7 +564,7 @@ export function Sidebar({
                                 ? t("buttons.expand_chapter")
                                 : t("buttons.collapse_chapter")
                             }
-                            className="shrink-0 rounded-md border border-zinc-300 px-1 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                            className="shrink-0 rounded-md border border-zinc-300 px-1 py-2 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 sm:py-0.5 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                           >
                             {isChapterCollapsed ? "▸" : "▾"}
                           </button>
@@ -587,7 +587,7 @@ export function Sidebar({
                           </button>
                           <button
                             onClick={() => onCreateScene?.(chapter.id)}
-                            className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                            className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-2 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 sm:py-0.5 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                             aria-label={`${t("buttons.new_scene")} ${chapter.title}`}
                           >
                             {t("buttons.new_scene")}
@@ -685,7 +685,7 @@ export function Sidebar({
           <>
             <button
               onClick={() => onCreateCharacter?.()}
-              className="rounded-md border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-md border border-zinc-300 px-2 py-2 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 sm:py-0.5 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
               aria-label={t("sidebar.new_character")}
             >
               {t("sidebar.new_character")}

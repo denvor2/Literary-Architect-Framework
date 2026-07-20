@@ -18,10 +18,16 @@ interface StatsFooterProps {
  * - Word count
  * - Character count (with spaces)
  * - Character count (without spaces)
+ * - Author's sheets (авторские листы: 40,000 chars = 1 а.л.)
  */
 export function StatsFooter({ stats }: StatsFooterProps) {
   const formatNumber = (num: number): string => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const authorSheets = (stats.charsNoSpaces / 40000).toFixed(2);
+  const formatAuthorSheets = (sheets: string): string => {
+    return sheets.endsWith('.00') ? sheets.slice(0, -3) : sheets;
   };
 
   return (
@@ -44,6 +50,13 @@ export function StatsFooter({ stats }: StatsFooterProps) {
         Без пробелов:{" "}
         <span className="font-medium text-zinc-900 dark:text-zinc-200">
           {formatNumber(stats.charsNoSpaces)}
+        </span>
+      </span>
+      <span className="mx-3 text-zinc-300 dark:text-zinc-700">|</span>
+      <span className="whitespace-nowrap">
+        А.л.:{" "}
+        <span className="font-medium text-zinc-900 dark:text-zinc-200">
+          {formatAuthorSheets(authorSheets)}
         </span>
       </span>
     </div>

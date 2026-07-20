@@ -222,6 +222,8 @@ export default function Home() {
   // Sprint-34-Design-Step-03: Sidebar collapse toggle for tablet layout
   // (768px-1024px, `md:` breakpoint). Ephemeral state, not persisted.
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  // Sprint-39-Step-03: Mobile drawer state for <640px
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   // Sprint-25-Step-02: drives whether the main-content/AssistantPanel split
   // renders as a mouse-draggable divider (desktop, `lg:` and up) or the
   // pre-existing stacked mobile layout. See `useIsDesktopLayout` above.
@@ -970,67 +972,113 @@ export default function Home() {
         />
         <SyncWarningBanner warning={syncWarning} />
 
+        {/* Mobile drawer overlay (Sprint-39-Step-03) */}
+        {isMobileDrawerOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black bg-opacity-45"
+            onClick={() => setIsMobileDrawerOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Mobile drawer (Sprint-39-Step-03) */}
+        {isMobileDrawerOpen && (
+          <div className="fixed inset-y-0 left-0 z-40 w-[min(80%,300px)] overflow-y-auto border-r border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950">
+            <Sidebar
+              expandedSidebarSection={expandedSidebarSection}
+              onToggleSidebarSection={toggleSidebarSection}
+              isDrawerOpen={isMobileDrawerOpen}
+              onCloseDrawer={() => setIsMobileDrawerOpen(false)}
+              books={books}
+              activeBookId={activeBookId}
+              chapters={chapters}
+              selectedChapterId={selectedChapterId}
+              selectedSceneId={selectedSceneId}
+              onSelectChapter={selectChapter}
+              onSelectScene={selectScene}
+              characters={characters}
+              selectedCharacterId={selectedCharacterId}
+              onSelectCharacter={selectCharacter}
+              onCreateCharacter={createCharacter}
+              onDeleteCharacter={deleteCharacter}
+              onSelectBook={handleSelectBook}
+              onNewBook={() => setIsDialogOpen(true)}
+              onDeleteBook={deleteBook}
+              deletedBooks={deletedBooks}
+              deletedChapters={deletedChapters}
+              deletedScenes={deletedScenes}
+              deletedCharacters={deletedCharacters}
+              deletedIdeas={deletedIdeas}
+              onRestoreBook={restoreBook}
+              onPermanentlyDeleteBook={permanentlyDeleteBook}
+              onPermanentlyDeleteChapter={permanentlyDeleteChapter}
+              onPermanentlyDeleteScene={permanentlyDeleteScene}
+              onPermanentlyDeleteCharacter={permanentlyDeleteCharacter}
+              onPermanentlyDeleteIdea={permanentlyDeleteIdea}
+              onCreateChapter={createChapter}
+              onDeleteChapter={deleteChapter}
+              onCreateScene={createScene}
+              onDeleteScene={deleteScene}
+              onToggleChapterCollapsed={toggleChapterCollapsed}
+              ideas={ideas}
+              onCreateIdea={createIdea}
+              onUpdateIdea={updateIdea}
+              onDeleteIdea={deleteIdea}
+              series={series}
+              collapsedSeriesIds={collapsedSeriesIds}
+              onToggleSeriesCollapsed={(seriesId) =>
+                setCollapsedSeriesIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(seriesId)) {
+                    next.delete(seriesId);
+                  } else {
+                    next.add(seriesId);
+                  }
+                  return next;
+                })
+              }
+              onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
+              onEditSeries={setEditingSeriesId}
+              onDeleteSeries={deleteSeries}
+              onMoveBookToSeries={moveBookToSeries}
+            />
+          </div>
+        )}
+
         {/* Mobile main content area — add padding-top for fixed header (56px for state A, 64px for state B) */}
         <div className="flex flex-1 flex-col overflow-hidden pt-14">
-          {/* Collection Tab */}
+          {/* Hamburger button for mobile drawer */}
+          {!isFocusMode && (
+            <button
+              onClick={() => setIsMobileDrawerOpen((prev) => !prev)}
+              className="absolute left-4 top-4 z-50 rounded-md border border-zinc-300 p-2 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900 md:hidden"
+              aria-label={
+                isMobileDrawerOpen ? "Закрыть навигацию" : "Открыть навигацию"
+              }
+              title="Навигация"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+          )}
+
+          {/* Collection Tab — shows drawer-based sidebar on mobile (Sprint-39-Step-03) */}
           {activeMobileTab === "collection" && !isFocusMode && (
             <div className="flex-1 overflow-y-auto">
-              <Sidebar
-                expandedSidebarSection={expandedSidebarSection}
-                onToggleSidebarSection={toggleSidebarSection}
-                books={books}
-                activeBookId={activeBookId}
-                chapters={chapters}
-                selectedChapterId={selectedChapterId}
-                selectedSceneId={selectedSceneId}
-                onSelectChapter={selectChapter}
-                onSelectScene={selectScene}
-                characters={characters}
-                selectedCharacterId={selectedCharacterId}
-                onSelectCharacter={selectCharacter}
-                onCreateCharacter={createCharacter}
-                onDeleteCharacter={deleteCharacter}
-                onSelectBook={handleSelectBook}
-                onNewBook={() => setIsDialogOpen(true)}
-                onDeleteBook={deleteBook}
-                deletedBooks={deletedBooks}
-                deletedChapters={deletedChapters}
-                deletedScenes={deletedScenes}
-                deletedCharacters={deletedCharacters}
-                deletedIdeas={deletedIdeas}
-                onRestoreBook={restoreBook}
-                onPermanentlyDeleteBook={permanentlyDeleteBook}
-                onPermanentlyDeleteChapter={permanentlyDeleteChapter}
-                onPermanentlyDeleteScene={permanentlyDeleteScene}
-                onPermanentlyDeleteCharacter={permanentlyDeleteCharacter}
-                onPermanentlyDeleteIdea={permanentlyDeleteIdea}
-                onCreateChapter={createChapter}
-                onDeleteChapter={deleteChapter}
-                onCreateScene={createScene}
-                onDeleteScene={deleteScene}
-                onToggleChapterCollapsed={toggleChapterCollapsed}
-                ideas={ideas}
-                onCreateIdea={createIdea}
-                onUpdateIdea={updateIdea}
-                onDeleteIdea={deleteIdea}
-                series={series}
-                collapsedSeriesIds={collapsedSeriesIds}
-                onToggleSeriesCollapsed={(seriesId) =>
-                  setCollapsedSeriesIds((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(seriesId)) {
-                      next.delete(seriesId);
-                    } else {
-                      next.add(seriesId);
-                    }
-                    return next;
-                  })
-                }
-                onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
-                onEditSeries={setEditingSeriesId}
-                onDeleteSeries={deleteSeries}
-                onMoveBookToSeries={moveBookToSeries}
-              />
+              <p className="p-4 text-center text-zinc-500">
+                Нажмите на навигацию выше для просмотра библиотеки
+              </p>
             </div>
           )}
 
@@ -1309,6 +1357,8 @@ export default function Home() {
             <Sidebar
               expandedSidebarSection={expandedSidebarSection}
               onToggleSidebarSection={toggleSidebarSection}
+              isDrawerOpen={false}
+              onCloseDrawer={undefined}
               books={books}
               activeBookId={activeBookId}
               chapters={chapters}

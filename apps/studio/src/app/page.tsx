@@ -831,6 +831,11 @@ export default function Home() {
         <Header
           currentUser={null}
           onOpenLogin={() => setAuthDialogMode("login")}
+          // Sprint-39-Step-02: No book/chapter/scene for auth screen
+          book={null}
+          chapter={null}
+          scene={null}
+          series={[]}
         />
         {authDialogMode === "login" && (
           <LoginDialog
@@ -953,11 +958,20 @@ export default function Home() {
             setSettingsBookId(bookId);
             setIsBookSettingsOpen(true);
           }}
+          // Sprint-39-Step-02: Mobile header props
+          book={activeBook}
+          chapter={activeChapter}
+          scene={activeScene}
+          series={series}
+          onBackClick={() => setActiveMobileTab("collection")}
+          onSettingsClick={() => {
+            /* Placeholder for settings bottom sheet (Step-04) */
+          }}
         />
         <SyncWarningBanner warning={syncWarning} />
 
-        {/* Mobile main content area */}
-        <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Mobile main content area — add padding-top for fixed header (56px for state A, 64px for state B) */}
+        <div className="flex flex-1 flex-col overflow-hidden pt-14">
           {/* Collection Tab */}
           {activeMobileTab === "collection" && !isFocusMode && (
             <div className="flex-1 overflow-y-auto">
@@ -1241,6 +1255,11 @@ export default function Home() {
         currentFontSize={currentFontSize}
         onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
         appVersion="0.1.0"
+        // Sprint-39-Step-02: Pass mobile props (not used on desktop, but for consistency)
+        book={null}
+        chapter={null}
+        scene={null}
+        series={series}
       />
       <SyncWarningBanner warning={syncWarning} />
       {/* Sprint-34-Design-Step-03: Tablet layout (768-1024px) with hamburger menu */}

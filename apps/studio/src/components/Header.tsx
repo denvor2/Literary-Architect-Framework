@@ -1,8 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Search, LogOut } from "lucide-react";
-import type { Book, Chapter, Character, Idea } from "@/domain/model";
+import { Search, LogOut, ChevronLeft, Settings } from "lucide-react";
+import type {
+  Book,
+  Chapter,
+  Character,
+  Idea,
+  Scene,
+  Series,
+} from "@/domain/model";
 import type { User } from "@/hooks/useAuthController";
 import { useLocaleContext } from "@/context/LocaleContext";
 import {
@@ -63,6 +70,13 @@ type HeaderProps = {
   appVersion?: string;
   // Sprint-34-Step-05: Story Bible settings
   onOpenBookSettings?: (bookId: string) => void;
+  // Sprint-39-Step-02: Mobile header state management
+  book?: Book | null;
+  chapter?: Chapter | null;
+  scene?: Scene | null;
+  series?: readonly Series[];
+  onBackClick?: () => void;
+  onSettingsClick?: () => void;
 };
 
 function SearchResultsSection({
@@ -144,10 +158,56 @@ export function Header({
   onShowKeyboardShortcuts,
   appVersion = "0.1.0",
   onOpenBookSettings,
+  // Sprint-39-Step-02: Mobile header props
+  book,
+  chapter,
+  scene,
+  series = [],
+  onBackClick,
+  onSettingsClick,
 }: HeaderProps) {
   const { t } = useLocaleContext();
   const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
   const menuBarRef = useRef<HTMLDivElement>(null);
+
+  // Sprint-39-Step-02: Helper function to get user initials for avatar
+  function getUserInitials(): string {
+    if (!currentUser?.email) return "?";
+    const email = currentUser.email;
+    const firstChar = email.charAt(0).toUpperCase();
+    return firstChar;
+  }
+
+  // Sprint-39-Step-02: Helper function to format breadcrumb
+  function formatBreadcrumb(): string {
+    if (!chapter) return "";
+
+    const seriesInfo =
+      series && book?.seriesId
+        ? series.find((s) => s.id === book.seriesId)?.title
+        : null;
+
+    const chapterNum = chapters.findIndex((c) => c.id === chapter.id) + 1;
+    const sceneNum = scene
+      ? chapter.scenes.findIndex((s) => s.id === scene.id) + 1
+      : null;
+
+    if (seriesInfo && sceneNum) {
+      return `${seriesInfo} · Chapter ${chapterNum} / Scene ${sceneNum}`;
+    } else if (seriesInfo && !sceneNum) {
+      return `${seriesInfo} · Chapter ${chapterNum}`;
+    } else if (sceneNum) {
+      return `Chapter ${chapterNum} / Scene ${sceneNum}`;
+    } else {
+      return `Chapter ${chapterNum}`;
+    }
+  }
+
+  // Sprint-39-Step-02: Truncate title if longer than 40 chars
+  function truncateTitle(title: string, maxChars: number = 40): string {
+    if (title.length <= maxChars) return title;
+    return title.substring(0, maxChars - 1) + "…";
+  }
 
   // Billing state
   const billingController = useBillingController();
@@ -256,6 +316,123 @@ export function Header({
   }
 
   const activeBook = books.find((b) => b.id === activeBookId);
+
+  // Sprint-39-Step-02: Mobile header (State A: no book, State B: with book)
+  // This renders on mobile layouts when called from page.tsx with book/chapter/scene props
+  if (book || chapter || scene) {
+    // State B: Book is open (show back button, title, breadcrumb)
+    if (book) {
+      const breadcrumb = formatBreadcrumb();
+      const displayTitle = truncateTitle(book.title);
+
+      return (
+        <header
+          className="pointer-events-auto fixed top-0 left-0 right-0 z-30 flex h-16 shrink-0 items-center justify-between bg-white px-2.5 py-2 dark:bg-black"
+          style={{
+            paddingTop: "8px",
+            paddingBottom: "8px",
+            borderBottom: "0.5px solid var(--border, #e4e4e7)",
+          }}
+        >
+          {/* Left side: Back button + Title + Breadcrumb */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <button
+              onClick={onBackClick}
+              className="flex-shrink-0 p-2 -ml-2 rounded-md text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900 active:bg-zinc-200 dark:active:bg-zinc-800"
+              style={{
+                width: "44px",
+                height: "44px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              title="Back"
+              aria-label="Back to collection"
+            >
+              <ChevronLeft size={20} />
+            </button>
+
+            <div className="min-w-0 flex-1">
+              <div
+                className="font-medium text-black truncate dark:text-white"
+                style={{ minWidth: 0, fontSize: "15px" }}
+              >
+                {displayTitle}
+              </div>
+              {breadcrumb && (
+                <div
+                  className="text-xs text-zinc-500 truncate dark:text-zinc-400"
+                  style={{ minWidth: 0 }}
+                >
+                  {breadcrumb}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right side: Avatar + Settings */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-800 text-xs font-semibold text-black dark:text-white">
+              {getUserInitials()}
+            </div>
+            <button
+              onClick={onSettingsClick}
+              className="p-2 -mr-2 rounded-md text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900 active:bg-zinc-200 dark:active:bg-zinc-800"
+              style={{
+                width: "44px",
+                height: "44px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              title="Settings"
+              aria-label="Settings"
+            >
+              <Settings size={18} />
+            </button>
+          </div>
+        </header>
+      );
+    }
+
+    // State A: No book (just logo, avatar, settings)
+    return (
+      <header
+        className="pointer-events-auto fixed top-0 left-0 right-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-3 dark:border-zinc-800 dark:bg-black"
+        style={{ paddingTop: "10px", paddingBottom: "10px" }}
+      >
+        {/* Logo */}
+        <div className="text-base font-medium tracking-tight text-black dark:text-white">
+          Lib
+        </div>
+
+        {/* Avatar + Settings */}
+        <div className="flex items-center gap-1">
+          <div
+            className="flex items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-800 text-xs font-semibold text-black dark:text-white"
+            style={{ width: "26px", height: "26px" }}
+          >
+            {getUserInitials()}
+          </div>
+          <button
+            onClick={onSettingsClick}
+            className="p-2 -mr-2 rounded-md text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900 active:bg-zinc-200 dark:active:bg-zinc-800"
+            style={{
+              width: "44px",
+              height: "44px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title="Settings"
+            aria-label="Settings"
+          >
+            <Settings size={20} />
+          </button>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="pointer-events-auto relative z-40 flex h-14 shrink-0 items-center gap-2 border-b border-zinc-200 bg-white px-3 sm:gap-4 sm:px-6 dark:border-zinc-800 dark:bg-black">

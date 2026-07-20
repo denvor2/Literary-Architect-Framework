@@ -20,12 +20,15 @@ import { SeriesSettingsDialog } from "@/components/SeriesSettingsDialog";
 import { BookSettingsDialog } from "@/components/BookSettingsDialog";
 import { ImportDialog } from "@/components/ImportDialog";
 import { StatsFooter } from "@/components/StatsFooter";
+import { ActionsSheet } from "@/components/ActionsSheet";
+import { SettingsSheet } from "@/components/SettingsSheet";
+import { AIToolsPanel } from "@/components/AIToolsPanel";
 import { useWorkspaceController } from "@/workspace/useWorkspaceController";
 import { useAuthController } from "@/hooks/useAuthController";
 import { useLocaleContext } from "@/context/LocaleContext";
 import { execute as aiBusExecute } from "@/ai/aiBus";
 import type { BookFieldName } from "@/ai/operations";
-import type { Book, Series } from "@/domain/model";
+import type { Book, Series, Chapter, Scene } from "@/domain/model";
 
 // Sprint-25-Step-02: `react-resizable-panels`'s `Group` renders its own
 // row/column flex layout via the `orientation` prop (JS-driven, not a CSS
@@ -224,6 +227,13 @@ export default function Home() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   // Sprint-39-Step-03: Mobile drawer state for <640px
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  // Sprint-39-Step-04: Bottom sheets state
+  const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
+  const [actionsSheetData, setActionsSheetData] = useState<
+    { type: "chapter"; data: Chapter } | { type: "scene"; data: Scene } | null
+  >(null);
+  const [isSettingsSheetOpen, setIsSettingsSheetOpen] = useState(false);
+  const [isAIToolsOpen, setIsAIToolsOpen] = useState(false);
   // Sprint-25-Step-02: drives whether the main-content/AssistantPanel split
   // renders as a mouse-draggable divider (desktop, `lg:` and up) or the
   // pre-existing stacked mobile layout. See `useIsDesktopLayout` above.
@@ -808,6 +818,106 @@ export default function Home() {
     document.documentElement.style.fontSize = `${size}px`;
   }
 
+  // Sprint-39-Step-04: Open ActionsSheet for chapter
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function openChapterActionsSheet(chapter: Chapter) {
+    setActionsSheetData({ type: "chapter", data: chapter });
+    setIsActionsSheetOpen(true);
+  }
+
+  // Sprint-39-Step-04: Open ActionsSheet for scene
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function openSceneActionsSheet(scene: Scene) {
+    setActionsSheetData({ type: "scene", data: scene });
+    setIsActionsSheetOpen(true);
+  }
+
+  // Sprint-39-Step-04: Handle ActionsSheet actions
+  function handleActionsSheetAction(action: string, data: Chapter | Scene) {
+    switch (action) {
+      case "rename":
+        // TODO: Implement rename logic with dialog
+        console.log("Rename action for:", data.title);
+        break;
+      case "publish":
+        // TODO: Implement publish logic
+        console.log("Publish action for:", data.title);
+        break;
+      case "move_up":
+        // TODO: Implement move up logic
+        console.log("Move up action for:", data.title);
+        break;
+      case "move_down":
+        // TODO: Implement move down logic
+        console.log("Move down action for:", data.title);
+        break;
+      case "delete":
+        // TODO: Implement delete with confirmation
+        if ("scenes" in data) {
+          // It's a chapter
+          deleteChapter(data.id);
+        } else {
+          // It's a scene
+          const sceneData = data as Scene;
+          const chapterOfScene = chapters.find((ch) =>
+            ch.scenes.some((s) => s.id === sceneData.id),
+          );
+          if (chapterOfScene) {
+            deleteScene(chapterOfScene.id, sceneData.id);
+          }
+        }
+        break;
+    }
+  }
+
+  // Sprint-39-Step-04: Handle SettingsSheet actions
+  function handleSettingsSheetAction(action: string) {
+    switch (action) {
+      case "export_book":
+        if (activeBook) {
+          handleExportBook(activeBook.id);
+        }
+        break;
+      case "import_book":
+        handleImportBook();
+        break;
+      case "theme_light":
+        handleThemeChange("light");
+        break;
+      case "theme_dark":
+        handleThemeChange("dark");
+        break;
+      case "theme_system":
+        handleThemeChange("auto");
+        break;
+      case "language_en":
+        // TODO: Implement language switching
+        console.log("Switch to English");
+        break;
+      case "language_ru":
+        // TODO: Implement language switching
+        console.log("Switch to Russian");
+        break;
+      case "help":
+        setShowKeyboardShortcuts(true);
+        break;
+      case "about":
+        // TODO: Show about dialog
+        console.log("About clicked");
+        break;
+      case "logout":
+        logout();
+        break;
+    }
+  }
+
+  // Sprint-39-Step-04: Handle AIToolsPanel commands
+  function handleAIToolCommand(command: string, customText: string) {
+    if (!activeScene) return;
+    console.log(`AI Tool: ${command} with custom text:`, customText);
+    // TODO: Implement AI tool logic based on command type
+  }
+
   // Sprint-35-Menu-Step-05: Global keyboard shortcuts (Ctrl+Plus/Minus for font size)
   useEffect(() => {
     function handleGlobalKeyDown(event: KeyboardEvent) {
@@ -1302,6 +1412,7 @@ export default function Home() {
         currentTheme={currentTheme}
         currentFontSize={currentFontSize}
         onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
+        onSettingsClick={() => setIsSettingsSheetOpen(true)}
         appVersion="0.1.0"
         // Sprint-39-Step-02: Pass mobile props (not used on desktop, but for consistency)
         book={null}
@@ -1683,6 +1794,37 @@ export default function Home() {
             />
           ) : null;
         })()}
+
+      {/* Sprint-39-Step-04: ActionsSheet for chapter/scene */}
+      {actionsSheetData && (
+        <ActionsSheet
+          isOpen={isActionsSheetOpen}
+          onClose={() => {
+            setIsActionsSheetOpen(false);
+            setActionsSheetData(null);
+          }}
+          type={actionsSheetData.type}
+          data={actionsSheetData.data}
+          onAction={handleActionsSheetAction}
+        />
+      )}
+
+      {/* Sprint-39-Step-04: SettingsSheet */}
+      <SettingsSheet
+        isOpen={isSettingsSheetOpen}
+        onClose={() => setIsSettingsSheetOpen(false)}
+        currentTheme={currentTheme}
+        currentLocale="ru"
+        onSettingsAction={handleSettingsSheetAction}
+      />
+
+      {/* Sprint-39-Step-04: AIToolsPanel */}
+      <AIToolsPanel
+        isOpen={isAIToolsOpen}
+        onClose={() => setIsAIToolsOpen(false)}
+        scene={activeScene}
+        onCommand={handleAIToolCommand}
+      />
     </div>
   );
 }

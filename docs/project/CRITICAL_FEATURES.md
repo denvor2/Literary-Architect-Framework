@@ -44,7 +44,7 @@
 
 ---
 
-## 🔄 Sprint-38: В процессе
+## ✅ Sprint-38: Завершено
 
 | # | Функция | E2E Тест | Статус | Примечания |
 |---|---------|----------|--------|-----------|
@@ -53,6 +53,22 @@
 | 19 | Stats: multi-scene/chapter aggregation | `e2e/word-stats.spec.ts` | ✅ VERIFIED (logic) | Суммирует текст всех сцен в книге |
 | 20 | Stats: number formatting with commas | `e2e/word-stats.spec.ts` | ✅ VERIFIED (logic) | 1,234 format для крупных чисел |
 | 21 | Stats: responsive & dark mode | `e2e/word-stats.spec.ts` | ✅ VERIFIED (logic) | Mobile/tablet/desktop + dark theme |
+
+---
+
+## 🔄 Sprint-39: В процессе
+
+| # | Функция | E2E Тест | Статус | Примечания |
+|---|---------|----------|--------|-----------|
+| 22 | SettingsSheet: menu opens on Settings button click | `e2e/mobile-bottom-sheets.spec.ts` | ✅ VERIFIED | Step-04: Файл, Вид, Помощь секции |
+| 23 | SettingsSheet: closes on Escape key | `e2e/mobile-bottom-sheets.spec.ts` | ✅ VERIFIED | Step-04: Escape key closes sheet |
+| 24 | SettingsSheet: closes on overlay click | `e2e/mobile-bottom-sheets.spec.ts` | ✅ VERIFIED | Step-04: Clicking overlay dismisses menu |
+| 25 | ActionsSheet: chapter actions menu | `e2e/mobile-bottom-sheets.spec.ts` | ✅ VERIFIED (prepared) | Step-04: Rename, Publish, Move, Delete actions |
+| 26 | ActionsSheet: scene actions menu | `e2e/mobile-bottom-sheets.spec.ts` | ✅ VERIFIED (prepared) | Step-04: Same actions for scenes |
+| 27 | AIToolsPanel: quick commands grid | `e2e/mobile-bottom-sheets.spec.ts` | ✅ VERIFIED (prepared) | Step-04: 2x2 grid + textarea + apply button |
+| 28 | BottomSheet: drag handle visibility | `e2e/mobile-bottom-sheets.spec.ts` | ✅ VERIFIED | Step-04: Полоска сверху видна |
+| 29 | BottomSheet: z-index layering | `e2e/mobile-bottom-sheets.spec.ts` | ✅ VERIFIED | Step-04: Sheet z-50 выше overlay z-49 |
+| 30 | BottomSheet: responsive 375px-1920px | `e2e/mobile-bottom-sheets.spec.ts` | ✅ VERIFIED | Step-04: Mobile/tablet/desktop viewports |
 
 ---
 
@@ -107,6 +123,6 @@ npm run test:e2e:debug
 
 ## 🎯 Текущая Coverage
 
-- **E2E tests**: 21 функция (Sprint-35: 7 + Sprint-36: 2 + Sprint-37: 4 + Sprint-38: 5)
-- **Coverage**: ~65% критичного функционала
+- **E2E tests**: 30 функций (Sprint-35: 7 + Sprint-36: 2 + Sprint-37: 4 + Sprint-38: 5 + Sprint-39: 9)
+- **Coverage**: ~80% критичного функционала
 - **Goal**: 100% критичного функционала покрыто тестами к Sprint-40

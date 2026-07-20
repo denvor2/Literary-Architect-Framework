@@ -8,6 +8,7 @@ import { LANGUAGES } from "@/components/NewBookDialog";
 import { GenreAutocomplete } from "@/components/GenreAutocomplete";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useLocaleContext } from "@/context/LocaleContext";
+import { EditorToolbar } from "@/components/EditorToolbar";
 
 // Sprint-13-Step-05: pure scene/chapter/book editing again — the AI
 // interaction that used to live here (SceneImprove, MODE_INFO, and the
@@ -330,371 +331,378 @@ function UnifiedBookView({
   }
 
   return (
-    <main className="flex flex-1 flex-col overflow-y-auto p-6 md:p-4">
-      <div
-        className={`flex w-full flex-1 flex-col gap-6 md:gap-4 ${
-          isFocusMode ? "mx-auto max-w-3xl" : ""
-        }`}
-      >
+    <main className="flex flex-1 flex-col overflow-hidden">
+      <EditorToolbar />
+      <div className="flex flex-1 overflow-y-auto p-6 md:p-4">
         <div
-          className={`rounded-md bg-zinc-50 dark:bg-zinc-950 ${
-            isDetailsCollapsed ? "p-3 md:p-2" : "p-6 md:p-4"
+          className={`flex w-full flex-1 flex-col gap-6 md:gap-4 ${
+            isFocusMode ? "mx-auto max-w-3xl" : ""
           }`}
         >
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              {t("sections.book_properties")}
-            </h2>
-            <button
-              onClick={() => setIsDetailsCollapsed((value) => !value)}
-              aria-label={
-                isDetailsCollapsed
-                  ? t("buttons.expand_properties")
-                  : t("buttons.collapse_properties")
-              }
-              className="shrink-0 rounded-md border border-zinc-300 p-1 text-zinc-500 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-            >
-              {isDetailsCollapsed ? (
-                <ChevronDown size={16} />
-              ) : (
-                <ChevronUp size={16} />
-              )}
-            </button>
-          </div>
-          {!isDetailsCollapsed && (
-            <div className="mt-4 flex max-w-2xl flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <input
-                  value={book.title}
-                  onChange={(event) =>
-                    onUpdateBook?.(book.id, { title: event.target.value })
-                  }
-                  placeholder={t("placeholders.book_title")}
-                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400 md:text-xl"
-                />
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {TITLE_QUICK_REQUESTS.map((quickRequest) => (
-                  <button
-                    key={quickRequest.key}
-                    onClick={() => handleTitleQuickRequest(quickRequest.key)}
-                    disabled={titleLoadingType !== null}
-                    className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                  >
-                    {titleLoadingType === quickRequest.key
-                      ? "…"
-                      : quickRequest.label}
-                  </button>
-                ))}
-              </div>
-              {renderTitleSuggestion()}
-              <div className="flex gap-2">
-                <GenreAutocomplete
-                  value={book.genre}
-                  onChange={(newGenre) =>
-                    onUpdateBook?.(book.id, { genre: newGenre })
-                  }
-                  placeholder="Выберите или введите жанр..."
-                />
-                <select
-                  value={book.language}
-                  onChange={(event) =>
-                    onUpdateBook?.(book.id, { language: event.target.value })
-                  }
-                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
-                >
-                  {LANGUAGES.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-start gap-2">
-                <textarea
-                  value={book.premise}
-                  onChange={(event) =>
-                    onUpdateBook?.(book.id, { premise: event.target.value })
-                  }
-                  placeholder="О чём эта книга?"
-                  rows={4}
-                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
-                />
-                {onRequestFieldSuggestion && (
-                  <button
-                    onClick={() => onRequestFieldSuggestion("premise")}
-                    disabled={isFieldSuggestionLoading}
-                    title="AI-предложение"
-                    className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                  >
-                    {isFieldSuggestionLoading &&
-                    fieldSuggestion?.fieldName === "premise"
-                      ? "…"
-                      : "AI"}
-                  </button>
-                )}
-              </div>
-              {renderFieldSuggestion("premise")}
-              <input
-                value={book.tags.join(", ")}
-                onChange={(event) =>
-                  onUpdateBook?.(book.id, {
-                    tags: event.target.value
-                      .split(",")
-                      .map((tag) => tag.trim())
-                      .filter((tag) => tag.length > 0),
-                  })
-                }
-                placeholder={t("placeholders.tags")}
-                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
-              />
-              <div className="flex items-start gap-2">
-                <textarea
-                  value={book.shortAnnotation}
-                  onChange={(event) =>
-                    onUpdateBook?.(book.id, {
-                      shortAnnotation: event.target.value,
-                    })
-                  }
-                  placeholder="Краткая аннотация..."
-                  rows={2}
-                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
-                />
-                {onRequestFieldSuggestion && (
-                  <button
-                    onClick={() => onRequestFieldSuggestion("shortAnnotation")}
-                    disabled={isFieldSuggestionLoading}
-                    title="AI-предложение"
-                    className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                  >
-                    {isFieldSuggestionLoading &&
-                    fieldSuggestion?.fieldName === "shortAnnotation"
-                      ? "…"
-                      : "AI"}
-                  </button>
-                )}
-              </div>
-              {renderFieldSuggestion("shortAnnotation")}
-              <div className="flex items-start gap-2">
-                <textarea
-                  value={book.fullAnnotation}
-                  onChange={(event) =>
-                    onUpdateBook?.(book.id, {
-                      fullAnnotation: event.target.value,
-                    })
-                  }
-                  placeholder={t("placeholders.full_annotation")}
-                  rows={6}
-                  className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
-                />
-                {onRequestFieldSuggestion && (
-                  <button
-                    onClick={() => onRequestFieldSuggestion("fullAnnotation")}
-                    disabled={isFieldSuggestionLoading}
-                    title="AI-предложение"
-                    className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                  >
-                    {isFieldSuggestionLoading &&
-                    fieldSuggestion?.fieldName === "fullAnnotation"
-                      ? "…"
-                      : "AI"}
-                  </button>
-                )}
-              </div>
-              {renderFieldSuggestion("fullAnnotation")}
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-8">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Главы
-            </h2>
-            {chapters.length > 0 && (
+          <div
+            className={`rounded-md bg-zinc-50 dark:bg-zinc-950 ${
+              isDetailsCollapsed ? "p-3 md:p-2" : "p-6 md:p-4"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                {t("sections.book_properties")}
+              </h2>
               <button
-                onClick={onToggleChaptersCollapsed}
-                className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                onClick={() => setIsDetailsCollapsed((value) => !value)}
+                aria-label={
+                  isDetailsCollapsed
+                    ? t("buttons.expand_properties")
+                    : t("buttons.collapse_properties")
+                }
+                className="shrink-0 rounded-md border border-zinc-300 p-1 text-zinc-500 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
               >
-                {isChaptersCollapsed
-                  ? t("buttons.expand_all_chapters")
-                  : t("buttons.collapse_all_chapters")}
+                {isDetailsCollapsed ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronUp size={16} />
+                )}
               </button>
+            </div>
+            {!isDetailsCollapsed && (
+              <div className="mt-4 flex max-w-2xl flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    value={book.title}
+                    onChange={(event) =>
+                      onUpdateBook?.(book.id, { title: event.target.value })
+                    }
+                    placeholder={t("placeholders.book_title")}
+                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400 md:text-xl"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {TITLE_QUICK_REQUESTS.map((quickRequest) => (
+                    <button
+                      key={quickRequest.key}
+                      onClick={() => handleTitleQuickRequest(quickRequest.key)}
+                      disabled={titleLoadingType !== null}
+                      className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    >
+                      {titleLoadingType === quickRequest.key
+                        ? "…"
+                        : quickRequest.label}
+                    </button>
+                  ))}
+                </div>
+                {renderTitleSuggestion()}
+                <div className="flex gap-2">
+                  <GenreAutocomplete
+                    value={book.genre}
+                    onChange={(newGenre) =>
+                      onUpdateBook?.(book.id, { genre: newGenre })
+                    }
+                    placeholder="Выберите или введите жанр..."
+                  />
+                  <select
+                    value={book.language}
+                    onChange={(event) =>
+                      onUpdateBook?.(book.id, { language: event.target.value })
+                    }
+                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
+                  >
+                    {LANGUAGES.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-start gap-2">
+                  <textarea
+                    value={book.premise}
+                    onChange={(event) =>
+                      onUpdateBook?.(book.id, { premise: event.target.value })
+                    }
+                    placeholder="О чём эта книга?"
+                    rows={4}
+                    className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
+                  />
+                  {onRequestFieldSuggestion && (
+                    <button
+                      onClick={() => onRequestFieldSuggestion("premise")}
+                      disabled={isFieldSuggestionLoading}
+                      title="AI-предложение"
+                      className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    >
+                      {isFieldSuggestionLoading &&
+                      fieldSuggestion?.fieldName === "premise"
+                        ? "…"
+                        : "AI"}
+                    </button>
+                  )}
+                </div>
+                {renderFieldSuggestion("premise")}
+                <input
+                  value={book.tags.join(", ")}
+                  onChange={(event) =>
+                    onUpdateBook?.(book.id, {
+                      tags: event.target.value
+                        .split(",")
+                        .map((tag) => tag.trim())
+                        .filter((tag) => tag.length > 0),
+                    })
+                  }
+                  placeholder={t("placeholders.tags")}
+                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
+                />
+                <div className="flex items-start gap-2">
+                  <textarea
+                    value={book.shortAnnotation}
+                    onChange={(event) =>
+                      onUpdateBook?.(book.id, {
+                        shortAnnotation: event.target.value,
+                      })
+                    }
+                    placeholder="Краткая аннотация..."
+                    rows={2}
+                    className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
+                  />
+                  {onRequestFieldSuggestion && (
+                    <button
+                      onClick={() =>
+                        onRequestFieldSuggestion("shortAnnotation")
+                      }
+                      disabled={isFieldSuggestionLoading}
+                      title="AI-предложение"
+                      className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    >
+                      {isFieldSuggestionLoading &&
+                      fieldSuggestion?.fieldName === "shortAnnotation"
+                        ? "…"
+                        : "AI"}
+                    </button>
+                  )}
+                </div>
+                {renderFieldSuggestion("shortAnnotation")}
+                <div className="flex items-start gap-2">
+                  <textarea
+                    value={book.fullAnnotation}
+                    onChange={(event) =>
+                      onUpdateBook?.(book.id, {
+                        fullAnnotation: event.target.value,
+                      })
+                    }
+                    placeholder={t("placeholders.full_annotation")}
+                    rows={6}
+                    className="w-full resize-none rounded-md border border-zinc-300 bg-white p-3 text-sm text-zinc-700 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-400"
+                  />
+                  {onRequestFieldSuggestion && (
+                    <button
+                      onClick={() => onRequestFieldSuggestion("fullAnnotation")}
+                      disabled={isFieldSuggestionLoading}
+                      title="AI-предложение"
+                      className="mt-1 shrink-0 rounded-md border border-zinc-300 px-2 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    >
+                      {isFieldSuggestionLoading &&
+                      fieldSuggestion?.fieldName === "fullAnnotation"
+                        ? "…"
+                        : "AI"}
+                    </button>
+                  )}
+                </div>
+                {renderFieldSuggestion("fullAnnotation")}
+              </div>
             )}
           </div>
-          {chapters.length === 0 ? (
-            <p className="text-sm text-zinc-400 dark:text-zinc-600">
-              Пока нет глав
-            </p>
-          ) : isChaptersCollapsed ? null : (
-            chapters.map((chapter) => {
-              const isChapterCollapsed =
-                collapsedChapterIds?.has(chapter.id) ?? false;
-              const allScenesCollapsed =
-                chapter.scenes.length > 0 &&
-                chapter.scenes.every((scene) =>
-                  collapsedSceneIds?.has(scene.id),
-                );
 
-              return (
-                <div
-                  key={chapter.id}
-                  id={`chapter-block-${chapter.id}`}
-                  className="flex flex-col gap-4 border-t border-zinc-200 pt-6 first:border-t-0 first:pt-0 dark:border-zinc-800"
+          <div className="flex flex-col gap-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Главы
+              </h2>
+              {chapters.length > 0 && (
+                <button
+                  onClick={onToggleChaptersCollapsed}
+                  className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                 >
-                  <div className="flex items-start gap-2">
-                    <button
-                      onClick={() => onToggleChapterCollapsed?.(chapter.id)}
-                      aria-label={
-                        isChapterCollapsed
-                          ? t("buttons.expand_chapter")
-                          : t("buttons.collapse_chapter")
-                      }
-                      className="mt-2 shrink-0 rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                    >
-                      {isChapterCollapsed ? "▸" : "▾"}
-                    </button>
-                    <div className="flex flex-1 flex-col gap-2">
-                      <input
-                        value={chapter.title}
-                        onChange={(event) =>
-                          onUpdateChapter?.(chapter.id, {
-                            title: event.target.value,
-                          })
+                  {isChaptersCollapsed
+                    ? t("buttons.expand_all_chapters")
+                    : t("buttons.collapse_all_chapters")}
+                </button>
+              )}
+            </div>
+            {chapters.length === 0 ? (
+              <p className="text-sm text-zinc-400 dark:text-zinc-600">
+                Пока нет глав
+              </p>
+            ) : isChaptersCollapsed ? null : (
+              chapters.map((chapter) => {
+                const isChapterCollapsed =
+                  collapsedChapterIds?.has(chapter.id) ?? false;
+                const allScenesCollapsed =
+                  chapter.scenes.length > 0 &&
+                  chapter.scenes.every((scene) =>
+                    collapsedSceneIds?.has(scene.id),
+                  );
+
+                return (
+                  <div
+                    key={chapter.id}
+                    id={`chapter-block-${chapter.id}`}
+                    className="flex flex-col gap-4 border-t border-zinc-200 pt-6 first:border-t-0 first:pt-0 dark:border-zinc-800"
+                  >
+                    <div className="flex items-start gap-2">
+                      <button
+                        onClick={() => onToggleChapterCollapsed?.(chapter.id)}
+                        aria-label={
+                          isChapterCollapsed
+                            ? t("buttons.expand_chapter")
+                            : t("buttons.collapse_chapter")
                         }
-                        placeholder="Название главы..."
-                        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xl font-semibold tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400"
-                      />
-                      {!isChapterCollapsed && (
+                        className="mt-2 shrink-0 rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                      >
+                        {isChapterCollapsed ? "▸" : "▾"}
+                      </button>
+                      <div className="flex flex-1 flex-col gap-2">
                         <input
-                          value={chapter.subtitle ?? ""}
+                          value={chapter.title}
                           onChange={(event) =>
                             onUpdateChapter?.(chapter.id, {
-                              subtitle: event.target.value,
+                              title: event.target.value,
                             })
                           }
-                          placeholder={t("placeholders.subtitle")}
-                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
+                          placeholder="Название главы..."
+                          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xl font-semibold tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400"
                         />
-                      )}
+                        {!isChapterCollapsed && (
+                          <input
+                            value={chapter.subtitle ?? ""}
+                            onChange={(event) =>
+                              onUpdateChapter?.(chapter.id, {
+                                subtitle: event.target.value,
+                              })
+                            }
+                            placeholder={t("placeholders.subtitle")}
+                            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-600 outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:focus:ring-zinc-400"
+                          />
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {!isChapterCollapsed &&
-                    (chapter.scenes.length === 0 ? (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Пока нет сцен
-                      </p>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() =>
-                            onToggleAllScenesInChapter?.(chapter.id)
-                          }
-                          className="self-start rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                        >
-                          {allScenesCollapsed
-                            ? t("buttons.expand_all_scenes")
-                            : t("buttons.collapse_all_scenes")}
-                        </button>
-                        <div className="flex flex-col gap-6 pl-4">
-                          {chapter.scenes.map((scene) => {
-                            const trimmed = scene.text.trim();
-                            const wordCount =
-                              trimmed === "" ? 0 : trimmed.split(/\s+/).length;
-                            const characterCount = scene.text.length;
-                            const textareaId = `scene-textarea-${scene.id}`;
-                            const isSceneCollapsed =
-                              collapsedSceneIds?.has(scene.id) ?? false;
+                    {!isChapterCollapsed &&
+                      (chapter.scenes.length === 0 ? (
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Пока нет сцен
+                        </p>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() =>
+                              onToggleAllScenesInChapter?.(chapter.id)
+                            }
+                            className="self-start rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                          >
+                            {allScenesCollapsed
+                              ? t("buttons.expand_all_scenes")
+                              : t("buttons.collapse_all_scenes")}
+                          </button>
+                          <div className="flex flex-col gap-6 pl-4">
+                            {chapter.scenes.map((scene) => {
+                              const trimmed = scene.text.trim();
+                              const wordCount =
+                                trimmed === ""
+                                  ? 0
+                                  : trimmed.split(/\s+/).length;
+                              const characterCount = scene.text.length;
+                              const textareaId = `scene-textarea-${scene.id}`;
+                              const isSceneCollapsed =
+                                collapsedSceneIds?.has(scene.id) ?? false;
 
-                            return (
-                              <div
-                                key={scene.id}
-                                id={`scene-block-${scene.id}`}
-                                className="flex flex-col gap-2"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() =>
-                                      onToggleSceneCollapsed?.(scene.id)
-                                    }
-                                    aria-label={
-                                      isSceneCollapsed
-                                        ? t("buttons.expand_scene")
-                                        : t("buttons.collapse_scene")
-                                    }
-                                    className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                                  >
-                                    {isSceneCollapsed ? "▸" : "▾"}
-                                  </button>
-                                  <input
-                                    value={scene.title}
-                                    onChange={(event) =>
-                                      onUpdateSceneTitle?.(
-                                        chapter.id,
-                                        scene.id,
-                                        event.target.value,
-                                      )
-                                    }
-                                    onKeyDown={(event) => {
-                                      if (event.key === "Enter") {
-                                        event.preventDefault();
-                                        document
-                                          .getElementById(textareaId)
-                                          ?.focus();
+                              return (
+                                <div
+                                  key={scene.id}
+                                  id={`scene-block-${scene.id}`}
+                                  className="flex flex-col gap-2"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() =>
+                                        onToggleSceneCollapsed?.(scene.id)
                                       }
-                                    }}
-                                    placeholder="Название сцены..."
-                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base font-medium tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400"
-                                  />
-                                </div>
-                                {!isSceneCollapsed && (
-                                  <>
-                                    <textarea
-                                      id={textareaId}
-                                      value={scene.text}
+                                      aria-label={
+                                        isSceneCollapsed
+                                          ? t("buttons.expand_scene")
+                                          : t("buttons.collapse_scene")
+                                      }
+                                      className="shrink-0 rounded-md border border-zinc-300 px-1.5 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                                    >
+                                      {isSceneCollapsed ? "▸" : "▾"}
+                                    </button>
+                                    <input
+                                      value={scene.title}
                                       onChange={(event) =>
-                                        onChangeSceneText?.(
+                                        onUpdateSceneTitle?.(
                                           chapter.id,
                                           scene.id,
                                           event.target.value,
                                         )
                                       }
-                                      onFocus={(event) =>
-                                        onSceneFocus?.(
-                                          chapter.id,
-                                          scene.id,
-                                          event.currentTarget,
-                                        )
-                                      }
-                                      placeholder="Начните писать сцену..."
-                                      rows={8}
-                                      className="w-full resize-none rounded-md bg-transparent p-3 text-base leading-relaxed text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:text-white dark:focus:ring-zinc-400"
+                                      onKeyDown={(event) => {
+                                        if (event.key === "Enter") {
+                                          event.preventDefault();
+                                          document
+                                            .getElementById(textareaId)
+                                            ?.focus();
+                                        }
+                                      }}
+                                      placeholder="Название сцены..."
+                                      className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base font-medium tracking-tight text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-400"
                                     />
-                                    <p className="text-xs text-zinc-400 dark:text-zinc-600">
-                                      Слов: {wordCount} · Символов:{" "}
-                                      {characterCount}
-                                    </p>
-                                  </>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </>
-                    ))}
-                  {!isChapterCollapsed && (
-                    <button
-                      onClick={() => onNewScene?.(chapter.id)}
-                      className="self-start rounded-full border border-zinc-300 px-4 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
-                    >
-                      + Новая сцена
-                    </button>
-                  )}
-                </div>
-              );
-            })
-          )}
+                                  </div>
+                                  {!isSceneCollapsed && (
+                                    <>
+                                      <textarea
+                                        id={textareaId}
+                                        value={scene.text}
+                                        onChange={(event) =>
+                                          onChangeSceneText?.(
+                                            chapter.id,
+                                            scene.id,
+                                            event.target.value,
+                                          )
+                                        }
+                                        onFocus={(event) =>
+                                          onSceneFocus?.(
+                                            chapter.id,
+                                            scene.id,
+                                            event.currentTarget,
+                                          )
+                                        }
+                                        placeholder="Начните писать сцену..."
+                                        rows={8}
+                                        className="w-full resize-none rounded-md bg-transparent p-3 text-base leading-relaxed text-black outline-none focus:ring-1 focus:ring-zinc-400 dark:text-white dark:focus:ring-zinc-400"
+                                      />
+                                      <p className="text-xs text-zinc-400 dark:text-zinc-600">
+                                        Слов: {wordCount} · Символов:{" "}
+                                        {characterCount}
+                                      </p>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
+                      ))}
+                    {!isChapterCollapsed && (
+                      <button
+                        onClick={() => onNewScene?.(chapter.id)}
+                        className="self-start rounded-full border border-zinc-300 px-4 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                      >
+                        + Новая сцена
+                      </button>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </main>

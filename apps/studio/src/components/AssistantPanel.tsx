@@ -674,7 +674,7 @@ function ReaderPanel({
           </div>
           <div className="flex flex-col gap-2">
             {typicalRequests && typicalRequests.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                 {typicalRequests.map((request) => (
                   <button
                     key={request}
@@ -686,7 +686,7 @@ function ReaderPanel({
                         return `${prev} ${request}`;
                       });
                     }}
-                    className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    className="rounded border border-zinc-300 px-3 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                   >
                     {request}
                   </button>
@@ -836,13 +836,11 @@ export function AssistantPanel({
       typicalRequests?: string[];
     }>
   >([]);
-  const [loadingExperts, setLoadingExperts] = useState(false);
   const [selectedExpertId, setSelectedExpertId] = useState<string | null>(null);
 
   // Загрузить личных экспертов при монтировании
   useEffect(() => {
     const loadExperts = async () => {
-      setLoadingExperts(true);
       try {
         const res = await fetch("/api/experts", { credentials: "include" });
         if (res.ok) {
@@ -859,8 +857,6 @@ export function AssistantPanel({
         }
       } catch (error) {
         console.error("Ошибка загрузки экспертов:", error);
-      } finally {
-        setLoadingExperts(false);
       }
     };
 
@@ -1382,7 +1378,7 @@ export function AssistantPanel({
             <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
               Мои эксперты
             </p>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-col gap-1.5 sm:flex-wrap sm:flex-row">
               {personalExperts.map((expert) => {
                 const isSelected = selectedExpertId === expert.id;
                 const isModeActive = selectedExpertId === null;
@@ -1392,7 +1388,7 @@ export function AssistantPanel({
                     onClick={() => {
                       setSelectedExpertId(isSelected ? null : expert.id);
                     }}
-                    className={`flex min-h-10 items-center gap-1 rounded border px-2 py-2 transition-colors sm:py-1 ${
+                    className={`flex min-h-10 w-full items-center justify-between gap-2 rounded border px-3 py-2 transition-colors sm:w-auto ${
                       isSelected
                         ? "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950"
                         : isModeActive
@@ -1405,7 +1401,7 @@ export function AssistantPanel({
                     >
                       {expert.icon} {expert.name}
                     </span>
-                    <div className="flex gap-0.5">
+                    <div className="flex gap-1">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1413,7 +1409,7 @@ export function AssistantPanel({
                           setIsExpertsDialogOpen(true);
                         }}
                         title="Редактировать"
-                        className="rounded px-1 py-2 text-xs text-zinc-500 hover:bg-zinc-200 sm:py-0.5 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        className="rounded px-1.5 py-1 text-xs text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800"
                       >
                         ⚙️
                       </button>
@@ -1423,7 +1419,7 @@ export function AssistantPanel({
                           handleDeleteExpert(expert.id, expert.name);
                         }}
                         title="Удалить"
-                        className="rounded px-1 py-2 text-xs text-red-500 hover:bg-red-100 sm:py-0.5 dark:text-red-400 dark:hover:bg-red-950"
+                        className="rounded px-1.5 py-1 text-xs text-red-500 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950"
                       >
                         🗑️
                       </button>
@@ -1501,7 +1497,7 @@ export function AssistantPanel({
             but serve a different purpose: prepopulating input, not filtering results.
             Sprint-38-Step-02-Cont: Also show typicalRequests from selected personal expert */}
           {displayedTypicalRequests.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               {displayedTypicalRequests.map((request) => (
                 <button
                   key={request}
@@ -1513,7 +1509,7 @@ export function AssistantPanel({
                       return `${prev} ${request}`;
                     });
                   }}
-                  className="rounded-full border border-zinc-300 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                  className="rounded border border-zinc-300 bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
                 >
                   {request}
                 </button>
@@ -1522,12 +1518,12 @@ export function AssistantPanel({
           )}
 
           {selectedMode === "critic" && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:flex lg:flex-wrap">
               {getCriticSubcategories(t).map((sub) => (
                 <button
                   key={sub.key ?? "all"}
                   onClick={() => setCriticSubcategory(sub.key)}
-                  className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                  className={`rounded border px-3 py-2 text-xs font-medium transition-colors ${
                     criticSubcategory === sub.key
                       ? "border-red-400 bg-red-50 text-red-700 dark:border-red-600 dark:bg-red-950 dark:text-red-300"
                       : "border-zinc-300 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
@@ -1719,7 +1715,7 @@ export function AssistantPanel({
                   CRITIC_SUBCATEGORIES above; not a new AI Bus operation.
                   Sprint-33-Step-06: Updated to append instead of replace. */}
                 {selectedTypicalRequests.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                     {selectedTypicalRequests.map((request) => (
                       <button
                         key={request}
@@ -1731,7 +1727,7 @@ export function AssistantPanel({
                             return `${prev} ${request}`;
                           });
                         }}
-                        className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                        className="rounded border border-zinc-300 px-3 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
                       >
                         {request}
                       </button>

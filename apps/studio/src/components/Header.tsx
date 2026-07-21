@@ -57,6 +57,7 @@ type HeaderProps = {
   onLogout?: () => void;
   onOpenLogin?: () => void;
   onCreateBook?: () => void;
+  onCreateSeries?: () => void;
   onSaveWorkspace?: () => void;
   onExportBook?: (bookId: string) => void;
   onImportBook?: () => void;
@@ -146,6 +147,7 @@ export function Header({
   onLogout,
   onOpenLogin,
   onCreateBook,
+  onCreateSeries,
   onSaveWorkspace,
   onExportBook,
   onImportBook,
@@ -271,7 +273,7 @@ export function Header({
       document.removeEventListener("mousedown", handleClickOutsideSearch);
   }, []);
 
-  // Keyboard shortcuts: Ctrl+K/F (search), Ctrl+N (new book), Ctrl+S (save), Ctrl+E (export)
+  // Keyboard shortcuts: Ctrl+K/F (search), Ctrl+N (new book), Ctrl+Shift+N (new series), Ctrl+S (save), Ctrl+E (export)
   // Escape closes menu/search
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -282,6 +284,13 @@ export function Header({
         event.preventDefault();
         searchInputRef.current?.focus();
         setIsResultsOpen(true);
+      } else if (
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "n"
+      ) {
+        event.preventDefault();
+        onCreateSeries?.();
       } else if (
         (event.ctrlKey || event.metaKey) &&
         event.key.toLowerCase() === "n"
@@ -309,7 +318,14 @@ export function Header({
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onCreateBook, onSaveWorkspace, onExportBook, activeBookId, onOpenSearch]);
+  }, [
+    onCreateBook,
+    onCreateSeries,
+    onSaveWorkspace,
+    onExportBook,
+    activeBookId,
+    onOpenSearch,
+  ]);
 
   function closeResults() {
     setIsResultsOpen(false);
@@ -484,6 +500,16 @@ export function Header({
                       aria-label={`${t("menu_items.file.new_book")} (Ctrl+N)`}
                     >
                       {t("menu_items.file.new_book")}
+                    </button>
+                    <button
+                      onClick={() => {
+                        onCreateSeries?.();
+                        setOpenMenu(null);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-sm text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
+                      aria-label={`${t("menu_items.file.new_series")} (Ctrl+Shift+N)`}
+                    >
+                      {t("menu_items.file.new_series")}
                     </button>
                     <button
                       disabled

@@ -24,6 +24,18 @@ test.describe("Menu System Live Verification", () => {
     expect(booksAfter).toBeGreaterThan(booksBefore);
   });
 
+  test("File: Новая серия opens dialog", async ({ page }) => {
+    await page.getByLabel(/Меню Файл|File/i).click();
+    await page.getByLabel(/Новая серия|New Series/i).click();
+
+    // Dialog should be visible
+    const dialog = page
+      .locator("div")
+      .filter({ hasText: /Создать серию|Create Series/ })
+      .first();
+    await expect(dialog).toBeVisible();
+  });
+
   test("File: Выход button is clickable", async ({ page }) => {
     await page.getByLabel(/Меню Файл|File/i).click();
     const exitBtn = page.getByLabel(/Выход|Exit/i);
@@ -103,6 +115,55 @@ test.describe("Menu System Live Verification", () => {
 
     await page.keyboard.press("Control+K");
     await expect(searchInput).toBeFocused();
+  });
+
+  test("Keyboard: Ctrl+N creates new book", async ({ page }) => {
+    const booksBefore = await page
+      .getByRole("button")
+      .filter({ hasText: /Книга|Book/ })
+      .count();
+
+    await page.keyboard.press("Control+N");
+
+    // Give it a moment to process
+    await page.waitForTimeout(200);
+
+    const booksAfter = await page
+      .getByRole("button")
+      .filter({ hasText: /Книга|Book|Без названия/ })
+      .count();
+    expect(booksAfter).toBeGreaterThan(booksBefore);
+  });
+
+  test("Keyboard: Ctrl+Shift+N opens New Series dialog", async ({ page }) => {
+    // First, need to ensure page is ready
+    await page.waitForLoadState("networkidle");
+
+    // Use keyboard combination to open New Series dialog
+    await page.keyboard.press("Control+Shift+N");
+
+    // Wait a moment for dialog to appear
+    await page.waitForTimeout(300);
+
+    // Check if dialog appears
+    const dialog = page
+      .locator("div")
+      .filter({ hasText: /Создать серию|Create Series/ })
+      .first();
+    const isDialogVisible = await dialog.isVisible().catch(() => false);
+
+    if (!isDialogVisible) {
+      // If dialog isn't visible with text, check for input with placeholder
+      const titleInput = page
+        .locator('input[placeholder*="Введите название серии"]')
+        .first();
+      const isTitleInputVisible = await titleInput
+        .isVisible()
+        .catch(() => false);
+      expect(isTitleInputVisible).toBeTruthy();
+    } else {
+      await expect(dialog).toBeVisible();
+    }
   });
 
   test("Keyboard: Escape closes menu", async ({ page }) => {

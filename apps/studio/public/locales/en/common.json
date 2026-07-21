@@ -16,6 +16,7 @@
   "menu_items": {
     "file": {
       "new_book": "New Book",
+      "new_series": "New Series",
       "open": "Open",
       "open_soon": "Open (soon)",
       "save": "Save",

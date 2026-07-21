@@ -1051,6 +1051,7 @@ export default function Home() {
               premise: "",
             })
           }
+          onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
           onSaveWorkspace={() => {
             /* Auto-saved by useWorkspaceController */
           }}
@@ -1395,6 +1396,7 @@ export default function Home() {
             premise: "",
           })
         }
+        onCreateSeries={() => setIsNewSeriesDialogOpen(true)}
         onSaveWorkspace={() => {
           /* Auto-saved by useWorkspaceController */
         }}
